@@ -202,6 +202,12 @@ public class TemplateRegistry {
                         nodes.put(compKey + "_" + i, new CosmeticNode(compKey + "_" + i, scale, localOffset, rot, compColor, compAnim, compAnimType, compAnimSpeed));
                     }
                 }
+                else if (type.equals("raw_node")) {
+                    Vector3f scale = getVector(comp, "scale", new Vector3f(1, 1, 1));
+                    Vector3f trans = getVector(comp, "translation", new Vector3f(0, 0, 0));
+                    Vector3f rot = getVector(comp, "rotation", new Vector3f(0, 0, 0));
+                    nodes.put(compKey, new CosmeticNode(compKey, scale, trans, rot, compColor, compAnim, compAnimType, compAnimSpeed));
+                }
             }
         }
 

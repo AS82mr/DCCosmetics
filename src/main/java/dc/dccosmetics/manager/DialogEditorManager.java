@@ -86,6 +86,11 @@ public class DialogEditorManager implements Listener {
         inv.setItem(6, createPropertyItem("global-rotation.x", getVectorVal(config, "global-rotation", 0)));
         inv.setItem(7, createPropertyItem("global-rotation.y", getVectorVal(config, "global-rotation", 1)));
         inv.setItem(8, createPropertyItem("global-rotation.z", getVectorVal(config, "global-rotation", 2)));
+        
+        inv.setItem(12, createItem(Material.ARMOR_STAND, "§eEquipment Slot", "§7Current: " + config.getString("type", "chest"), "", "§fClick to cycle (head, chest, waist, boots)"));
+        inv.setItem(13, createItem(Material.DIAMOND, "§dRarity", "§7Current: " + config.getString("rarity", "epic"), "", "§fClick to cycle"));
+        inv.setItem(14, createItem(Material.MINECART, "§aBlockbench Mode", "§7Current: " + config.getBoolean("blockbench", false), "", "§fClick to toggle"));
+        
         inv.setItem(22, createItem(Material.ARROW, "§aBack to Main Menu"));
         player.openInventory(inv);
     }
@@ -220,6 +225,13 @@ public class DialogEditorManager implements Listener {
                 return;
             }
 
+            // FIX: Bypass the decimal parser if it's a color!
+            if (prop.equals("color")) {
+                awaitingChatInput.remove(player.getUniqueId());
+                Bukkit.getScheduler().runTask(plugin, () -> applyStringShift(player, templateId, compName, input));
+                return;
+            }
+
             try {
                 double val = Double.parseDouble(input);
                 awaitingChatInput.remove(player.getUniqueId());
@@ -273,6 +285,34 @@ public class DialogEditorManager implements Listener {
             String templateId = activeTemplate.get(player.getUniqueId());
             if (event.getSlot() == 22) { openMainMenu(player, templateId); return; }
             
+            File file = plugin.getTemplateRegistry().getTemplateFile(templateId);
+            YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+
+            if (event.getSlot() == 12) {
+                String[] slots = {"head", "chest", "waist", "boots"};
+                String current = config.getString("type", "chest");
+                String next = "head";
+                for (int i = 0; i < slots.length; i++) if (slots[i].equals(current)) next = slots[(i + 1) % slots.length];
+                config.set("type", next);
+                saveAndReload(file, config);
+                openGeneralSettingsMenu(player, templateId);
+                return;
+            } else if (event.getSlot() == 13) {
+                String[] rarities = {"uncommon", "rare", "epic", "legendary"};
+                String current = config.getString("rarity", "epic");
+                String next = "uncommon";
+                for (int i = 0; i < rarities.length; i++) if (rarities[i].equals(current)) next = rarities[(i + 1) % rarities.length];
+                config.set("rarity", next);
+                saveAndReload(file, config);
+                openGeneralSettingsMenu(player, templateId);
+                return;
+            } else if (event.getSlot() == 14) {
+                config.set("blockbench", !config.getBoolean("blockbench", false));
+                saveAndReload(file, config);
+                openGeneralSettingsMenu(player, templateId);
+                return;
+            }
+
             if (event.getCurrentItem().getType() == Material.PAPER) {
                 String prop = org.bukkit.ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName());
                 handlePropertyClick(player, event, templateId, "GLOBAL", prop);
@@ -296,7 +336,7 @@ public class DialogEditorManager implements Listener {
 
             if (event.getSlot() == 4) {
                 String currentType = config.getString("components." + compName + ".type", "solid");
-                String[] types = {"solid", "star", "flat_ring", "cylinder", "cone", "hourglass", "burst"};
+                String[] types = {"solid", "star", "flat_ring", "cylinder", "cone", "hourglass", "burst", "raw_node"};
                 String nextType = "solid";
                 for (int i = 0; i < types.length; i++) {
                     if (types[i].equals(currentType)) {

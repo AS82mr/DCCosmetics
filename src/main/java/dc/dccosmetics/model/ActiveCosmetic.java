@@ -243,9 +243,29 @@ public class ActiveCosmetic {
                     Vector3f newRot = new Vector3f(originalNode.getRotation());
                     Vector3f newTrans = new Vector3f(originalNode.getTranslation());
                     
-                    // Apply Global Scale and Rotation natively to the nodes!
+                    // 1. Apply Global Scale natively!
                     newTrans.mul(template.getGlobalScale());
-                    newRot.add(template.getGlobalRotation());
+
+                    // 2. UNIFIED RIGID BODY GLOBAL ROTATION!
+                    if (template.getGlobalRotation().lengthSquared() > 0) {
+                        org.joml.Quaternionf gRot = new org.joml.Quaternionf().rotationYXZ(
+                                (float) Math.toRadians(template.getGlobalRotation().y()),
+                                (float) Math.toRadians(template.getGlobalRotation().x()),
+                                (float) Math.toRadians(template.getGlobalRotation().z())
+                        );
+                        // Orbit the translation to keep the model perfectly glued together while rotating!
+                        newTrans.rotate(gRot);
+
+                        org.joml.Quaternionf localRot = new org.joml.Quaternionf().rotationYXZ(
+                                (float) Math.toRadians(newRot.y()),
+                                (float) Math.toRadians(newRot.x()),
+                                (float) Math.toRadians(newRot.z())
+                        );
+                        gRot.mul(localRot); // Combine rotations smoothly
+                        org.joml.Vector3f euler = new org.joml.Vector3f();
+                        gRot.getEulerAnglesYXZ(euler);
+                        newRot.set((float) Math.toDegrees(euler.x()), (float) Math.toDegrees(euler.y()), (float) Math.toDegrees(euler.z()));
+                    }
 
                     if (isBlockbench) {
                         // Apply global unified Blockbench animation translations FIRST, before orbiting!
