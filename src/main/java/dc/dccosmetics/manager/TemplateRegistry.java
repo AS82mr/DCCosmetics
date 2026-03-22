@@ -76,6 +76,8 @@ public class TemplateRegistry {
         float animationSpeed = (float) config.getDouble("animation-speed", 4.0);
 
         Vector3f globalOffset = getVector(config, "global-offset", new Vector3f(0, 0, 0));
+        Vector3f globalScale = getVector(config, "global-scale", new Vector3f(1.0f, 1.0f, 1.0f));
+        Vector3f globalRotation = getVector(config, "global-rotation", new Vector3f(0, 0, 0));
         String footstepParticle = config.getString("footstep.particle", null);
         String footstepColor = parseColor(config.getString("footstep.color"));
         String footstepSound = config.getString("footstep.sound", null);
@@ -222,7 +224,7 @@ public class TemplateRegistry {
             }
         }
 
-        CosmeticTemplate template = new CosmeticTemplate(id, slot, rarity, permission, iconBase64, globalOffset, blockbench, animated, animationType, animationSpeed, footstepParticle, footstepColor, footstepSound, soundVol, soundPitch, nodes);
+        CosmeticTemplate template = new CosmeticTemplate(id, slot, rarity, permission, iconBase64, globalOffset, globalScale, globalRotation, blockbench, animated, animationType, animationSpeed, footstepParticle, footstepColor, footstepSound, soundVol, soundPitch, nodes);
         templates.put(id, template);
         templateFiles.put(id, file);
         return null; // Return null if success

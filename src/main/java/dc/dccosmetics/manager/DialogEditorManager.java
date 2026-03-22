@@ -52,14 +52,42 @@ public class DialogEditorManager implements Listener {
                     inv.setItem(slot++, createItem(Material.LIME_DYE, "§aEdit: " + comp, "§7Type: " + type, "", "§eClick to edit properties!"));
                 }
             }
+            if (config.getConfigurationSection("nodes") != null) {
+                for (String node : config.getConfigurationSection("nodes").getKeys(false)) {
+                    if (slot >= 44) break; // Prevent overflow
+                    inv.setItem(slot++, createItem(Material.PURPLE_DYE, "§dEdit Node: " + node, "§7Type: Raw Matrix", "", "§eClick to edit matrix properties!"));
+                }
+            }
         }
 
+        inv.setItem(48, createItem(Material.COMMAND_BLOCK, "§bGeneral Settings", "§7Edit Global Offset, Scale,", "§7and Rotation of the entire model."));
         inv.setItem(45, createItem(Material.EMERALD, "§a+ Add Component", "§7Adds a new solid component."));
         inv.setItem(49, createItem(Material.BARRIER, "§cClose Editor"));
 
         if (!player.getOpenInventory().getTitle().equals("§8Sculpting: " + templateId)) {
             player.openInventory(inv);
         }
+    }
+
+    public void openGeneralSettingsMenu(Player player, String templateId) {
+        activeTemplate.put(player.getUniqueId(), templateId);
+        activeComponent.put(player.getUniqueId(), "GLOBAL");
+        Inventory inv = Bukkit.createInventory(null, 27, "§8General: " + templateId);
+        File file = plugin.getTemplateRegistry().getTemplateFile(templateId);
+        if (file == null) return;
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+
+        inv.setItem(0, createPropertyItem("global-offset.x", getVectorVal(config, "global-offset", 0)));
+        inv.setItem(1, createPropertyItem("global-offset.y", getVectorVal(config, "global-offset", 1)));
+        inv.setItem(2, createPropertyItem("global-offset.z", getVectorVal(config, "global-offset", 2)));
+        inv.setItem(3, createPropertyItem("global-scale.x", getVectorVal(config, "global-scale", 0, 1.0)));
+        inv.setItem(4, createPropertyItem("global-scale.y", getVectorVal(config, "global-scale", 1, 1.0)));
+        inv.setItem(5, createPropertyItem("global-scale.z", getVectorVal(config, "global-scale", 2, 1.0)));
+        inv.setItem(6, createPropertyItem("global-rotation.x", getVectorVal(config, "global-rotation", 0)));
+        inv.setItem(7, createPropertyItem("global-rotation.y", getVectorVal(config, "global-rotation", 1)));
+        inv.setItem(8, createPropertyItem("global-rotation.z", getVectorVal(config, "global-rotation", 2)));
+        inv.setItem(22, createItem(Material.ARROW, "§aBack to Main Menu"));
+        player.openInventory(inv);
     }
 
     public void openComponentMenu(Player player, String templateId, String compName) {
@@ -77,21 +105,30 @@ public class DialogEditorManager implements Listener {
         File file = plugin.getTemplateRegistry().getTemplateFile(templateId);
         if (file == null) return;
         YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-        String path = "components." + compName;
+        
+        String path;
+        if (config.contains("components." + compName)) { path = "components." + compName; }
+        else if (config.contains("nodes." + compName)) { path = "nodes." + compName; }
+        else { openMainMenu(player, templateId); return; }
 
-        if (!config.contains(path)) {
-            openMainMenu(player, templateId);
-            return;
-        }
-
-        String type = config.getString(path + ".type", "solid");
-        inv.setItem(4, createItem(Material.NAME_TAG, "§eComponent: " + compName, "§7Type: " + type, "", "§fClick to change type!"));
+        String type = config.getString(path + ".type", "raw_node");
+        inv.setItem(4, createItem(Material.NAME_TAG, "§eEditing: " + compName, "§7Type: " + type, "", "§fClick to change type!"));
 
         int slot = 9;
-        inv.setItem(slot++, createPropertyItem("pitch", config.getDouble(path + ".pitch", 90.0)));
         inv.setItem(slot++, createPropertyItem("local-offset.x", getVectorVal(config, path + ".local-offset", 0)));
         inv.setItem(slot++, createPropertyItem("local-offset.y", getVectorVal(config, path + ".local-offset", 1)));
         inv.setItem(slot++, createPropertyItem("local-offset.z", getVectorVal(config, path + ".local-offset", 2)));
+        
+        if (type.equals("raw_node")) {
+            inv.setItem(slot++, createPropertyItem("rotation.x", getVectorVal(config, path + ".rotation", 0)));
+            inv.setItem(slot++, createPropertyItem("rotation.y", getVectorVal(config, path + ".rotation", 1)));
+            inv.setItem(slot++, createPropertyItem("rotation.z", getVectorVal(config, path + ".rotation", 2)));
+            inv.setItem(slot++, createPropertyItem("scale.x", getVectorVal(config, path + ".scale", 0, 1.0)));
+            inv.setItem(slot++, createPropertyItem("scale.y", getVectorVal(config, path + ".scale", 1, 1.0)));
+            inv.setItem(slot++, createPropertyItem("scale.z", getVectorVal(config, path + ".scale", 2, 1.0)));
+        } else {
+            inv.setItem(slot++, createPropertyItem("pitch", config.getDouble(path + ".pitch", 90.0)));
+        }
 
         if (type.equals("solid")) {
             inv.setItem(slot++, createPropertyItem("length", config.getDouble(path + ".length", 1.0)));
@@ -116,6 +153,8 @@ public class DialogEditorManager implements Listener {
 
         inv.setItem(22, createItem(Material.ARROW, "§aBack to Main Menu"));
         inv.setItem(26, createItem(Material.RED_DYE, "§cDelete Component", "§7Shift-Right-Click to delete."));
+        
+        inv.setItem(20, createItem(Material.CYAN_DYE, "§bEdit Color", "§7Current: " + config.getString(path + ".color", "#FFFFFF"), "", "§eDrop (Q) to type Hex Color in chat!"));
 
         if (!player.getOpenInventory().getTitle().equals("§8Editing: " + compName)) {
             player.openInventory(inv);
@@ -123,9 +162,12 @@ public class DialogEditorManager implements Listener {
     }
 
     private double getVectorVal(YamlConfiguration config, String path, int index) {
+        return getVectorVal(config, path, index, 0.0);
+    }
+    private double getVectorVal(YamlConfiguration config, String path, int index, double def) {
         List<Double> list = config.getDoubleList(path);
         if (list.size() > index) return list.get(index);
-        return 0.0;
+        return def;
     }
 
     private ItemStack createPropertyItem(String prop, double val) {
@@ -182,8 +224,9 @@ public class DialogEditorManager implements Listener {
                 double val = Double.parseDouble(input);
                 awaitingChatInput.remove(player.getUniqueId());
                 Bukkit.getScheduler().runTask(plugin, () -> {
-                    applyShift(templateId, compName, prop, "", val, true);
-                    openComponentMenu(player, templateId, compName);
+                    applyShift(templateId, compName, prop, val, true);
+                    if (compName.equals("GLOBAL")) openGeneralSettingsMenu(player, templateId);
+                    else openComponentMenu(player, templateId, compName);
                 });
             } catch (NumberFormatException e) {
                 player.sendMessage("§cInvalid number! Type a valid decimal or 'cancel'.");
@@ -212,9 +255,27 @@ public class DialogEditorManager implements Listener {
                 config.set("components.new_comp_" + count + ".type", "solid");
                 saveAndReload(file, config);
                 openMainMenu(player, templateId);
+            } else if (event.getSlot() == 48) {
+                openGeneralSettingsMenu(player, templateId);
+            } else if (event.getCurrentItem().getType() == Material.PURPLE_DYE) {
+                String comp = org.bukkit.ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName()).replace("Edit Node: ", "");
+                openComponentMenu(player, templateId, comp);
             } else if (event.getCurrentItem().getType() == Material.LIME_DYE) {
                 String comp = org.bukkit.ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName()).replace("Edit: ", "");
                 openComponentMenu(player, templateId, comp);
+            }
+        }
+        // THE FIX: This block was incorrectly checking for "Editing:" instead of "General:"!
+        else if (title.startsWith("§8General: ")) {
+            event.setCancelled(true);
+            if (event.getCurrentItem() == null) return;
+            
+            String templateId = activeTemplate.get(player.getUniqueId());
+            if (event.getSlot() == 22) { openMainMenu(player, templateId); return; }
+            
+            if (event.getCurrentItem().getType() == Material.PAPER) {
+                String prop = org.bukkit.ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName());
+                handlePropertyClick(player, event, templateId, "GLOBAL", prop);
             }
         }
         else if (title.startsWith("§8Editing: ")) {
@@ -259,21 +320,29 @@ public class DialogEditorManager implements Listener {
 
             if (event.getCurrentItem().getType() == Material.PAPER) {
                 String prop = org.bukkit.ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName());
-                double shift = 0;
-                if (event.getClick().isLeftClick()) shift = event.getClick().isShiftClick() ? 0.02 : 0.2;
-                else if (event.getClick().isRightClick()) shift = event.getClick().isShiftClick() ? -0.02 : -0.2;
-                else if (event.getClick() == org.bukkit.event.inventory.ClickType.DROP) {
-                    player.closeInventory();
-                    awaitingChatInput.put(player.getUniqueId(), templateId + ":" + compName + ":" + prop);
-                    player.sendMessage("§ePlease type the exact new value for §b" + prop + " §ein chat, or type 'cancel'.");
-                    return;
-                }
-
-                if (shift != 0) {
-                    applyShift(templateId, compName, prop, "", shift, false);
-                    openComponentMenu(player, templateId, compName);
-                }
+                handlePropertyClick(player, event, templateId, compName, prop);
+            } else if (event.getCurrentItem().getType() == Material.CYAN_DYE && event.getClick() == org.bukkit.event.inventory.ClickType.DROP) {
+                player.closeInventory();
+                awaitingChatInput.put(player.getUniqueId(), templateId + ":" + compName + ":color");
+                player.sendMessage("§ePlease type a Hex Color (e.g. #FF0000) in chat, or type 'cancel'.");
             }
+        }
+    }
+
+    private void handlePropertyClick(Player player, InventoryClickEvent event, String templateId, String compName, String prop) {
+        double shift = 0;
+        if (event.getClick().isLeftClick()) shift = event.getClick().isShiftClick() ? 0.02 : 0.2;
+        else if (event.getClick().isRightClick()) shift = event.getClick().isShiftClick() ? -0.02 : -0.2;
+        else if (event.getClick() == org.bukkit.event.inventory.ClickType.DROP) {
+            player.closeInventory();
+            awaitingChatInput.put(player.getUniqueId(), templateId + ":" + compName + ":" + prop);
+            player.sendMessage("§ePlease type the exact new value for §b" + prop + " §ein chat, or type 'cancel'.");
+            return;
+        }
+        if (shift != 0) {
+            applyShift(templateId, compName, prop, shift, false);
+            if (compName.equals("GLOBAL")) openGeneralSettingsMenu(player, templateId);
+            else openComponentMenu(player, templateId, compName);
         }
     }
 
@@ -287,27 +356,39 @@ public class DialogEditorManager implements Listener {
         }
     }
     
-    public void applyShift(String templateId, String compName, String prop, String extra, double shiftAmt) {
-        applyShift(templateId, compName, prop, extra, shiftAmt, false);
+    public void applyStringShift(Player player, String templateId, String compName, String colorStr) {
+        File file = plugin.getTemplateRegistry().getTemplateFile(templateId);
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+        String path = (config.contains("nodes." + compName) ? "nodes." : "components.") + compName + ".color";
+        config.set(path, colorStr);
+        saveAndReload(file, config);
+        openComponentMenu(player, templateId, compName);
     }
 
-    public void applyShift(String templateId, String compName, String prop, String extra, double shiftAmt, boolean isAbsolute) {
+    public void applyShift(String templateId, String compName, String prop, double shiftAmt, boolean isAbsolute) {
         File file = plugin.getTemplateRegistry().getTemplateFile(templateId);
         if (file == null) return;
         YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
         
-        if (prop.startsWith("local-offset.")) {
+        String basePath = "";
+        if (!compName.equals("GLOBAL")) {
+            basePath = (config.contains("nodes." + compName) ? "nodes." : "components.") + compName + ".";
+        }
+        
+        if (prop.startsWith("local-offset.") || prop.startsWith("global-offset.") || prop.startsWith("global-scale.") || prop.startsWith("global-rotation.") || prop.startsWith("scale.") || prop.startsWith("rotation.")) {
             int axis = prop.endsWith(".x") ? 0 : (prop.endsWith(".y") ? 1 : 2);
-            List<Double> list = config.getDoubleList("components." + compName + ".local-offset");
+            
+            String listPath = basePath + prop.substring(0, prop.length() - 2);
+            List<Double> list = config.getDoubleList(listPath);
             while (list.size() < 3) list.add(0.0);
             
             list.set(axis, isAbsolute ? shiftAmt : (list.get(axis) + shiftAmt));
-            config.set("components." + compName + ".local-offset", list);
+            config.set(listPath, list);
         } else {
-            String path = "components." + compName + "." + prop;
-            double current = config.getDouble(path, 0.0);
+            String path = basePath + prop;
+            double current = config.getDouble(path, prop.contains("scale") ? 1.0 : 0.0);
             double newVal = isAbsolute ? shiftAmt : (current + shiftAmt);
-            if (!prop.contains("pitch") && newVal <= 0) newVal = 0.01;
+            if (!prop.contains("pitch") && !prop.contains("rotation") && !prop.contains("offset") && newVal <= 0) newVal = 0.01;
             config.set(path, newVal);
         }
         

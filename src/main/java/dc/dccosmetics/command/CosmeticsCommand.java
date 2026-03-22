@@ -77,9 +77,19 @@ public class CosmeticsCommand implements CommandExecutor {
             return true;
         }
 
-        if (args.length > 0 && args[0].equalsIgnoreCase("debugbb")) {
-            dc.dccosmetics.model.ActiveCosmetic.DEBUG_BB = !dc.dccosmetics.model.ActiveCosmetic.DEBUG_BB;
-            player.sendMessage(ChatColor.YELLOW + "Blockbench 3D Helper Particles are now: " + dc.dccosmetics.model.ActiveCosmetic.DEBUG_BB);
+        // =========================================
+        // THE NODE ISOLATOR (Fixing Blockbench Errors!)
+        // =========================================
+        if (args.length >= 2 && args[0].equalsIgnoreCase("debugnode")) {
+            String node = args[1];
+            if (node.equalsIgnoreCase("clear")) {
+                dc.dccosmetics.model.ActiveCosmetic.ISOLATED_NODE = null;
+                player.sendMessage(ChatColor.GREEN + "Cleared node isolation! Showing full model.");
+            } else {
+                dc.dccosmetics.model.ActiveCosmetic.ISOLATED_NODE = node;
+                player.sendMessage(ChatColor.YELLOW + "Isolated node: " + ChatColor.AQUA + node);
+                player.sendMessage(ChatColor.GRAY + "All other nodes are now invisible.");
+            }
             return true;
         }
 
@@ -111,8 +121,9 @@ public class CosmeticsCommand implements CommandExecutor {
                 editor.openComponentMenu(player, templateId, args[3]);
             } else if (action.equalsIgnoreCase("shift")) {
                 // /cosmetics editcmd <id> shift <comp> <field> <value>
-                editor.applyShift(templateId, args[3], args[4], args.length > 6 ? args[5] : "", Double.parseDouble(args[args.length - 1]));
-                editor.openComponentMenu(player, templateId, args[3]);
+                editor.applyShift(templateId, args[3], args[4], Double.parseDouble(args[args.length - 1]), true);
+                if (args[3].equals("GLOBAL")) editor.openGeneralSettingsMenu(player, templateId);
+                else editor.openComponentMenu(player, templateId, args[3]);
             }
             return true;
         }

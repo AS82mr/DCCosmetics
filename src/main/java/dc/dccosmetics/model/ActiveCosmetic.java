@@ -30,8 +30,8 @@ public class ActiveCosmetic {
     private float wingFlapPhase = 0f;
     private float currentBodyYaw = 0f;
     private int stationaryTicks = 0;
+    public static String ISOLATED_NODE = null;
     public static boolean DEBUG_BOOTS = false;
-    public static boolean DEBUG_BB = false;
 
     public ActiveCosmetic(LivingEntity owner, CosmeticTemplate template, String colorHex) {
         this.owner = owner;
@@ -232,10 +232,21 @@ public class ActiveCosmetic {
                 String originalId = id.replace("_front", "").replace("_back", "");
                 CosmeticNode originalNode = template.getNodes().get(originalId);
 
+                if (ISOLATED_NODE != null && !ISOLATED_NODE.equalsIgnoreCase("clear")) {
+                    if (!originalId.equalsIgnoreCase(ISOLATED_NODE) && !id.equalsIgnoreCase(ISOLATED_NODE)) {
+                        node.setScale(new Vector3f(0.001f, 0.001f, 0.001f));
+                        continue; // Hide this node so we can isolate the broken one!
+                    }
+                }
+
                 if (originalNode != null) {
                     Vector3f newRot = new Vector3f(originalNode.getRotation());
                     Vector3f newTrans = new Vector3f(originalNode.getTranslation());
                     
+                    // Apply Global Scale and Rotation natively to the nodes!
+                    newTrans.mul(template.getGlobalScale());
+                    newRot.add(template.getGlobalRotation());
+
                     if (isBlockbench) {
                         // Apply global unified Blockbench animation translations FIRST, before orbiting!
                         newTrans.add(globalAnimTrans);
@@ -252,7 +263,7 @@ public class ActiveCosmetic {
                     if (isHidden && !isDummy) {
                         node.setScale(new Vector3f(0.001f, 0.001f, 0.001f));
                     } else {
-                        node.setScale(originalNode.getScale());
+                        node.setScale(new Vector3f(originalNode.getScale()).mul(template.getGlobalScale()));
                     }
 
                     if (!isBlockbench) {
@@ -320,12 +331,6 @@ public class ActiveCosmetic {
                     node.setRotation(newRot);
                     node.setTranslation(newTrans);
                     node.update();
-
-                    // 3D SKELETON DETECTOR: Spawns particles at the mathematical center of every face!
-                    if (DEBUG_BB && isBlockbench && tickCounter % 5 == 0 && !isBack) {
-                        Location particleLoc = pLoc.clone().add(newTrans.x, newTrans.y, newTrans.z);
-                        owner.getWorld().spawnParticle(org.bukkit.Particle.END_ROD, particleLoc, 1, 0, 0, 0, 0);
-                    }
                 }
             }
         }, 0L, 1L);
