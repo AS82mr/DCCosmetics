@@ -157,12 +157,15 @@ public class ActiveCosmetic {
                     float yawDiff = (pYaw - currentBodyYaw) % 360;
                     if (yawDiff < -180) yawDiff += 360;
                     if (yawDiff > 180) yawDiff -= 360;
-                    if (Math.abs(yawDiff) > 50) {
-                        float targetBodyYaw = pYaw - (yawDiff > 0 ? 50 : -50);
+                    
+                    // THE FIX: Tighter constraints for Chest/Wings so they don't clip into the arms!
+                    int maxDiff = isChest ? 25 : 50; 
+                    if (Math.abs(yawDiff) > maxDiff) {
+                        float targetBodyYaw = pYaw - (yawDiff > 0 ? maxDiff : -maxDiff);
                         float catchUp = (targetBodyYaw - currentBodyYaw) % 360;
                         if (catchUp < -180) catchUp += 360;
                         if (catchUp > 180) catchUp -= 360;
-                        currentBodyYaw += catchUp * 0.2f;
+                        currentBodyYaw += catchUp * 0.35f; // Faster catch-up!
                     }
                 }
             }
@@ -240,116 +243,97 @@ public class ActiveCosmetic {
                 }
 
                 if (originalNode != null) {
-                    Vector3f newRot = new Vector3f(originalNode.getRotation());
                     Vector3f newTrans = new Vector3f(originalNode.getTranslation());
                     
-                    // 1. Apply Global Scale natively!
+                    // Base Local Quaternion
+                    org.joml.Quaternionf localQ = new org.joml.Quaternionf().rotationYXZ(
+                            (float) Math.toRadians(originalNode.getRotation().y()),
+                            (float) Math.toRadians(originalNode.getRotation().x()),
+                            (float) Math.toRadians(originalNode.getRotation().z())
+                    );
+
+                    if (isBlockbench) {
+                        // Apply global unified Blockbench animation translations FIRST, before orbiting!
+                        newTrans.add(globalAnimTrans);
+                    } else {
+                        // --- 5. LOCAL PROCEDURAL ANIMATIONS (Apply before global orbit) ---
+                        if (isBoots && originalId.toLowerCase().contains("left")) {
+                            newTrans.add(0, Math.max(0, legSwing * 0.2f), legSwing * 0.35f);
+                        } else if (isBoots && originalId.toLowerCase().contains("right")) {
+                            newTrans.add(0, Math.max(0, -legSwing * 0.2f), -legSwing * 0.35f);
+                        }
+
+                        if (isChest && originalId.toLowerCase().contains("wing_left")) {
+                            localQ.rotateLocalY((float) Math.toRadians(-wingFlapPhase * 40f));
+                            localQ.rotateLocalZ((float) Math.toRadians(wingFlapPhase * 20f));
+                        } else if (isChest && originalId.toLowerCase().contains("wing_right")) {
+                            localQ.rotateLocalY((float) Math.toRadians(wingFlapPhase * 40f));
+                            localQ.rotateLocalZ((float) Math.toRadians(-wingFlapPhase * 20f));
+                        }
+
+                        if (originalNode.isAnimated()) {
+                            String type = originalNode.getAnimationType();
+                            float speed = originalNode.getAnimationSpeed();
+                            if ("spin".equalsIgnoreCase(type)) {
+                                localQ.rotateLocalY((float) Math.toRadians(-(tickCounter * speed) % 360));
+                            } else if ("float".equalsIgnoreCase(type)) {
+                                newTrans.add(0, (float) Math.sin(tickCounter * speed * 0.1f) * 0.2f, 0);
+                            } else if ("glitch".equalsIgnoreCase(type)) {
+                                if (Math.random() < 0.1) {
+                                    newTrans.add((float)(Math.random() * 0.2 - 0.1), (float)(Math.random() * 0.2 - 0.1), (float)(Math.random() * 0.2 - 0.1));
+                                }
+                            }
+                        }
+                    }
+
+                    // Apply Global Scale
                     newTrans.mul(template.getGlobalScale());
 
-                    // 2. UNIFIED RIGID BODY GLOBAL ROTATION!
+                    // UNIFIED RIGID BODY GLOBAL ROTATION (Gimbal Lock Free)
                     if (template.getGlobalRotation().lengthSquared() > 0) {
                         org.joml.Quaternionf gRot = new org.joml.Quaternionf().rotationYXZ(
                                 (float) Math.toRadians(template.getGlobalRotation().y()),
                                 (float) Math.toRadians(template.getGlobalRotation().x()),
                                 (float) Math.toRadians(template.getGlobalRotation().z())
                         );
-                        // Orbit the translation to keep the model perfectly glued together while rotating!
                         newTrans.rotate(gRot);
-
-                        org.joml.Quaternionf localRot = new org.joml.Quaternionf().rotationYXZ(
-                                (float) Math.toRadians(newRot.y()),
-                                (float) Math.toRadians(newRot.x()),
-                                (float) Math.toRadians(newRot.z())
-                        );
-                        gRot.mul(localRot); // Combine rotations smoothly
-                        org.joml.Vector3f euler = new org.joml.Vector3f();
-                        gRot.getEulerAnglesYXZ(euler);
-                        newRot.set((float) Math.toDegrees(euler.x()), (float) Math.toDegrees(euler.y()), (float) Math.toDegrees(euler.z()));
+                        gRot.mul(localQ, localQ); // Pre-multiply global into local!
                     }
 
-                    if (isBlockbench) {
-                        // Apply global unified Blockbench animation translations FIRST, before orbiting!
-                        newTrans.add(globalAnimTrans);
-                    }
-
-                    // Fully respect user's YAML global-offset! Allows fixing sunk boots via config!
+                    // Apply Global Offsets & Vertical Drops
                     newTrans.add(template.getGlobalOffset());
-                    
-                    // Apply master vertical push to bring it from the mount point down to the correct slot!
                     newTrans.add(0, verticalTranslation, 0);
-                    boolean isBack = id.endsWith("_back");
 
-                    // Use 0.001f instead of 0 to prevent the client from breaking the matrix and despawning it permanently!
+                    // Orbit around Player Yaw
+                    float targetYaw = (isHead || isBlockbench) ? pLoc.getYaw() : currentBodyYaw;
+                    float globalOrbitYaw = targetYaw + globalAnimYaw;
+                    newTrans.rotateY((float) Math.toRadians(-globalOrbitYaw));
+                    
+                    org.joml.Quaternionf orbitQ = new org.joml.Quaternionf().rotationY((float) Math.toRadians(-globalOrbitYaw));
+                    orbitQ.mul(localQ, localQ);
+
+                    if (isHead && !isVanillaHead) {
+                        org.joml.Quaternionf pitchQ = new org.joml.Quaternionf().rotationX((float) Math.toRadians(pitchOffset));
+                        pitchQ.mul(localQ, localQ);
+                    }
+
+                    boolean isBack = id.endsWith("_back");
+                    if (isBack) {
+                        // Flipping the plane inside-out to create a perfect two-sided hologram
+                        localQ.rotateLocalY((float) Math.toRadians(180));
+                    }
+
+                    node.setTranslation(newTrans);
+                    if (node instanceof dc.dccosmetics.nms.ProtocolDisplayWrapper pNode) {
+                        pNode.setRawQuaternion(localQ);
+                    }
+
                     if (isHidden && !isDummy) {
                         node.setScale(new Vector3f(0.001f, 0.001f, 0.001f));
                     } else {
                         node.setScale(new Vector3f(originalNode.getScale()).mul(template.getGlobalScale()));
                     }
 
-                    if (!isBlockbench) {
-                        // --- 5. LOCAL PROCEDURAL ANIMATIONS (Apply before global orbit) ---
-                        if (isBoots && originalId.toLowerCase().contains("left")) {
-                        newTrans.add(0, Math.max(0, legSwing * 0.2f), legSwing * 0.35f);
-                    } else if (isBoots && originalId.toLowerCase().contains("right")) {
-                        newTrans.add(0, Math.max(0, -legSwing * 0.2f), -legSwing * 0.35f);
-                    }
-
-                    if (isChest && originalId.toLowerCase().contains("wing_left")) {
-                        newRot.add(0, -wingFlapPhase * 40f, wingFlapPhase * 20f);
-                    } else if (isChest && originalId.toLowerCase().contains("wing_right")) {
-                        newRot.add(0, wingFlapPhase * 40f, -wingFlapPhase * 20f);
-                    }
-                    }
-
-                    if (isHead && !isVanillaHead) {
-                        newRot.add(pitchOffset, 0, 0); // Allow custom hats to look up and down naturally!
-                    }
-
-                    // --- 6. APPLY GLOBAL ROTATION ORBIT ---
-                    // Players do not sync yaw to passengers natively, so we must matrix-orbit the components!
-                    // THE FIX: Blockbench items bypass the delayed "Body Yaw" catchup so they feel perfectly rigid and static!
-                    float targetYaw = (isHead || isBlockbench) ? pLoc.getYaw() : currentBodyYaw;
-                    
-                    // THE FIX: If the global model is spinning, we MUST orbit the translation as well, 
-                    // otherwise the nodes will spin in place and tear the box apart!
-                    float globalOrbitYaw = targetYaw + globalAnimYaw;
-                    newTrans.rotateY((float) Math.toRadians(-globalOrbitYaw));
-
-                    // THE FIX: We MUST subtract the yaw instead of adding it. 
-                    // JOML rotates CCW, but Minecraft Yaw rotates CW. Subtracting ensures translation and rotation move together!
-                    if (isBlockbench) {
-                        if (isBack) newRot.set(-newRot.x, newRot.y - globalOrbitYaw + 180, -newRot.z);
-                        else newRot.add(0, -globalOrbitYaw, 0);
-                    } else if (template.isAnimated()) {
-                        if (isBack) newRot.set(-newRot.x, newRot.y - globalOrbitYaw + 180, -newRot.z);
-                        else newRot.add(0, -globalOrbitYaw, 0);
-                    } else if (originalNode.isAnimated()) {
-                        String type = originalNode.getAnimationType();
-                        float speed = originalNode.getAnimationSpeed();
-
-                        if ("spin".equalsIgnoreCase(type)) {
-                            float nodeYaw = (tickCounter * speed) % 360;
-                            if (isBack) newRot.set(-newRot.x, newRot.y - nodeYaw - targetYaw + 180, -newRot.z);
-                            else newRot.add(0, -nodeYaw - targetYaw, 0);
-                        } else if ("float".equalsIgnoreCase(type)) {
-                            float offset = (float) Math.sin(tickCounter * speed * 0.1f) * 0.2f;
-                            newTrans.add(0, offset, 0);
-                            if (isBack) newRot.set(-newRot.x, newRot.y - targetYaw + 180, -newRot.z);
-                            else newRot.add(0, -targetYaw, 0);
-                        } else if ("glitch".equalsIgnoreCase(type)) {
-                            if (Math.random() < 0.1) {
-                                newTrans.add((float)(Math.random() * 0.2 - 0.1), (float)(Math.random() * 0.2 - 0.1), (float)(Math.random() * 0.2 - 0.1));
-                            }
-                            if (isBack) newRot.set(-newRot.x, newRot.y - targetYaw + 180, -newRot.z);
-                            else newRot.add(0, -targetYaw, 0);
-                        }
-                    } else {
-                        if (isBack) newRot.set(-newRot.x, newRot.y - targetYaw + 180, -newRot.z);
-                        else newRot.add(0, -targetYaw, 0);
-                    }
-
-                    node.setRotation(newRot);
-                    node.setTranslation(newTrans);
                     node.update();
                 }
             }

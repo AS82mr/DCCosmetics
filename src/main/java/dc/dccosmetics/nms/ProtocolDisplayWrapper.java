@@ -31,6 +31,7 @@ public class ProtocolDisplayWrapper implements DisplayWrapper {
     private org.bukkit.entity.TextDisplay cachedDummy = null;
     private String textShape = null;
     private boolean blockbenchMode = false;
+    private org.joml.Quaternionf rawQuaternion = null;
 
     public ProtocolDisplayWrapper(List<Player> viewers, Location location, ProtocolManager protocolManager) {
         this.protocolManager = protocolManager;
@@ -83,17 +84,24 @@ public class ProtocolDisplayWrapper implements DisplayWrapper {
     
     public void setBlockbenchMode(boolean mode) { this.blockbenchMode = mode; }
 
+    public void setRawQuaternion(org.joml.Quaternionf q) { this.rawQuaternion = q; }
+
     @Override
     public void update() {
         PacketContainer metadataPacket = protocolManager.createPacket(PacketType.Play.Server.ENTITY_METADATA);
         metadataPacket.getIntegers().write(0, entityId);
 
-        // 1. CHAINED ROTATION: Fixes the diagonal twisting (Gimbal Lock)
-        org.joml.Quaternionf qRot = new org.joml.Quaternionf().rotationYXZ(
-                (float) Math.toRadians(rotation.y()), // Yaw
-                (float) Math.toRadians(rotation.x()), // Pitch
-                (float) Math.toRadians(rotation.z())  // Roll
-        );
+        org.joml.Quaternionf qRot;
+        if (this.rawQuaternion != null) {
+            qRot = new org.joml.Quaternionf(this.rawQuaternion); // Gimbal-Lock Free Matrix!
+        } else {
+            // Legacy Fallback
+            qRot = new org.joml.Quaternionf().rotationYXZ(
+                    (float) Math.toRadians(rotation.y()), 
+                    (float) Math.toRadians(rotation.x()), 
+                    (float) Math.toRadians(rotation.z())  
+            );
+        }
 
         if (this.cachedDummy == null) {
             this.cachedDummy = location.getWorld().createEntity(location, org.bukkit.entity.TextDisplay.class);
@@ -108,9 +116,10 @@ public class ProtocolDisplayWrapper implements DisplayWrapper {
             normalizedScale = new org.joml.Vector3f(scale);
             pivotShift = new org.joml.Vector3f(0, 0, 0); // Text centers natively
         } else if (this.blockbenchMode) {
-            // "Almost Perfect" magic ratio that perfectly stretches the 10-space TextDisplay geometry
-            // so it perfectly meets at the corners of the 3D block!
-            normalizedScale = new org.joml.Vector3f(scale.x * 0.912f, scale.y * 4.0f, scale.z);
+            // PERFECT PIXEL-TO-BLOCK ASPECT RATIO: 
+            // 10 spaces = 42px width, 11px height. 0.92f and 3.5f forces height/width to equal exact 1:1 squares!
+            // This mechanically forces the planes to extend exactly to the corners and seals all gaps!
+            normalizedScale = new org.joml.Vector3f(scale.x * 0.92f, scale.y * 3.5f, scale.z);
             pivotShift = new org.joml.Vector3f(0, scale.y / 2.0f, 0);
         } else {
             // LEGACY PROCEDURAL SHAPES MATRIX
@@ -153,9 +162,9 @@ public class ProtocolDisplayWrapper implements DisplayWrapper {
             }
         }
         
-        // Interpolate position smoothing for tracking teleported Boot cosmetics!
-        dummy.setTeleportDuration(2);
-        dummy.setInterpolationDuration(2);
+        // FAST INTERPOLATION: 1 tick instantly locks backpacks and wings to the player's back without dragging!
+        dummy.setTeleportDuration(1);
+        dummy.setInterpolationDuration(1);
         dummy.setInterpolationDelay(0);
 
         dummy.setBackgroundColor(finalColor);
