@@ -1,0 +1,35 @@
+id: "master_sword"
+type: "chest"
+rarity: "epic"
+global-offset: [0.0, 0.6, -0.25]
+nodes:
+  blade_core:
+    scale: [0.25, 1.6, 0.15]
+    translation: [0.0, 0.4, 0.0]
+    rotation: [0.0, 0.0, 45.0]
+    color: "#228B22"
+  blade_edge_glow:
+    scale: [0.32, 1.5, 0.08]
+    translation: [0.0, 0.45, 0.0]
+    rotation: [0.0, 0.0, 45.0]
+    color: "#00FF00"
+  crossguard:
+    scale: [0.8, 0.2, 0.2]
+    translation: [-0.3, -0.3, 0.0]
+    rotation: [0.0, 0.0, 45.0]
+    color: "#FFD700"
+  crossguard_gem:
+    scale: [0.25, 0.25, 0.25]
+    translation: [-0.3, -0.3, 0.0]
+    rotation: [0.0, 0.0, 45.0]
+    color: "#00FF00"
+  grip:
+    scale: [0.12, 0.4, 0.12]
+    translation: [-0.45, -0.45, 0.0]
+    rotation: [0.0, 0.0, 45.0]
+    color: "#111111"
+  pommel:
+    scale: [0.25, 0.25, 0.25]
+    translation: [-0.65, -0.65, 0.0]
+    rotation: [0.0, 0.0, 45.0]
+    color: "#FFD700"

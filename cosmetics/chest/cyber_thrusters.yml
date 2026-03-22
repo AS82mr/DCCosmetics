@@ -1,0 +1,48 @@
+id: "cyber_thrusters"
+type: "chest"
+rarity: "epic"
+global-offset: [0.0, 0.5, -0.2]
+components:
+  jet_body_left:
+    type: "cylinder"
+    radius: 0.12
+    height: 0.5
+    sides: 8
+    local-offset: [0.25, 0.0, 0.0]
+    color: "#2F4F4F"
+  jet_body_right:
+    type: "cylinder"
+    radius: 0.12
+    height: 0.5
+    sides: 8
+    local-offset: [-0.25, 0.0, 0.0]
+    color: "#2F4F4F"
+  exhaust_left:
+    type: "cone"
+    radius: 0.08
+    height: 0.15
+    inward-pitch: -25.0
+    local-offset: [0.25, -0.25, 0.0]
+    color: "#696969"
+  exhaust_right:
+    type: "cone"
+    radius: 0.08
+    height: 0.15
+    inward-pitch: -25.0
+    local-offset: [-0.25, -0.25, 0.0]
+    color: "#696969"
+nodes:
+  flame_left:
+    scale: [0.1, 0.4, 0.1]
+    translation: [0.25, -0.4, 0.0]
+    color: "#00FFFF"
+    animated: true
+    animation-type: "glitch"
+    animation-speed: 2.0
+  flame_right:
+    scale: [0.1, 0.4, 0.1]
+    translation: [-0.25, -0.4, 0.0]
+    color: "#00FFFF"
+    animated: true
+    animation-type: "glitch"
+    animation-speed: 2.0

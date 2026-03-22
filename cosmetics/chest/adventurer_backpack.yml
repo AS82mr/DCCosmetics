@@ -1,0 +1,29 @@
+id: "adventurer_backpack"
+type: "chest"
+rarity: "uncommon"
+global-offset: [0.0, 0.4, -0.25]
+nodes:
+  main_bag:
+    scale: [0.6, 0.7, 0.25]
+    translation: [0.0, 0.0, 0.0]
+    color: "#654321"
+  pocket_left:
+    scale: [0.15, 0.35, 0.2]
+    translation: [0.35, -0.1, 0.0]
+    color: "#8B4513"
+  pocket_right:
+    scale: [0.15, 0.35, 0.2]
+    translation: [-0.35, -0.1, 0.0]
+    color: "#8B4513"
+  strap_left:
+    scale: [0.05, 0.72, 0.27]
+    translation: [0.15, 0.0, 0.0]
+    color: "#1A1A1A"
+  strap_right:
+    scale: [0.05, 0.72, 0.27]
+    translation: [-0.15, 0.0, 0.0]
+    color: "#1A1A1A"
+  sleeping_bedroll:
+    scale: [0.65, 0.2, 0.2]
+    translation: [0.0, 0.45, 0.0]
+    color: "#2E8B57"

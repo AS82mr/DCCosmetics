@@ -1,0 +1,321 @@
+    <title>DCCosmetics Engine: Official Creation Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --surface: #1e293b;
+            --surface-hover: #334155;
+            --primary: #38bdf8;
+            --secondary: #818cf8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --accent-red: #f87171;
+            --accent-green: #4ade80;
+            --accent-yellow: #facc15;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text-main);
+            background-color: var(--bg-color);
+            display: flex;
+        }
+
+        /* Sidebar Navigation */
+        nav {
+            width: 280px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            height: 100vh;
+            position: fixed;
+            padding: 2rem 1.5rem;
+            overflow-y: auto;
+        }
+        nav h2 {
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        nav ul { list-style: none; padding: 0; }
+        nav li { margin-bottom: 0.75rem; }
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+        nav a:hover { color: var(--primary); }
+
+        /* Main Content */
+        main {
+            margin-left: 280px;
+            padding: 3rem 4rem;
+            max-width: 1100px;
+            width: 100%;
+        }
+
+        h1, h2, h3 { font-weight: 600; margin-top: 2rem; margin-bottom: 1rem; }
+        
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+        }
+        
+        p.subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 3rem;
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+        
+        h3 { font-size: 1.3rem; color: var(--primary); }
+        
+        p, li { color: var(--text-muted); margin-bottom: 1rem; }
+        ul { padding-left: 1.5rem; margin-bottom: 1.5rem; }
+        li { margin-bottom: 0.5rem; }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            padding: 1.25rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        
+        code {
+            font-family: 'Fira Code', monospace;
+            background-color: var(--surface);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            color: var(--accent-red);
+            font-size: 0.9em;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            color: var(--text-main);
+        }
+
+        /* Syntax Highlighting Colors */
+        .yaml-key { color: var(--primary); }
+        .yaml-string { color: var(--accent-green); }
+        .yaml-number { color: var(--accent-yellow); }
+        .yaml-comment { color: #64748b; font-style: italic; }
+        .yaml-boolean { color: var(--secondary); }
+
+        /* Callouts / Pro-Tips */
+        .callout {
+            background-color: rgba(56, 189, 248, 0.1);
+            border-left: 4px solid var(--primary);
+            padding: 1.25rem;
+            margin: 0 auto;
+            margin-bottom: 2rem;
+            border-radius: 0 8px 8px 0;
+        }
+        .callout strong { color: var(--primary); font-weight: 600; display: block; margin-bottom: 0.5rem; }
+        .callout p { margin-bottom: 0; color: var(--text-main); }
+
+        /* Shape Badges */
+        .badge {
+            display: inline-block;
+            background-color: var(--surface-hover);
+            color: var(--primary);
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid var(--border);
+        }
+        
+    </style>
+</head>
+<body>
+
+<nav>
+    <h2>DCCosmetics</h2>
+    <ul>
+        <li><a href="#overview">1. Overview</a></li>
+        <li><a href="#live-sculpting">2. Live Sculptor</a></li>
+        <li><a href="#global-settings">3. Global Settings</a></li>
+        <li><a href="#component-shapes">4. Component Shapes</a></li>
+        <li><a href="#raw-nodes">5. Raw Nodes</a></li>
+        <li><a href="#animations">6. Animations</a></li>
+        <li><a href="#kinematics">7. Inverse Kinematics</a></li>
+        <li><a href="#footstep-engine">8. Footstep Engine</a></li>
+        <li><a href="#example">9. Full Example</a></li>
+    </ul>
+</nav>
+
+<main>
+    <h1>DCCosmetics Documentation</h1>
+    <p class="subtitle">The definitive guide to creating zero-lag, packet-based 3D cosmetics.</p>
+
+    <h2 id="overview">1. Overview</h2>
+    <p>The DCCosmetics engine is a highly optimized, packet-based 3D renderer. It creates geometry by manipulating the backgrounds of invisible <code>TextDisplay</code> entities. This means it has <strong>zero impact</strong> on server block physics and runs incredibly smoothly on the client.</p>
+    <p>Cosmetics are built by combining multiple primitive 3D "components" (like rings, cylinders, and cones) into a single <code>components</code> list.</p>
+
+    <h2 id="live-sculpting">2. The Live Sculptor Tool</h2>
+    <p>You don't need to guess coordinates! DCCosmetics comes with a built-in GUI editor and live-reloading mannequin.</p>
+    
+    <div class="callout">
+        <strong>Command: /cosmetics sculpt &lt;id&gt;</strong>
+        <p>Spawns a real-time Mannequin (or Citizens NPC, if installed) right in front of you. As you edit the YAML file, the mannequin updates instantly.</p>
+    </div>
+    
+    <ul>
+        <li><code>/cosmetics sculpt editor</code> - Opens the interactive GUI to shift coordinates, add components, and change sizes without leaving the game.</li>
+        <li><code>/cosmetics sculpt toggle</code> - Toggles the visibility of the underlying mannequin dummy.</li>
+        <li><code>/cosmetics sculpt clear</code> - Despawns the dummy.</li>
+    </ul>
+    <p>In the GUI Editor, you can <strong>Left-Click</strong> to add to a value, <strong>Right-Click</strong> to subtract, and press <strong>Q (Drop)</strong> to type an exact number in chat!</p>
+
+    <h2 id="global-settings">3. Global Settings</h2>
+    <p>Every cosmetic file (e.g., <code>my_cosmetic.yml</code>) requires these base settings at the top of the file:</p>
+<pre><code><span class="yaml-key">id:</span> <span class="yaml-string">"my_custom_cosmetic"</span>       <span class="yaml-comment"># The unique internal ID</span>
+<span class="yaml-key">type:</span> <span class="yaml-string">"head"</span>                   <span class="yaml-comment"># Slots: head, chest, waist, boots</span>
+<span class="yaml-key">rarity:</span> <span class="yaml-string">"epic"</span>                 <span class="yaml-comment"># uncommon, rare, epic, legendary</span>
+<span class="yaml-key">global-offset:</span> [<span class="yaml-number">0.0</span>, <span class="yaml-number">2.2</span>, <span class="yaml-number">0.0</span>] <span class="yaml-comment"># Shifts the ENTIRE cosmetic</span>
+<span class="yaml-key">head-tracking:</span> <span class="yaml-boolean">true</span>            <span class="yaml-comment"># (HEAD ONLY) Makes the cosmetic look up/down</span>
+<span class="yaml-key">display-item:</span> <span class="yaml-string">"eyJ0ZX..."</span>      <span class="yaml-comment"># Base64 string for the GUI Head</span>
+
+<span class="yaml-key">animated:</span> <span class="yaml-boolean">true</span>                 <span class="yaml-comment"># Spins the ENTIRE cosmetic</span>
+<span class="yaml-key">spin-speed:</span> <span class="yaml-number">4.0</span>                <span class="yaml-comment"># Speed of global spin</span></code></pre>
+
+    <div class="callout">
+        <strong>What is head-tracking?</strong>
+        <p>By default, cosmetics lock to the player's Body Yaw (shoulders). If you are building a custom helmet or mask, set <code>head-tracking: true</code>. This allows the geometry to pitch up and down seamlessly when the player looks at the sky or floor!</p>
+    </div>
+
+    <h2 id="component-shapes">4. Component Shape Types</h2>
+    <p>Every piece of geometry you add goes under the <code>components:</code> section. Every component needs a <code>type</code>, <code>color</code>, and <code>local-offset</code>.</p>
+
+    <h3><span class="badge">solid</span> (Flat Planes / Cubes)</h3>
+    <p>Spawns flat 2D planes. If <code>sides</code> > 1, it spawns them in a circle facing outward.</p>
+    <ul>
+        <li><code>length</code>: How long the plane is.</li>
+        <li><code>width</code>: How wide the plane is.</li>
+        <li><code>pitch</code>: Up/Down tilt (90.0 lays it flat on the ground).</li>
+    </ul>
+
+    <h3><span class="badge">star</span> (Spiky Stars)</h3>
+    <p>Similar to solid, but alternating sides are shorter, creating perfect multi-pointed stars.</p>
+    <ul>
+        <li><code>length</code>: The size of the primary spikes.</li>
+        <li><code>short-length</code>: The size of the inner/secondary spikes.</li>
+    </ul>
+
+    <h3><span class="badge">flat_ring</span> (Halos / Discs)</h3>
+    <p>Generates a mathematically perfect horizontal flat ring or disc (like a Saturn ring).</p>
+    <ul>
+        <li><code>radius</code>: How wide the ring is.</li>
+        <li><code>width</code>: How thick the ring band is.</li>
+    </ul>
+
+    <h3><span class="badge">cylinder</span> (Tubes / Bands)</h3>
+    <p>Generates a vertical tube (perfect for crowns, armbands, or hover-thruster engines).</p>
+    <ul>
+        <li><code>radius</code>: Width of the tube (Player head is <code>0.25</code> radius).</li>
+        <li><code>height</code>: How tall the tube is.</li>
+    </ul>
+
+    <h3><span class="badge">cone</span> (Horns / Spikes / Exhausts)</h3>
+    <p>A cylinder where the walls pitch inward or outward.</p>
+    <ul>
+        <li><code>inward-pitch</code>: The angle. Positive makes a sharp point. Negative flares outward like a crown.</li>
+    </ul>
+
+    <h3><span class="badge">hourglass</span> (Energy Cages / Twisters)</h3>
+    <p>Stacks two cones on top of each other. Great for sci-fi energy fields or tornadoes.</p>
+
+    <h3><span class="badge">burst</span> (Spherical Explosions)</h3>
+    <p>Uses Fibonacci sphere math to generate a 3D explosion of spikes pointing in all directions.</p>
+    
+    <h2 id="raw-nodes">5. Raw Nodes (Absolute Control)</h2>
+    <p>Don't want to use generated shapes? You can manually place individual panels with absolute control over their Matrix Scale, Translation, and Rotation by placing them under the <code>nodes:</code> section instead of <code>components:</code>.</p>
+<pre><code><span class="yaml-key">nodes:</span>
+  <span class="yaml-key">custom_matrix_piece:</span>
+    <span class="yaml-key">scale:</span> [<span class="yaml-number">1.0</span>, <span class="yaml-number">1.0</span>, <span class="yaml-number">1.0</span>]
+    <span class="yaml-key">translation:</span> [<span class="yaml-number">0.0</span>, <span class="yaml-number">0.5</span>, <span class="yaml-number">0.0</span>]
+    <span class="yaml-key">rotation:</span> [<span class="yaml-number">0.0</span>, <span class="yaml-number">45.0</span>, <span class="yaml-number">0.0</span>] <span class="yaml-comment"># Pitch, Yaw, Roll</span>
+    <span class="yaml-key">color:</span> <span class="yaml-string">"#FF00FF"</span></code></pre>
+
+    <h2 id="animations">6. Animations</h2>
+    <p>Instead of spinning the whole cosmetic, you can animate individual components.</p>
+<pre><code><span class="yaml-key">components:</span>
+  <span class="yaml-key">my_floating_gem:</span>
+    <span class="yaml-key">type:</span> <span class="yaml-string">"solid"</span>
+    <span class="yaml-key">color:</span> <span class="yaml-string">"#00FFFF"</span>
+    <span class="yaml-key">animated:</span> <span class="yaml-boolean">true</span>
+    <span class="yaml-key">animation-type:</span> <span class="yaml-string">"float"</span>    <span class="yaml-comment"># spin, float, glitch</span>
+    <span class="yaml-key">animation-speed:</span> <span class="yaml-number">4.0</span></code></pre>
+    <ul>
+        <li><span class="badge">spin</span>: Rotates the component locally.</li>
+        <li><span class="badge">float</span>: Bobs up and down using a sine-wave.</li>
+        <li><span class="badge">glitch</span>: Rapidly teleports to simulate cyberpunk holograms.</li>
+    </ul>
+
+    <h2 id="kinematics">7. Inverse Kinematics (Walk & Wing Engines)</h2>
+    <p>DCCosmetics contains native inverse kinematic tracking engines. By simply naming your components properly, the engine will automatically attach physics-based animations to them!</p>
+    
+    <h3>The Walk Engine (Boots Only)</h3>
+    <p>Tracks player distance to simulate vanilla leg swinging. Prefix components with <code>left_</code> or <code>right_</code>.</p>
+<pre><code><span class="yaml-key">components:</span>
+  <span class="yaml-key">left_boot_ring:</span>  <span class="yaml-comment"># Engine detects "left_" and binds to the Left Leg</span>
+    <span class="yaml-key">type:</span> <span class="yaml-string">"flat_ring"</span>
+    <span class="yaml-key">local-offset:</span> [<span class="yaml-number">-0.13</span>, <span class="yaml-number">0.0</span>, <span class="yaml-number">0.0</span>]
+    
+  <span class="yaml-key">right_boot_ring:</span> <span class="yaml-comment"># Engine detects "right_" and binds to the Right Leg</span>
+    <span class="yaml-key">type:</span> <span class="yaml-string">"flat_ring"</span></code></pre>
+    
+    <h3>The Wing Engine (Chest Only)</h3>
+    <p>Reads player state (Jumping, Falling, Sprinting, Idle) to dynamically control wing-flapping speed and intensity. Prefix components with <code>wing_left_</code> or <code>wing_right_</code>.</p>
+<pre><code><span class="yaml-key">components:</span>
+  <span class="yaml-key">wing_left_main:</span>  <span class="yaml-comment"># Binds to the procedural Left Wing kinematic bone!</span>
+    <span class="yaml-key">type:</span> <span class="yaml-string">"solid"</span></code></pre>
+
+    <h2 id="footstep-engine">8. The Footstep Engine (Boots Only)</h2>
+    <p>Automatically drops holographic footprints mapped to the walk cycle!</p>
+<pre><code><span class="yaml-key">footstep:</span>
+  <span class="yaml-key">particle:</span> <span class="yaml-string">"end_rod"</span>
+  <span class="yaml-key">color:</span> <span class="yaml-string">"#FFD700"</span>
+  <span class="yaml-key">sound:</span> <span class="yaml-string">"entity.strider.step"</span>
+  <span class="yaml-key">volume:</span> <span class="yaml-number">0.5</span>
+  <span class="yaml-key">pitch:</span> <span class="yaml-number">1.5</span></code></pre>
+
+    <div class="callout">
+        <strong>Hologram Shapes</strong>
+        <p>The engine reads the <code>id</code> of your cosmetic file to determine what footprint to drop! 
+        Contains <strong>"star"</strong> (★), <strong>"heart"</strong> (❤), <strong>"ring"</strong> (⬤), Default (█).</p>
+    </div>
+
+    <h2 id="example">9. Full Example: Glitch Runners</h2>
+<pre><code><span class="yaml-key">id:</span> <span class="yaml-string">"legendary_glitch_runners"</span>
+<span class="yaml-key">type:</span> <span class="yaml-string">"boots"</span>
+    <span class="yaml-key">animated:</span> <span class="yaml-boolean">true</span>
+</main>
+</body>
+</html>

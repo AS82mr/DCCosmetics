@@ -1,0 +1,19 @@
+name: DCCosmetics
+version: 1.0.0
+main: dc.dccosmetics.DCCosmetics
+api-version: '1.21'
+author: YourName
+description: A highly modular, packet-based holographic cosmetics system.
+
+# This ensures the server loads ProtocolLib BEFORE our plugin
+depend:
+  - ProtocolLib
+
+commands:
+  cosmetics:
+    description: Open the cosmetics menu or manage cosmetics.
+    aliases: [dcc]
+    usage: /<command>
+  profile:
+    description: View your own or another player's profile.
+    usage: /<command> [player]

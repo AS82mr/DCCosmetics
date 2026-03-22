@@ -1,0 +1,206 @@
+title: "&8{target}'s Profile"
+size: 54
+
+fillItems:
+  enabled: true
+  material: BLACK_STAINED_GLASS_PANE
+  name: "&f"
+  lore: []
+
+items:
+  tradeTarget:
+    material: "head;eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzAzZmRkMjU3NjNiM2Q0NzVlMDlmOGJmNWE0MmU4NjgzZTQ4YWI3MzIzYTNjYzU0MmJiOGQ5OWFlNGI3MDNiOSJ9fX0="
+    name: "&b&lTrade {target}"
+    slots: [ 33 ]
+    onlyOwner: false
+    onlyVisitor: false
+    lore:
+      - "&f"
+      - "&7Click to trade with &e{target}"
+    leftClickCommands:
+      - "[PLAYER] trade {target}"
+      - "[CLOSE]"
+    rightClickCommands:
+      - "[PLAYER] trade {target}"
+      - "[CLOSE]"
+
+  teleportTarget:
+    material: "head;eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzc3ZDRhMjA2ZDc3NTdmNDc5ZjMzMmVjMWEyYmJiZWU1N2NlZjk3NTY4ZGQ4OGRmODFmNDg2NGFlZTdkM2Q5OCJ9fX0="
+    name: "&#2ED18D&lTeleport {target}"
+    slots: [ 42 ]
+    onlyOwner: false
+    onlyVisitor: false
+    lore:
+      - "&f"
+      - "&7Click to request a"
+      - "&7teleportation to &e{target}"
+    leftClickCommands:
+      - "[PLAYER] tpa {target}"
+      - "[CLOSE]"
+    rightClickCommands:
+      - "[PLAYER] tpa {target}"
+      - "[CLOSE]"
+
+  PartyTarget:
+    material: "head;eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDkxODBkYjAyMDYxYzkwYWU4ODE0YmQ2Zjg0YzVlZTg0ODUxOThkMzJjMGRkMGI0OGJiYTQ4YTMxYWZhMmUwMSJ9fX0="
+    name: "&#2ED18D&lParty {target}"
+    slots: [ 43 ]
+    onlyOwner: false
+    onlyVisitor: false
+    lore:
+      - "&f"
+      - "&7Click to create a"
+      - "&7party with &e{target}"
+    leftClickCommands:
+      - "[PLAYER] party create {target}"
+      - "[PLAYER] party invite {target}"
+      - "[PLAYER] partychat"
+      - "[CLOSE]"
+    rightClickCommands:
+      - "[PLAYER] party create {target}"
+      - "[PLAYER] party invite {target}"
+      - "[PLAYER] partychat"
+      - "[CLOSE]"
+
+  shopTarget:
+    material: "head;eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGQxMTEwOWY0YWIwM2FhNmM1Yjc2Y2FkMTI5MTc2ZmZiMWZjZThjMTc0ZTY5YzllOGJhMDZiOWY4MDYxZTVhZCJ9fX0="
+    name: "&3&l{target}'s Shops"
+    slots: [ 25 ]
+    onlyOwner: false
+    onlyVisitor: false
+    lore:
+      - "&f"
+      - "&7Click to see &e{target}'s selling"
+      - "&7items in PlayerShops!"
+    leftClickCommands:
+      - "[CLOSE]"
+      - "[PLAYER] pshop playersearch {target}"
+    rightClickCommands:
+      - "[CLOSE]"
+      - "[PLAYER] pshop playersearch {target}"
+
+  AuctionTarget:
+    material: "head;eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzMyNGE3ZDYxY2NkNDRiMDMxNzQ0YjUxN2Y5MTFhNWM0NjE2MTRiOTUzYjE3ZjY0ODI4MmUxNDdiMjlkMTBlIn19fQ=="
+    name: "&3&l{target}'s Auctions"
+    slots: [ 24 ]
+    onlyOwner: false
+    onlyVisitor: false
+    lore:
+      - "&f"
+      - "&7Click to see &e{target}'s selling"
+      - "&7items in Auction House!"
+    leftClickCommands:
+      - "[CLOSE]"
+      - "[PLAYER] ah search seller::{target}"
+    rightClickCommands:
+      - "[CLOSE]"
+      - "[PLAYER] ah search seller::{target}"
+
+  pwTarget:
+    material: "head;eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZThlZThmMzQxZWFiZjY1NTE1NzE4MTYzZWMzYjQzZWQwMWUxY2RlMjdiM2IyNmM0ZDkyYzYwNzI5OWU0ZDkxIn19fQ=="
+    name: "&b&l{target}'s Player Warps"
+    slots: [ 34 ]
+    onlyOwner: false
+    onlyVisitor: false
+    lore:
+      - "&f"
+      - "&7Click to see &e{target}'s warps!"
+    leftClickCommands:
+      - "[CLOSE]"
+      - "[CONSOLE] pw open mywarps -player %player_name% -view {target}"
+    rightClickCommands:
+      - "[CLOSE]"
+      - "[CONSOLE] pw open mywarps -player %player_name% -view {target}"
+
+  customMenu:
+    material: "head;{target}"
+    name: "%luckperms_prefix%{target}"
+    slots: [ 13 ]
+    lore:
+      - "&7Power Level:&#ff793f %mcmmogui_power-level%"
+      - ''
+      - "&8[Combat Skills]"
+      - ' &#e67e22Acrobatics &8» &7lvl.&f%mcmmogui_skill_acrobatics_level%'
+      - ' &#e67e22Archery &8» &7lvl.&f%mcmmogui_skill_archery_level%'
+      - ' &#e67e22Unarmed &8» &7lvl.&f%mcmmogui_skill_unarmed_level%'
+      - ' &#e67e22Swords &8» &7lvl.&f%mcmmogui_skill_swords_level%'
+      - ' &#e67e22Taming &8» &7lvl.&f%mcmmogui_skill_taming_level%'
+      - ' &#e67e22Axes &8» &7lvl.&f%mcmmogui_skill_axes_level%'
+
+  cosmeticHelmet:
+    type: HELMET
+    material: RED_STAINED_GLASS_PANE
+    name: "&eHead Cosmetic"
+    slots: [ 10 ]
+    lore: [ "&cNot Equipped" ]
+
+  cosmeticChestplate:
+    type: CHESTPLATE
+    material: RED_STAINED_GLASS_PANE
+    name: "&eChestplate Cosmetic"
+    slots: [ 19 ]
+    lore: [ "&cNot Equipped" ]
+
+  cosmeticLeggings:
+    type: LEGGINGS
+    material: RED_STAINED_GLASS_PANE
+    name: "&eWaist Cosmetic"
+    slots: [ 28 ]
+    lore: [ "&cNot Equipped" ]
+
+  cosmeticBoots:
+    type: BOOTS
+    material: RED_STAINED_GLASS_PANE
+    name: "&eBoots Cosmetic"
+    slots: [ 37 ]
+    lore: [ "&cNot Equipped" ]
+
+  backButton:
+    material: "head;eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDQ2NmM1YmQwNDlmNzVhYzdhYWJhZTgyY2MzZmNlNDIzMzUzMmFhNTk4NjMyZmEzYmVmYjE1YWM0MGIwMTUyNiJ9fX0="
+    name: "&6&lMenu"
+    slots: [ 49 ]
+    onlyOwner: true
+    leftClickCommands: [ "[PLAYER] cosmetics" ]
+    rightClickCommands: [ "[PLAYER] cosmetics" ]
+
+  playerHelmet:
+    type: PLAYER_HELMET
+    material: LIGHT_GRAY_STAINED_GLASS_PANE
+    name: "&7No Helmet Equipped"
+    slots: [ 11 ]
+    lore: []
+
+  playerChestplate:
+    type: PLAYER_CHESTPLATE
+    material: LIGHT_GRAY_STAINED_GLASS_PANE
+    name: "&7No Chestplate Equipped"
+    slots: [ 20 ]
+    lore: []
+
+  playerLeggings:
+    type: PLAYER_LEGGINGS
+    material: LIGHT_GRAY_STAINED_GLASS_PANE
+    name: "&7No Leggings Equipped"
+    slots: [ 29 ]
+    lore: []
+
+  playerBoots:
+    type: PLAYER_BOOTS
+    material: LIGHT_GRAY_STAINED_GLASS_PANE
+    name: "&7No Boots Equipped"
+    slots: [ 38 ]
+    lore: []
+
+  playerMainHand:
+    type: PLAYER_MAIN_HAND
+    material: LIGHT_GRAY_STAINED_GLASS_PANE
+    name: "&7Empty Hand"
+    slots: [ 12 ]
+    lore: []
+
+  playerOffHand:
+    type: PLAYER_OFF_HAND
+    material: LIGHT_GRAY_STAINED_GLASS_PANE
+    name: "&7Empty Offhand"
+    slots: [ 21 ]
+    lore: []
