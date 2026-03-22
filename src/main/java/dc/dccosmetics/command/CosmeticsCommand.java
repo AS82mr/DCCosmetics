@@ -103,18 +103,22 @@ public class CosmeticsCommand implements CommandExecutor {
                 dc.dccosmetics.model.ActiveCosmetic.DEBUG_CORNERS = !dc.dccosmetics.model.ActiveCosmetic.DEBUG_CORNERS;
                 player.sendMessage(ChatColor.YELLOW + "Mathematical Corner Particles: " + dc.dccosmetics.model.ActiveCosmetic.DEBUG_CORNERS);
                 return true;
-            } else if (args.length == 4 && args[1].equalsIgnoreCase("ratio")) {
+            } else if (args.length >= 5 && args[1].equalsIgnoreCase("ratio")) {
                 try {
                     dc.dccosmetics.nms.ProtocolDisplayWrapper.BB_MAGIC_X = Float.parseFloat(args[2]);
                     dc.dccosmetics.nms.ProtocolDisplayWrapper.BB_MAGIC_Y = Float.parseFloat(args[3]);
-                    player.sendMessage(ChatColor.GREEN + "Set TextDisplay Aspect Ratios to -> X: " + args[2] + ", Y: " + args[3]);
+                    dc.dccosmetics.nms.ProtocolDisplayWrapper.BB_MAGIC_Z = Float.parseFloat(args[4]);
+                    if (args.length >= 6) {
+                        dc.dccosmetics.nms.ProtocolDisplayWrapper.BB_OFFSET_Z = Float.parseFloat(args[5]);
+                    }
+                    player.sendMessage(ChatColor.GREEN + "Set Ratios -> X: " + args[2] + ", Y: " + args[3] + ", Z: " + args[4] + (args.length >= 6 ? ", Gap: " + args[5] : ""));
                     DCCosmetics.getInstance().getSculptManager().refreshAllDummies();
                 } catch (NumberFormatException e) {
-                    player.sendMessage(ChatColor.RED + "Invalid numbers. Use formats like: 0.92");
+                    player.sendMessage(ChatColor.RED + "Invalid numbers. Use formats like: 0.95");
                 }
                 return true;
             }
-            player.sendMessage(ChatColor.RED + "Usage: /cosmetics debugbb <corners | ratio x y>");
+            player.sendMessage(ChatColor.RED + "Usage: /cosmetics debugbb <corners | ratio x y z [gap]>");
             return true;
         }
 

@@ -124,7 +124,7 @@ public class BlockbenchImporter {
                     faces.add(new FaceDef("down", sx, sz, new Vector3f(0, -sy/2.0f, 0), new Vector3f(90, 0, 0)));
                 }
 
-                // If it's literally a 2D plane in Blockbench, we just spawn 1 face!
+                // If it's literally a 2D plane in Blockbench, spawn 1 face. The engine will auto-duplicate it!
                 if (faces.isEmpty()) {
                     faces.add(new FaceDef("flat", sx > 0 ? sx : 1, sy > 0 ? sy : 1, new Vector3f(0,0,0), new Vector3f(0,0,0)));
                 }

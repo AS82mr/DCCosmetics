@@ -66,12 +66,9 @@ public class ActiveCosmetic {
             Vector3f frontRot = new Vector3f(nodeData.getRotation());
             spawnNode(nodeData, frontRot, finalColor, entry.getKey() + "_front", isVanillaHead, isBlockbench);
 
-            // Blockbench objects natively generate 6 closed faces!
-            // We ONLY clone back-faces for flat procedural shapes!
-            if (!isBlockbench) {
-                Vector3f backRot = new Vector3f(-nodeData.getRotation().x(), nodeData.getRotation().y() + 180, -nodeData.getRotation().z());
-                spawnNode(nodeData, backRot, finalColor, entry.getKey() + "_back", isVanillaHead, isBlockbench);
-            }
+            // Auto-generate back faces for EVERY node so everything is inherently two-sided!
+            Vector3f backRot = new Vector3f(-nodeData.getRotation().x(), nodeData.getRotation().y() + 180, -nodeData.getRotation().z());
+            spawnNode(nodeData, backRot, finalColor, entry.getKey() + "_back", isVanillaHead, isBlockbench);
         }
 
         startTracking(isBoots, isChest, isWaist, isHead, isVanillaHead);
@@ -248,12 +245,20 @@ public class ActiveCosmetic {
                 if (originalNode != null) {
                     Vector3f newTrans = new Vector3f(originalNode.getTranslation());
                     
-                    // Base Local Quaternion
+                    boolean isBack = id.endsWith("_back");
+
                     org.joml.Quaternionf localQ = new org.joml.Quaternionf().rotationYXZ(
                             (float) Math.toRadians(originalNode.getRotation().y()),
                             (float) Math.toRadians(originalNode.getRotation().x()),
                             (float) Math.toRadians(originalNode.getRotation().z())
                     );
+
+                    // THE FIX: True Mathematical Mirroring!
+                    // Manually flipping Euler angles causes precision overhangs (the "little extra" glitch).
+                    // Rotating the local Quaternion by exactly PI natively flips the plane flawlessly!
+                    if (isBack) {
+                        localQ.rotateLocalY((float) Math.PI);
+                    }
 
                     if (isBlockbench) {
                         // Apply global unified Blockbench animation translations FIRST, before orbiting!
@@ -318,12 +323,6 @@ public class ActiveCosmetic {
                     if (isHead && !isVanillaHead) {
                         org.joml.Quaternionf pitchQ = new org.joml.Quaternionf().rotationX((float) Math.toRadians(pitchOffset));
                         pitchQ.mul(localQ, localQ);
-                    }
-
-                    boolean isBack = id.endsWith("_back");
-                    if (isBack) {
-                        // Flipping the plane inside-out to create a perfect two-sided hologram
-                        localQ.rotateLocalY((float) Math.toRadians(180));
                     }
 
                     node.setTranslation(newTrans);

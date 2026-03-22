@@ -34,9 +34,11 @@ public class ProtocolDisplayWrapper implements DisplayWrapper {
     private org.joml.Quaternionf rawQuaternion = null;
 
     // ADVANCED DEBUGGING: Live Tunable Matrix Magic Numbers
-    public static float BB_MAGIC_X = 0.92f;
-    public static float BB_MAGIC_Y = 3.5f;
+    public static float BB_MAGIC_X = 0.9524f; // Perfect Holotools Math (1.0 / 1.05)
+    public static float BB_MAGIC_Y = 3.6363f; // Perfect Holotools Math (1.0 / 0.275)
+    public static float BB_MAGIC_Z = 1.0f;
     public static float BB_PIVOT_Y = 2.0f;
+    public static float BB_OFFSET_Z = 0.0f; // 0.0 is mathematically perfect for aligned TextDisplays
 
     public ProtocolDisplayWrapper(List<Player> viewers, Location location, ProtocolManager protocolManager) {
         this.protocolManager = protocolManager;
@@ -122,7 +124,7 @@ public class ProtocolDisplayWrapper implements DisplayWrapper {
             pivotShift = new org.joml.Vector3f(0, 0, 0); // Text centers natively
         } else if (this.blockbenchMode) {
             // Use the live-tunable Aspect Ratios! Default is 0.92 and 3.5
-            normalizedScale = new org.joml.Vector3f(scale.x * BB_MAGIC_X, scale.y * BB_MAGIC_Y, scale.z);
+            normalizedScale = new org.joml.Vector3f(scale.x * BB_MAGIC_X, scale.y * BB_MAGIC_Y, scale.z * BB_MAGIC_Z);
             pivotShift = new org.joml.Vector3f(0, scale.y / BB_PIVOT_Y, 0);
         } else {
             // LEGACY PROCEDURAL SHAPES MATRIX
@@ -134,6 +136,15 @@ public class ProtocolDisplayWrapper implements DisplayWrapper {
         
         pivotShift.rotate(qRot);
         org.joml.Vector3f adjustedTranslation = new org.joml.Vector3f(translation).sub(pivotShift);
+
+        // PERFECT DOUBLE-SIDED SEALING
+        // TextDisplays have a native background thickness. When placed back-to-back, they leave a tiny gap.
+        // By pushing the plane slightly backward along its local Z normal, they perfectly fuse together!
+        if (this.blockbenchMode && BB_OFFSET_Z != 0.0f) {
+            org.joml.Vector3f depthPush = new org.joml.Vector3f(0, 0, BB_OFFSET_Z);
+            depthPush.rotate(qRot);
+            adjustedTranslation.add(depthPush);
+        }
 
         org.bukkit.util.Transformation t = new org.bukkit.util.Transformation(
                 adjustedTranslation, qRot, normalizedScale, new org.joml.Quaternionf()

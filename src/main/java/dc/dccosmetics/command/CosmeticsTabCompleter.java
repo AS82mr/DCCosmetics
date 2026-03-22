@@ -56,6 +56,14 @@ public class CosmeticsTabCompleter implements TabCompleter {
             if (args[0].equalsIgnoreCase("debugbb") && args[1].equalsIgnoreCase("ratio")) {
                 completions.add("3.5"); // Suggest default Y
             }
+        } else if (args.length == 5 && sender.hasPermission("dccosmetics.admin")) {
+            if (args[0].equalsIgnoreCase("debugbb") && args[1].equalsIgnoreCase("ratio")) {
+                completions.add("1.0"); // Suggest default Z
+            }
+        } else if (args.length == 6 && sender.hasPermission("dccosmetics.admin")) {
+            if (args[0].equalsIgnoreCase("debugbb") && args[1].equalsIgnoreCase("ratio")) {
+                completions.add("0.0"); // Suggest default Gap
+            }
         }
 
         // Filter results based on what the user is typing
