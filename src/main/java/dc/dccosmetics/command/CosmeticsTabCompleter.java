@@ -6,6 +6,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,12 +21,40 @@ public class CosmeticsTabCompleter implements TabCompleter {
             completions.add("debugboots");
             if (sender.hasPermission("dccosmetics.admin")) {
                 completions.add("sculpt");
+                completions.add("import");
+                completions.add("debugnode");
+                completions.add("debugbb");
             }
-        } else if (args.length == 2 && args[0].equalsIgnoreCase("sculpt")) {
-            completions.add("clear");
-            completions.add("editor");
-            for (CosmeticTemplate template : DCCosmetics.getInstance().getTemplateRegistry().getAllTemplates()) {
-                completions.add(template.getId());
+        } else if (args.length == 2 && sender.hasPermission("dccosmetics.admin")) {
+            if (args[0].equalsIgnoreCase("sculpt")) {
+                completions.add("clear");
+                completions.add("editor");
+                completions.add("toggle");
+                for (CosmeticTemplate template : DCCosmetics.getInstance().getTemplateRegistry().getAllTemplates()) {
+                    completions.add(template.getId());
+                }
+            } else if (args[0].equalsIgnoreCase("import")) {
+                File folder = new File(DCCosmetics.getInstance().getDataFolder(), "imports");
+                if (folder.exists() && folder.listFiles() != null) {
+                    for (File f : folder.listFiles()) {
+                        if (f.getName().endsWith(".bbmodel") || f.getName().endsWith(".json")) {
+                            completions.add(f.getName());
+                        }
+                    }
+                }
+            } else if (args[0].equalsIgnoreCase("debugnode")) {
+                completions.add("clear");
+            } else if (args[0].equalsIgnoreCase("debugbb")) {
+                completions.add("ratio");
+                completions.add("corners");
+            }
+        } else if (args.length == 3 && sender.hasPermission("dccosmetics.admin")) {
+            if (args[0].equalsIgnoreCase("debugbb") && args[1].equalsIgnoreCase("ratio")) {
+                completions.add("0.92"); // Suggest default X
+            }
+        } else if (args.length == 4 && sender.hasPermission("dccosmetics.admin")) {
+            if (args[0].equalsIgnoreCase("debugbb") && args[1].equalsIgnoreCase("ratio")) {
+                completions.add("3.5"); // Suggest default Y
             }
         }
 

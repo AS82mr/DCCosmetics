@@ -106,10 +106,10 @@ public class BlockbenchImporter {
                 
                 // 3. True 3D Cube Generation: Generate 6 TextDisplay planes for every cube to give it actual depth!
                 if (sx > 0 && sy > 0) {
-                    // North face: Normal = -Z -> Yaw = 0
-                    faces.add(new FaceDef("north", sx, sy, new Vector3f(0, 0, -sz/2.0f), new Vector3f(0, 0, 0)));
-                    // South face: Normal = +Z -> Yaw = 180
-                    faces.add(new FaceDef("south", sx, sy, new Vector3f(0, 0, sz/2.0f), new Vector3f(0, 180, 0)));
+                    // North face: Normal = -Z -> Yaw = 180
+                    faces.add(new FaceDef("north", sx, sy, new Vector3f(0, 0, -sz/2.0f), new Vector3f(0, 180, 0)));
+                    // South face: Normal = +Z -> Yaw = 0
+                    faces.add(new FaceDef("south", sx, sy, new Vector3f(0, 0, sz/2.0f), new Vector3f(0, 0, 0)));
                 }
                 if (sz > 0 && sy > 0) {
                     // West face: Normal = -X -> Yaw = -90
@@ -118,10 +118,10 @@ public class BlockbenchImporter {
                     faces.add(new FaceDef("east", sz, sy, new Vector3f(sx/2.0f, 0, 0), new Vector3f(0, 90, 0)));
                 }
                 if (sx > 0 && sz > 0) {
-                    // Up face: Normal = +Y -> Pitch = 90
-                    faces.add(new FaceDef("up", sx, sz, new Vector3f(0, sy/2.0f, 0), new Vector3f(90, 0, 0)));
-                    // Down face: Normal = -Y -> Pitch = -90
-                    faces.add(new FaceDef("down", sx, sz, new Vector3f(0, -sy/2.0f, 0), new Vector3f(-90, 0, 0)));
+                    // Up face: Normal = +Y -> Pitch = -90
+                    faces.add(new FaceDef("up", sx, sz, new Vector3f(0, sy/2.0f, 0), new Vector3f(-90, 0, 0)));
+                    // Down face: Normal = -Y -> Pitch = 90
+                    faces.add(new FaceDef("down", sx, sz, new Vector3f(0, -sy/2.0f, 0), new Vector3f(90, 0, 0)));
                 }
 
                 // If it's literally a 2D plane in Blockbench, we just spawn 1 face!

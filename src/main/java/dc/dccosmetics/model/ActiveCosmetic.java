@@ -32,6 +32,7 @@ public class ActiveCosmetic {
     private int stationaryTicks = 0;
     public static String ISOLATED_NODE = null;
     public static boolean DEBUG_BOOTS = false;
+    public static boolean DEBUG_CORNERS = false;
 
     public ActiveCosmetic(LivingEntity owner, CosmeticTemplate template, String colorHex) {
         this.owner = owner;
@@ -65,10 +66,12 @@ public class ActiveCosmetic {
             Vector3f frontRot = new Vector3f(nodeData.getRotation());
             spawnNode(nodeData, frontRot, finalColor, entry.getKey() + "_front", isVanillaHead, isBlockbench);
 
-            // THE FIX: FORCE TWO-SIDED HOLOS ON EVERYTHING! 
-            // This paints the inside walls of the 3D cubes so they are perfectly solid from all angles, never paper-thin!
-            Vector3f backRot = new Vector3f(-nodeData.getRotation().x(), nodeData.getRotation().y() + 180, -nodeData.getRotation().z());
-            spawnNode(nodeData, backRot, finalColor, entry.getKey() + "_back", isVanillaHead, isBlockbench);
+            // Blockbench objects natively generate 6 closed faces!
+            // We ONLY clone back-faces for flat procedural shapes!
+            if (!isBlockbench) {
+                Vector3f backRot = new Vector3f(-nodeData.getRotation().x(), nodeData.getRotation().y() + 180, -nodeData.getRotation().z());
+                spawnNode(nodeData, backRot, finalColor, entry.getKey() + "_back", isVanillaHead, isBlockbench);
+            }
         }
 
         startTracking(isBoots, isChest, isWaist, isHead, isVanillaHead);
@@ -335,6 +338,23 @@ public class ActiveCosmetic {
                     }
 
                     node.update();
+
+                    // THE ULTIMATE DEBUGGER: Plots the 4 Mathematical Corners of the plane!
+                    // If the flames form a perfectly sealed box, the importer math is flawless!
+                    // If the paper doesn't reach the flames, you need to adjust the BB_MAGIC_X/Y ratio!
+                    if (DEBUG_CORNERS && isBlockbench && tickCounter % 5 == 0) {
+                        float hw = originalNode.getScale().x * template.getGlobalScale().x / 2.0f;
+                        float hh = originalNode.getScale().y * template.getGlobalScale().y / 2.0f;
+                        Vector3f[] corners = {
+                                new Vector3f(hw, hh, 0), new Vector3f(-hw, hh, 0),
+                                new Vector3f(hw, -hh, 0), new Vector3f(-hw, -hh, 0)
+                        };
+                        for (Vector3f c : corners) {
+                            c.rotate(localQ).add(newTrans);
+                            Location cornerLoc = pLoc.clone().add(c.x, c.y, c.z);
+                            owner.getWorld().spawnParticle(org.bukkit.Particle.FLAME, cornerLoc, 1, 0, 0, 0, 0);
+                        }
+                    }
                 }
             }
         }, 0L, 1L);

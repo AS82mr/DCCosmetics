@@ -94,6 +94,31 @@ public class CosmeticsCommand implements CommandExecutor {
         }
 
         // =========================================
+        // ADVANCED BLOCKBENCH DEBUGGER
+        // =========================================
+        if (args.length >= 1 && args[0].equalsIgnoreCase("debugbb")) {
+            if (!sender.hasPermission("dccosmetics.admin")) return true;
+            
+            if (args.length == 2 && args[1].equalsIgnoreCase("corners")) {
+                dc.dccosmetics.model.ActiveCosmetic.DEBUG_CORNERS = !dc.dccosmetics.model.ActiveCosmetic.DEBUG_CORNERS;
+                player.sendMessage(ChatColor.YELLOW + "Mathematical Corner Particles: " + dc.dccosmetics.model.ActiveCosmetic.DEBUG_CORNERS);
+                return true;
+            } else if (args.length == 4 && args[1].equalsIgnoreCase("ratio")) {
+                try {
+                    dc.dccosmetics.nms.ProtocolDisplayWrapper.BB_MAGIC_X = Float.parseFloat(args[2]);
+                    dc.dccosmetics.nms.ProtocolDisplayWrapper.BB_MAGIC_Y = Float.parseFloat(args[3]);
+                    player.sendMessage(ChatColor.GREEN + "Set TextDisplay Aspect Ratios to -> X: " + args[2] + ", Y: " + args[3]);
+                    DCCosmetics.getInstance().getSculptManager().refreshAllDummies();
+                } catch (NumberFormatException e) {
+                    player.sendMessage(ChatColor.RED + "Invalid numbers. Use formats like: 0.92");
+                }
+                return true;
+            }
+            player.sendMessage(ChatColor.RED + "Usage: /cosmetics debugbb <corners | ratio x y>");
+            return true;
+        }
+
+        // =========================================
         // NEW: CHAT-BASED DIALOG EDITOR ROUTING
         // =========================================
         if (args.length >= 3 && args[0].equalsIgnoreCase("editcmd")) {

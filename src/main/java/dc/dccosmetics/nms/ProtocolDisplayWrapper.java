@@ -33,6 +33,11 @@ public class ProtocolDisplayWrapper implements DisplayWrapper {
     private boolean blockbenchMode = false;
     private org.joml.Quaternionf rawQuaternion = null;
 
+    // ADVANCED DEBUGGING: Live Tunable Matrix Magic Numbers
+    public static float BB_MAGIC_X = 0.92f;
+    public static float BB_MAGIC_Y = 3.5f;
+    public static float BB_PIVOT_Y = 2.0f;
+
     public ProtocolDisplayWrapper(List<Player> viewers, Location location, ProtocolManager protocolManager) {
         this.protocolManager = protocolManager;
         this.viewers = viewers;
@@ -116,11 +121,9 @@ public class ProtocolDisplayWrapper implements DisplayWrapper {
             normalizedScale = new org.joml.Vector3f(scale);
             pivotShift = new org.joml.Vector3f(0, 0, 0); // Text centers natively
         } else if (this.blockbenchMode) {
-            // PERFECT PIXEL-TO-BLOCK ASPECT RATIO: 
-            // 10 spaces = 42px width, 11px height. 0.92f and 3.5f forces height/width to equal exact 1:1 squares!
-            // This mechanically forces the planes to extend exactly to the corners and seals all gaps!
-            normalizedScale = new org.joml.Vector3f(scale.x * 0.92f, scale.y * 3.5f, scale.z);
-            pivotShift = new org.joml.Vector3f(0, scale.y / 2.0f, 0);
+            // Use the live-tunable Aspect Ratios! Default is 0.92 and 3.5
+            normalizedScale = new org.joml.Vector3f(scale.x * BB_MAGIC_X, scale.y * BB_MAGIC_Y, scale.z);
+            pivotShift = new org.joml.Vector3f(0, scale.y / BB_PIVOT_Y, 0);
         } else {
             // LEGACY PROCEDURAL SHAPES MATRIX
             normalizedScale = new org.joml.Vector3f(scale.x * 0.4f, scale.y * 4.0f, scale.z);
