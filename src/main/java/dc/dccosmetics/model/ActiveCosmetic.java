@@ -51,6 +51,8 @@ public class ActiveCosmetic {
         boolean isChest = "chest".equalsIgnoreCase(template.getEquipmentSlot().trim());
         boolean isWaist = "waist".equalsIgnoreCase(template.getEquipmentSlot().trim());
         boolean isHead = "head".equalsIgnoreCase(template.getEquipmentSlot().trim());
+        boolean isSword = "sword".equalsIgnoreCase(template.getEquipmentSlot().trim());
+        boolean isOffhand = "offhand".equalsIgnoreCase(template.getEquipmentSlot().trim());
         boolean isVanillaHead = isHead && !DCCosmetics.getInstance().getTemplateRegistry().isCustomHeadTracking(template.getId());
         boolean isBlockbench = template.isBlockbench();
 
@@ -73,7 +75,7 @@ public class ActiveCosmetic {
             }
         }
 
-        startTracking(isBoots, isChest, isWaist, isHead, isVanillaHead);
+        startTracking(isBoots, isChest, isWaist, isHead, isVanillaHead, isSword, isOffhand);
     }
 
     private void spawnNode(CosmeticNode nodeData, Vector3f rot, String color, String id, boolean isVanillaHead, boolean isBlockbench) {
@@ -106,7 +108,7 @@ public class ActiveCosmetic {
         activeNodes.put(id, nodeDisplay);
     }
 
-    private void startTracking(boolean isBoots, boolean isChest, boolean isWaist, boolean isHead, boolean isVanillaHead) {
+    private void startTracking(boolean isBoots, boolean isChest, boolean isWaist, boolean isHead, boolean isVanillaHead, boolean isSword, boolean isOffhand) {
         boolean hasNodeAnim = template.getNodes().values().stream().anyMatch(CosmeticNode::isAnimated);
         boolean isDummy = DCCosmetics.getInstance().getSculptManager().getActiveDummies().containsValue(owner);
         boolean isBlockbench = template.isBlockbench();
@@ -126,6 +128,19 @@ public class ActiveCosmetic {
 
             // --- FLIGHT DISABLER ---
             boolean isHidden = (owner instanceof Player p) && (p.isFlying() || p.isGliding() || (!p.isOnGround() && p.getVelocity().lengthSquared() > 0.8));
+
+            if (owner instanceof Player p && !isDummy) {
+                if (isSword) {
+                    org.bukkit.Material type = p.getInventory().getItemInMainHand().getType();
+                    boolean valid = type.name().endsWith("_SWORD") || type.name().endsWith("_AXE") || type == org.bukkit.Material.MACE || type == org.bukkit.Material.TRIDENT;
+                    if (!valid) isHidden = true;
+                }
+                if (isOffhand) {
+                    org.bukkit.Material type = p.getInventory().getItemInOffHand().getType();
+                    boolean valid = type == org.bukkit.Material.SHIELD || type == org.bukkit.Material.TOTEM_OF_UNDYING;
+                    if (!valid) isHidden = true;
+                }
+            }
 
             // --- 1. PROCEDURAL WALK ENGINE ---
             float legSwing = 0f;
@@ -197,6 +212,7 @@ public class ActiveCosmetic {
             float targetY = 0f;
             if (isHead) targetY = 1.6f;
             else if (isChest) targetY = 1.1f;
+            else if (isSword || isOffhand) targetY = 0.9f;
             else if (isWaist) targetY = 0.7f;
             else if (isBoots) targetY = 0.0f; // PERFECTLY ON THE FLOOR
 

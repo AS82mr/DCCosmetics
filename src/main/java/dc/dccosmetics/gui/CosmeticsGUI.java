@@ -57,6 +57,8 @@ public class CosmeticsGUI implements InventoryHolder {
         inventory.setItem(13, createFilterItem(Material.LEATHER_CHESTPLATE, Material.GOLDEN_CHESTPLATE, "chest", ChatColor.YELLOW, state.getSelectedType()));
         inventory.setItem(14, createFilterItem(Material.LEATHER_LEGGINGS, Material.GOLDEN_LEGGINGS, "waist", ChatColor.YELLOW, state.getSelectedType()));
         inventory.setItem(15, createFilterItem(Material.LEATHER_BOOTS, Material.GOLDEN_BOOTS, "boots", ChatColor.YELLOW, state.getSelectedType()));
+        inventory.setItem(16, createFilterItem(Material.IRON_SWORD, Material.GOLDEN_SWORD, "sword", ChatColor.YELLOW, state.getSelectedType()));
+        inventory.setItem(17, createFilterItem(Material.SHIELD, Material.TOTEM_OF_UNDYING, "offhand", ChatColor.YELLOW, state.getSelectedType()));
 
         // 5. Rows 2 & 3: Render Filtered Cosmetics
         renderCosmetics();
@@ -128,6 +130,8 @@ public class CosmeticsGUI implements InventoryHolder {
         else if (slot == 13) { state.setSelectedType("chest"); state.setViewedCosmeticId(null); build(); }
         else if (slot == 14) { state.setSelectedType("waist"); state.setViewedCosmeticId(null); build(); }
         else if (slot == 15) { state.setSelectedType("boots"); state.setViewedCosmeticId(null); build(); }
+        else if (slot == 16) { state.setSelectedType("sword"); state.setViewedCosmeticId(null); build(); }
+        else if (slot == 17) { state.setSelectedType("offhand"); state.setViewedCosmeticId(null); build(); }
 
         // Handle Back / External Navigation
         else if (slot == 49) {
@@ -171,16 +175,8 @@ public class CosmeticsGUI implements InventoryHolder {
         // 3. Handle Unequipping (Slot 44)
         else if (slot == 44) {
             clicker.closeInventory();
-            PlayerProfile profile = DCCosmetics.getInstance().getProfileManager().getProfile(clicker);
-            if (profile != null) {
-                ActiveCosmetic active = profile.getActiveCosmetic(state.getSelectedType());
-                if (active != null) {
-                    active.despawn();
-                    profile.removeActiveCosmetic(state.getSelectedType());
-                    profile.removeEquipped(state.getSelectedType());
-                    clicker.sendMessage(ChatColor.RED + "Unequipped cosmetic!");
-                }
-            }
+            DCCosmetics.getInstance().getProfileManager().unequipCosmetic(clicker, state.getSelectedType());
+            clicker.sendMessage(ChatColor.RED + "Unequipped cosmetic!");
         }
     }
 

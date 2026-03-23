@@ -14,6 +14,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.ItemStack;
 
 public class ProfileManager {
     private final Map<UUID, PlayerProfile> profiles = new HashMap<>();
@@ -120,6 +124,78 @@ public class ProfileManager {
                     equipCosmetic(player, s, equipped, profile.getEquippedColor(s));
                 }
             }
+        }
+    }
+
+    public void unequipCosmetic(Player player, String slot) {
+        PlayerProfile profile = getProfile(player);
+        if (profile == null) return;
+
+        ActiveCosmetic old = profile.getActiveCosmetic(slot);
+        if (old != null) {
+            old.despawn();
+            profile.removeActiveCosmetic(slot);
+        }
+        profile.removeEquipped(slot);
+    }
+
+    public void startEquipmentScanner() {
+        Bukkit.getScheduler().runTaskTimer(DCCosmetics.getInstance(), () -> {
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                PlayerProfile profile = getProfile(p);
+                if (profile != null) {
+                    checkSlot(p, profile, "sword", p.getInventory().getItemInMainHand());
+                    checkSlot(p, profile, "offhand", p.getInventory().getItemInOffHand());
+                    checkSlot(p, profile, "head", p.getInventory().getHelmet());
+                    checkSlot(p, profile, "chest", p.getInventory().getChestplate());
+                    checkSlot(p, profile, "waist", p.getInventory().getLeggings());
+                    checkSlot(p, profile, "boots", p.getInventory().getBoots());
+                }
+            }
+        }, 5L, 5L); // Scan every quarter of a second
+    }
+
+    private void checkSlot(Player p, PlayerProfile profile, String slot, ItemStack item) {
+        // Auto-update the display names if config changed!
+        DCCosmetics.getInstance().updateCosmeticItem(item);
+
+        String targetId = profile.getEquippedCosmetic(slot); // GUI Override Admin checks!
+        String targetColor = profile.getEquippedColor(slot);
+
+        // If the admin didn't force a GUI cosmetic, check the physical item!
+        if (targetId == null && item != null && item.hasItemMeta()) {
+            PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
+            NamespacedKey idKey = new NamespacedKey(DCCosmetics.getInstance(), "cosmetic_id");
+            NamespacedKey colorKey = new NamespacedKey(DCCosmetics.getInstance(), "cosmetic_color");
+            if (pdc.has(idKey, PersistentDataType.STRING)) {
+                targetId = pdc.get(idKey, PersistentDataType.STRING);
+                targetColor = pdc.get(colorKey, PersistentDataType.STRING);
+            }
+        }
+
+        // Enforce Slot Rules: If you hold Boots in your hand, do NOT render them as a Hand item!
+        if (targetId != null) {
+            CosmeticTemplate t = DCCosmetics.getInstance().getTemplateRegistry().getTemplate(targetId);
+            if (t == null || !t.getEquipmentSlot().equalsIgnoreCase(slot)) {
+                targetId = null; 
+            }
+        }
+
+        ActiveCosmetic active = profile.getActiveCosmetic(slot);
+        String currentId = active != null ? active.getTemplate().getId() : null;
+
+        // If target changed, swap cosmetics instantly
+        if (targetId != null && !targetId.equals(currentId)) {
+            if (active != null) active.despawn();
+            CosmeticTemplate temp = DCCosmetics.getInstance().getTemplateRegistry().getTemplate(targetId);
+            if (temp != null) {
+                ActiveCosmetic newActive = new ActiveCosmetic(p, temp, targetColor != null ? targetColor : "#FFFFFF");
+                newActive.spawn();
+                profile.setActiveCosmetic(slot, newActive);
+            }
+        } else if (targetId == null && active != null) {
+            active.despawn();
+            profile.removeActiveCosmetic(slot);
         }
     }
 

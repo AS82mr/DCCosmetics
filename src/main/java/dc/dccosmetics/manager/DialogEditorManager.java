@@ -325,7 +325,7 @@ public class DialogEditorManager implements Listener {
             YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
 
             if (event.getSlot() == 12) {
-                String[] slots = {"head", "chest", "waist", "boots"};
+                String[] slots = {"head", "chest", "waist", "boots", "sword", "offhand"};
                 String current = config.getString("type", "chest");
                 String next = "head";
                 for (int i = 0; i < slots.length; i++) if (slots[i].equals(current)) next = slots[(i + 1) % slots.length];

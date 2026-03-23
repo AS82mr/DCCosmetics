@@ -64,6 +64,7 @@ public class TemplateRegistry {
         String id = config.getString("id");
         if (id == null) return "Missing 'id' in YAML.";
 
+        String itemName = config.getString("item-name", id); // Fallback to ID if not set!
         String slot = config.getString("type", "head");
         String rarity = config.getString("rarity", "uncommon");
         String permission = config.getString("permission", "dccosmetics." + slot + "." + id);
@@ -78,6 +79,9 @@ public class TemplateRegistry {
         Vector3f globalOffset = getVector(config, "global-offset", new Vector3f(0, 0, 0));
         Vector3f globalScale = getVector(config, "global-scale", new Vector3f(1.0f, 1.0f, 1.0f));
         Vector3f globalRotation = getVector(config, "global-rotation", new Vector3f(0, 0, 0));
+        java.util.List<String> allowedColors = config.getStringList("allowed-colors");
+        java.util.List<String> lore = config.getStringList("lore");
+        
         String footstepParticle = config.getString("footstep.particle", null);
         String footstepColor = parseColor(config.getString("footstep.color"));
         String footstepSound = config.getString("footstep.sound", null);
@@ -253,7 +257,7 @@ public class TemplateRegistry {
             }
         }
 
-        CosmeticTemplate template = new CosmeticTemplate(id, slot, rarity, permission, iconBase64, globalOffset, globalScale, globalRotation, blockbench, animated, animationType, animationSpeed, footstepParticle, footstepColor, footstepSound, soundVol, soundPitch, nodes);
+        CosmeticTemplate template = new CosmeticTemplate(id, itemName, slot, rarity, permission, iconBase64, globalOffset, globalScale, globalRotation, allowedColors, lore, blockbench, animated, animationType, animationSpeed, footstepParticle, footstepColor, footstepSound, soundVol, soundPitch, nodes);
         templates.put(id, template);
         templateFiles.put(id, file);
         return null; // Return null if success

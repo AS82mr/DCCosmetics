@@ -1,8 +1,10 @@
 package dc.dccosmetics;
 
+import dc.dccosmetics.model.CosmeticTemplate;
 import dc.dccosmetics.api.PacketAdapter;
 import dc.dccosmetics.command.CosmeticsCommand;
 import dc.dccosmetics.command.ProfileCommand;
+import dc.dccosmetics.command.CustomiseCommand;
 import dc.dccosmetics.gui.GuiManager;
 import dc.dccosmetics.listener.PlayerListener;
 import dc.dccosmetics.manager.ProfileManager;
@@ -13,8 +15,15 @@ import dc.dccosmetics.manager.BlockbenchImporter;
 import dc.dccosmetics.manager.CosmeticWatcher;
 import dc.dccosmetics.nms.ProtocolLibAdapter;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import dc.dccosmetics.listener.FootstepListener;
 import java.io.File;
@@ -52,6 +61,8 @@ public final class DCCosmetics extends JavaPlugin {
         this.dialogEditorManager = new DialogEditorManager();
         this.blockbenchImporter = new BlockbenchImporter();
 
+        saveDefaultConfig(); // Automatically saves config.yml from resources!
+
         // 3. Load Data (Reads your cosmetics folder)
         File guiFile = new File(getDataFolder(), "gui.yml");
         if (!guiFile.exists()) {
@@ -66,6 +77,12 @@ public final class DCCosmetics extends JavaPlugin {
                     ex.printStackTrace();
                 }
             }
+        }
+        
+        if (getCommand("customise") != null) {
+            getCommand("customise").setExecutor(new CustomiseCommand(this.guiManager));
+        } else {
+            getLogger().severe("[ERROR] Command 'customise' not found in plugin.yml!");
         }
         this.guiConfig = YamlConfiguration.loadConfiguration(guiFile);
         this.templateRegistry.loadAll();
@@ -98,11 +115,15 @@ public final class DCCosmetics extends JavaPlugin {
         this.watcher = new CosmeticWatcher(this);
         this.watcher.runTaskTimerAsynchronously(this, 60L, 40L); // Starts after 3s, checks every 2s
 
+        // 8. Start the Dynamic Item Bound Equipment Scanner
+        this.profileManager.startEquipmentScanner();
+
         getLogger().info("DCcosmetics successfully enabled!");
         getLogger().info("----------------------------------------");
     }
 
     public void reloadConfigs() {
+        reloadConfig(); // Reloads config.yml
         File guiFile = new File(getDataFolder(), "gui.yml");
         if (guiFile.exists()) {
             this.guiConfig = YamlConfiguration.loadConfiguration(guiFile);
@@ -124,6 +145,130 @@ public final class DCCosmetics extends JavaPlugin {
         }
 
         getLogger().info("DCcosmetics successfully disabled!");
+    }
+
+    // =========================================
+    // GLOBALLY ACCESSIBLE UTILITIES
+    // =========================================
+
+    public String parseColors(String text) {
+        if (text == null) return "";
+        java.util.regex.Pattern hexPattern = java.util.regex.Pattern.compile("&#([A-Fa-f0-9]{6})");
+        java.util.regex.Matcher matcher = hexPattern.matcher(text);
+        StringBuffer buffer = new StringBuffer();
+        while (matcher.find()) {
+            matcher.appendReplacement(buffer, net.md_5.bungee.api.ChatColor.of("#" + matcher.group(1)).toString());
+        }
+        matcher.appendTail(buffer);
+        return ChatColor.translateAlternateColorCodes('&', buffer.toString());
+    }
+
+    public String formatMaterialName(Material mat) {
+        String[] words = mat.name().split("_");
+        StringBuilder sb = new StringBuilder();
+        for (String w : words) {
+            if (w.isEmpty()) continue;
+            sb.append(w.substring(0, 1).toUpperCase()).append(w.substring(1).toLowerCase()).append(" ");
+        }
+        return sb.toString().trim();
+    }
+
+    public String getSafeColor(CosmeticTemplate temp, String requestedColor) {
+        if (requestedColor != null && !requestedColor.equals("#FFFFFF")) return requestedColor;
+        if (temp.getAllowedColors() != null && !temp.getAllowedColors().isEmpty()) {
+            String first = temp.getAllowedColors().get(0);
+            if (first.contains(":")) return first.split(":")[0];
+            return first;
+        }
+        return "#FFFFFF";
+    }
+
+    public ItemStack createScroll(String id, String color) {
+        CosmeticTemplate temp = getTemplateRegistry().getTemplate(id);
+        if (temp == null) return new ItemStack(Material.PAPER);
+        
+        color = getSafeColor(temp, color);
+
+        ItemStack scroll;
+        if (temp.getGuiIconBase64() != null && !temp.getGuiIconBase64().isEmpty()) {
+            scroll = dc.dccosmetics.util.HeadUtil.getCustomHead(temp.getGuiIconBase64());
+        } else {
+            scroll = new ItemStack(Material.PAPER);
+        }
+        ItemMeta meta = scroll.getItemMeta();
+        String rarity = temp.getRarity().toLowerCase();
+        String nameFormat = getConfig().getString("scrolls." + rarity + ".name", "&fCosmetic Scroll: {cosmetic}");
+        meta.setDisplayName(parseColors(nameFormat.replace("{cosmetic}", temp.getItemName())));
+        
+        java.util.List<String> lore = new java.util.ArrayList<>();
+        for (String line : getConfig().getStringList("scrolls." + rarity + ".lore")) {
+            if (line.contains("{itemlore}")) {
+                for (String l : temp.getLore()) {
+                    lore.add(parseColors(l));
+                }
+            } else {
+                lore.add(parseColors(line.replace("{cosmetic}", temp.getItemName()).replace("{slot}", temp.getEquipmentSlot().toUpperCase())));
+            }
+        }
+        meta.setLore(lore);
+
+        meta.getPersistentDataContainer().set(new NamespacedKey(this, "cosmetic_scroll_id"), PersistentDataType.STRING, id);
+        meta.getPersistentDataContainer().set(new NamespacedKey(this, "cosmetic_scroll_color"), PersistentDataType.STRING, color);
+        scroll.setItemMeta(meta);
+        return scroll;
+    }
+
+    public void updateCosmeticItem(ItemStack item) {
+        if (item == null || !item.hasItemMeta()) return;
+        ItemMeta meta = item.getItemMeta();
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        
+        NamespacedKey idKey = new NamespacedKey(this, "cosmetic_id");
+        NamespacedKey cKey = new NamespacedKey(this, "cosmetic_color");
+        NamespacedKey origKey = new NamespacedKey(this, "cosmetic_original_name");
+        NamespacedKey scrollKey = new NamespacedKey(this, "cosmetic_scroll_id");
+
+        if (pdc.has(idKey, PersistentDataType.STRING)) {
+            String id = pdc.get(idKey, PersistentDataType.STRING);
+            String origName = pdc.has(origKey, PersistentDataType.STRING) ? pdc.get(origKey, PersistentDataType.STRING) : formatMaterialName(item.getType());
+            
+            CosmeticTemplate temp = getTemplateRegistry().getTemplate(id);
+            if (temp != null) {
+                String color = pdc.has(cKey, PersistentDataType.STRING) ? pdc.get(cKey, PersistentDataType.STRING) : getSafeColor(temp, null);
+                String rarity = temp.getRarity().toLowerCase();
+                String emoji = getConfig().getString("scrolls." + rarity + ".emoji", "&f⬤");
+                String format = getConfig().getString("applied_item_format", "{emoji} &r{item_name} {color}[{cosmetic_name}]");
+
+                String newName = parseColors(format.replace("{emoji}", emoji).replace("{item_name}", origName).replace("{color}", net.md_5.bungee.api.ChatColor.of(color).toString()).replace("{cosmetic_name}", temp.getItemName()));
+                
+                boolean updateNeeded = false;
+                if (!newName.equals(meta.getDisplayName())) {
+                    meta.setDisplayName(newName);
+                    updateNeeded = true;
+                }
+                
+                java.util.List<String> lore = meta.hasLore() ? meta.getLore() : new java.util.ArrayList<>();
+                boolean removed = lore.removeIf(l -> ChatColor.stripColor(l).contains("✦ Cosmetic:"));
+                String newLoreLine = net.md_5.bungee.api.ChatColor.of(color) + "✦ Cosmetic: " + temp.getItemName();
+                
+                if (removed || !lore.contains(newLoreLine)) {
+                    lore.add(newLoreLine);
+                    meta.setLore(lore);
+                    updateNeeded = true;
+                }
+                
+                if (updateNeeded) item.setItemMeta(meta);
+            }
+        } else if (pdc.has(scrollKey, PersistentDataType.STRING)) {
+            // Auto-update unapplied scrolls if the config changes!
+            String id = pdc.get(scrollKey, PersistentDataType.STRING);
+            CosmeticTemplate temp = getTemplateRegistry().getTemplate(id);
+            String color = pdc.has(new NamespacedKey(this, "cosmetic_scroll_color"), PersistentDataType.STRING) ? pdc.get(new NamespacedKey(this, "cosmetic_scroll_color"), PersistentDataType.STRING) : getSafeColor(temp, null);
+            ItemStack freshScroll = createScroll(id, color);
+            if (!meta.getDisplayName().equals(freshScroll.getItemMeta().getDisplayName()) || !meta.getLore().equals(freshScroll.getItemMeta().getLore())) {
+                item.setItemMeta(freshScroll.getItemMeta());
+            }
+        }
     }
 
     // Getters for everywhere else in the plugin

@@ -33,7 +33,22 @@ public class CosmeticWatcher extends BukkitRunnable {
 
     @Override
     public void run() {
+        checkConfig(new File(plugin.getDataFolder(), "config.yml"));
+        checkConfig(new File(plugin.getDataFolder(), "gui.yml"));
         checkFolder(new File(plugin.getDataFolder(), "cosmetics"));
+    }
+
+    private void checkConfig(File file) {
+        if (!file.exists()) return;
+        long lastModified = file.lastModified();
+        Long previous = fileTimestamps.get(file.getAbsolutePath());
+        if (previous == null || lastModified > previous) {
+            fileTimestamps.put(file.getAbsolutePath(), lastModified);
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                plugin.reloadConfigs();
+                broadcastAdmin("§a[DCCosmetics] Auto-Reloaded System Config: §e" + file.getName());
+            });
+        }
     }
 
     private void checkFolder(File folder) {

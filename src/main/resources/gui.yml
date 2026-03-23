@@ -1,6 +1,37 @@
 title: "&8{target}'s Profile"
 size: 54
 
+customiseMenu:
+  title: "&5Customise: {cosmetic}"
+  size: 45
+  fillItems:
+    enabled: true
+    material: BLACK_STAINED_GLASS_PANE
+    name: " "
+  infoItem:
+    slot: 4
+    material: BOOK
+    name: "&e&lCustomise Cosmetic"
+    lore:
+      - "&7Select a color below to magically"
+      - "&7dye your attached cosmetic!"
+  detachItem:
+    slot: 40
+    material: REDSTONE
+    name: "&c&lDetach Scroll"
+    lore:
+      - "&7Click to cleanly detach the cosmetic"
+      - "&7and retrieve your Scroll."
+  barrierItem:
+    slot: 22
+    material: BARRIER
+    name: "&c&lNo Colors Available"
+    lore:
+      - "&7This cosmetic does not support"
+      - "&7primary color modifications."
+  colorsStartSlot: 19
+  colorsMaxSlot: 25
+
 fillItems:
   enabled: true
   material: BLACK_STAINED_GLASS_PANE
@@ -127,34 +158,6 @@ items:
       - ' &#e67e22Taming &8» &7lvl.&f%mcmmogui_skill_taming_level%'
       - ' &#e67e22Axes &8» &7lvl.&f%mcmmogui_skill_axes_level%'
 
-  cosmeticHelmet:
-    type: HELMET
-    material: RED_STAINED_GLASS_PANE
-    name: "&eHead Cosmetic"
-    slots: [ 10 ]
-    lore: [ "&cNot Equipped" ]
-
-  cosmeticChestplate:
-    type: CHESTPLATE
-    material: RED_STAINED_GLASS_PANE
-    name: "&eChestplate Cosmetic"
-    slots: [ 19 ]
-    lore: [ "&cNot Equipped" ]
-
-  cosmeticLeggings:
-    type: LEGGINGS
-    material: RED_STAINED_GLASS_PANE
-    name: "&eWaist Cosmetic"
-    slots: [ 28 ]
-    lore: [ "&cNot Equipped" ]
-
-  cosmeticBoots:
-    type: BOOTS
-    material: RED_STAINED_GLASS_PANE
-    name: "&eBoots Cosmetic"
-    slots: [ 37 ]
-    lore: [ "&cNot Equipped" ]
-
   backButton:
     material: "head;eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDQ2NmM1YmQwNDlmNzVhYzdhYWJhZTgyY2MzZmNlNDIzMzUzMmFhNTk4NjMyZmEzYmVmYjE1YWM0MGIwMTUyNiJ9fX0="
     name: "&6&lMenu"
@@ -167,28 +170,28 @@ items:
     type: PLAYER_HELMET
     material: LIGHT_GRAY_STAINED_GLASS_PANE
     name: "&7No Helmet Equipped"
-    slots: [ 11 ]
+    slots: [ 10, 11 ]
     lore: []
 
   playerChestplate:
     type: PLAYER_CHESTPLATE
     material: LIGHT_GRAY_STAINED_GLASS_PANE
     name: "&7No Chestplate Equipped"
-    slots: [ 20 ]
+    slots: [ 19, 20 ]
     lore: []
 
   playerLeggings:
     type: PLAYER_LEGGINGS
     material: LIGHT_GRAY_STAINED_GLASS_PANE
     name: "&7No Leggings Equipped"
-    slots: [ 29 ]
+    slots: [ 28, 29 ]
     lore: []
 
   playerBoots:
     type: PLAYER_BOOTS
     material: LIGHT_GRAY_STAINED_GLASS_PANE
     name: "&7No Boots Equipped"
-    slots: [ 38 ]
+    slots: [ 37, 38 ]
     lore: []
 
   playerMainHand:

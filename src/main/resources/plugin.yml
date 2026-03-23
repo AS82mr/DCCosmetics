@@ -17,3 +17,7 @@ commands:
   profile:
     description: View your own or another player's profile.
     usage: /<command> [player]
+  customise:
+    description: Customise the cosmetic applied to your held item.
+    aliases: [customize]
+    usage: /<command>

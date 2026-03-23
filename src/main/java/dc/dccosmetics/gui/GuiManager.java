@@ -1,6 +1,8 @@
 package dc.dccosmetics.gui;
 
 import dc.dccosmetics.DCCosmetics;
+import dc.dccosmetics.model.CosmeticTemplate;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -39,6 +41,11 @@ public class GuiManager implements Listener {
         gui.open();
     }
 
+    public void openCustomiseMenu(Player player, CosmeticTemplate template, ItemStack item) {
+        CustomiseGUI gui = new CustomiseGUI(player, template, item);
+        gui.open();
+    }
+
     @EventHandler
     public void onClick(InventoryClickEvent event) {
         if (event.getInventory().getHolder() instanceof CosmeticsGUI) {
@@ -53,6 +60,11 @@ public class GuiManager implements Listener {
             
             ProfileGUI gui = (ProfileGUI) event.getInventory().getHolder();
             gui.handleClick((Player) event.getWhoClicked(), event.getRawSlot(), event.getClick());
+        } else if (event.getInventory().getHolder() instanceof CustomiseGUI) {
+            event.setCancelled(true);
+            if (event.getCurrentItem() == null) return;
+            CustomiseGUI gui = (CustomiseGUI) event.getInventory().getHolder();
+            gui.handleClick(event.getRawSlot());
         }
     }
 }

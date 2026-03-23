@@ -8,6 +8,7 @@ import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
 import dc.dccosmetics.DCCosmetics;
 import dc.dccosmetics.api.DisplayWrapper;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
@@ -70,6 +71,7 @@ public class ProtocolLibAdapter implements dc.dccosmetics.api.PacketAdapter {
             }
         });
     }
+
 
     @Override
     public void injectPlayer(Player player) {

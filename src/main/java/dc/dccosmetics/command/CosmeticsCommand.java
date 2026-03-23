@@ -3,6 +3,7 @@ package dc.dccosmetics.command;
 import dc.dccosmetics.DCCosmetics;
 import dc.dccosmetics.gui.GuiManager;
 import dc.dccosmetics.listener.FootstepListener;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -46,6 +47,28 @@ public class CosmeticsCommand implements CommandExecutor {
             }
             String filename = args[1];
             DCCosmetics.getInstance().getBlockbenchImporter().importModel(filename, sender);
+            return true;
+        }
+
+        // =========================================
+        // 5. SCROLL GIVER: /cosmetics scroll <player> <id> [color]
+        // =========================================
+        if (args.length >= 3 && args[0].equalsIgnoreCase("scroll")) {
+            if (!sender.hasPermission("dccosmetics.admin")) return true;
+            Player target = Bukkit.getPlayer(args[1]);
+            if (target == null) {
+                sender.sendMessage(ChatColor.RED + "Player not found!");
+                return true;
+            }
+            String id = args[2];
+            dc.dccosmetics.model.CosmeticTemplate temp = DCCosmetics.getInstance().getTemplateRegistry().getTemplate(id);
+            if (temp == null) {
+                sender.sendMessage(ChatColor.RED + "Cosmetic not found!");
+                return true;
+            }
+            
+            target.getInventory().addItem(DCCosmetics.getInstance().createScroll(id, args.length >= 4 ? args[3] : "#FFFFFF"));
+            sender.sendMessage(ChatColor.GREEN + "Given scroll to " + target.getName());
             return true;
         }
 

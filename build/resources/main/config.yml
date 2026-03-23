@@ -1,0 +1,63 @@
+# DCCosmetics Main Configuration
+
+applied_item_format: "{emoji} &r{item_name} {color}[{cosmetic_name}]"
+
+scrolls:
+  uncommon:
+    emoji: "&a⬤"
+    name: "&#03E700&lUncommon {cosmetic} Scroll"
+    lore:
+      - "&#03E700&l&n&m_&#03E10B&l&n&m_&#03DC16&l&n&m_&#03D621&l&n&m_&#02D02C&l&n&m_&#02CB37&l&n&m_&#02C543&l&n&m_&#02BF4E&l&n&m_&#02B959&l&n&m_&#02B464&l&n&m_&#02AE6F&l&n&m_&#02A87A&l&n&m_&#01A385&l&n&m_&#019D90&l&n&m_&#01979B&l&n&m_&#0192A6&l&n&m_&#018CB1&l&n&m_&#0186BC&l&n&m_&#0180C8&l&n&m_&#017BD3&l&n&m_&#0075DE&l&n&m_&#006FE9&l&n&m_&#006AF4&l&n&m_&#0064FF&l&n&m_"
+      - "&f"
+      - "{itemlore}"
+      - "{itemlore}"
+      - "{itemlore}"
+      - "{itemlore}"
+      - "&f"
+      - "§8§m=§r &8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "§8§m=§r &8ᴏɴᴛᴏ ᴀ {slot} ᴛᴏ ᴀᴘᴘʟʏ!"
+      - "&#03E700&l&n&m_&#03E10B&l&n&m_&#03DC16&l&n&m_&#03D621&l&n&m_&#02D02C&l&n&m_&#02CB37&l&n&m_&#02C543&l&n&m_&#02BF4E&l&n&m_&#02B959&l&n&m_&#02B464&l&n&m_&#02AE6F&l&n&m_&#02A87A&l&n&m_&#01A385&l&n&m_&#019D90&l&n&m_&#01979B&l&n&m_&#0192A6&l&n&m_&#018CB1&l&n&m_&#0186BC&l&n&m_&#0180C8&l&n&m_&#017BD3&l&n&m_&#0075DE&l&n&m_&#006FE9&l&n&m_&#006AF4&l&n&m_&#0064FF&l&n&m_"
+      - "§f#03E700§m=§r #03E700&lUncommon"
+      - "&#03E700&l&n&m_&#03E10B&l&n&m_&#03DC16&l&n&m_&#03D621&l&n&m_&#02D02C&l&n&m_&#02CB37&l&n&m_&#02C543&l&n&m_&#02BF4E&l&n&m_&#02B959&l&n&m_&#02B464&l&n&m_&#02AE6F&l&n&m_&#02A87A&l&n&m_&#01A385&l&n&m_&#019D90&l&n&m_&#01979B&l&n&m_&#0192A6&l&n&m_&#018CB1&l&n&m_&#0186BC&l&n&m_&#0180C8&l&n&m_&#017BD3&l&n&m_&#0075DE&l&n&m_&#006FE9&l&n&m_&#006AF4&l&n&m_&#0064FF&l&n&m_"
+  rare:
+    emoji: "&b✦"
+    name: "&#0098FF&lRare {cosmetic} Scroll"
+    lore:
+      - "&#0098FF&l&n&m_&#098FFF&l&n&m_&#1185FF&l&n&m_&#1A7CFF&l&n&m_&#2372FF&l&n&m_&#2B69FF&l&n&m_&#345FFF&l&n&m_&#3C56FF&l&n&m_&#454CFF&l&n&m_&#4E43FF&l&n&m_&#5639FF&l&n&m_&#5F30FF&l&n&m_&#6826FF&l&n&m_&#701DFF&l&n&m_&#7913FF&l&n&m_&#810AFF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_"
+      - "&f"
+      - "&7Add a splash of style to your equipment"
+      - "&7and stand out with exclusive &acosmetics&7!"
+      - "&f"
+      - "§8§m=§r &8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "§8§m=§r &8ᴏɴᴛᴏ ᴀ {slot} ᴛᴏ ᴀᴘᴘʟʏ!"
+      - "&#0098FF&l&n&m_&#098FFF&l&n&m_&#1185FF&l&n&m_&#1A7CFF&l&n&m_&#2372FF&l&n&m_&#2B69FF&l&n&m_&#345FFF&l&n&m_&#3C56FF&l&n&m_&#454CFF&l&n&m_&#4E43FF&l&n&m_&#5639FF&l&n&m_&#5F30FF&l&n&m_&#6826FF&l&n&m_&#701DFF&l&n&m_&#7913FF&l&n&m_&#810AFF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_"
+      - "§f#0098FF§m=§r #0098FF&lRare"
+      - "&#0098FF&l&n&m_&#098FFF&l&n&m_&#1185FF&l&n&m_&#1A7CFF&l&n&m_&#2372FF&l&n&m_&#2B69FF&l&n&m_&#345FFF&l&n&m_&#3C56FF&l&n&m_&#454CFF&l&n&m_&#4E43FF&l&n&m_&#5639FF&l&n&m_&#5F30FF&l&n&m_&#6826FF&l&n&m_&#701DFF&l&n&m_&#7913FF&l&n&m_&#810AFF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_"
+  epic:
+    emoji: "&d⭐"
+    name: "&#8A00FF&lEpic {cosmetic} Scroll"
+    lore:
+      - "&#8A00FF&l&n&m_&#8F09F5&l&n&m_&#9311EB&l&n&m_&#981AE0&l&n&m_&#9D22D6&l&n&m_&#A12BCC&l&n&m_&#A634C2&l&n&m_&#AB3CB8&l&n&m_&#AF45AD&l&n&m_&#B44DA3&l&n&m_&#B95699&l&n&m_&#BD5F8F&l&n&m_&#C26785&l&n&m_&#C7707A&l&n&m_&#CC7870&l&n&m_&#D08166&l&n&m_&#D58A5C&l&n&m_&#DA9252&l&n&m_&#DE9B47&l&n&m_&#E3A33D&l&n&m_&#E8AC33&l&n&m_&#ECB529&l&n&m_&#F1BD1F&l&n&m_&#F6C614&l&n&m_&#FACE0A&l&n&m_&#FFD700&l&n&m_"
+      - "&f"
+      - "&7Add a splash of style to your equipment"
+      - "&7and stand out with exclusive &acosmetics&7!"
+      - "&f"
+      - "§8§m=§r &8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "§8§m=§r &8ᴏɴᴛᴏ ᴀ {slot} ᴛᴏ ᴀᴘᴘʟʏ!"
+      - "&#8A00FF&l&n&m_&#8F09F5&l&n&m_&#9311EB&l&n&m_&#981AE0&l&n&m_&#9D22D6&l&n&m_&#A12BCC&l&n&m_&#A634C2&l&n&m_&#AB3CB8&l&n&m_&#AF45AD&l&n&m_&#B44DA3&l&n&m_&#B95699&l&n&m_&#BD5F8F&l&n&m_&#C26785&l&n&m_&#C7707A&l&n&m_&#CC7870&l&n&m_&#D08166&l&n&m_&#D58A5C&l&n&m_&#DA9252&l&n&m_&#DE9B47&l&n&m_&#E3A33D&l&n&m_&#E8AC33&l&n&m_&#ECB529&l&n&m_&#F1BD1F&l&n&m_&#F6C614&l&n&m_&#FACE0A&l&n&m_&#FFD700&l&n&m_"
+      - "§f#8A00FF§m=§r #8A00FF&lEpic"
+      - "&#8A00FF&l&n&m_&#8F09F5&l&n&m_&#9311EB&l&n&m_&#981AE0&l&n&m_&#9D22D6&l&n&m_&#A12BCC&l&n&m_&#A634C2&l&n&m_&#AB3CB8&l&n&m_&#AF45AD&l&n&m_&#B44DA3&l&n&m_&#B95699&l&n&m_&#BD5F8F&l&n&m_&#C26785&l&n&m_&#C7707A&l&n&m_&#CC7870&l&n&m_&#D08166&l&n&m_&#D58A5C&l&n&m_&#DA9252&l&n&m_&#DE9B47&l&n&m_&#E3A33D&l&n&m_&#E8AC33&l&n&m_&#ECB529&l&n&m_&#F1BD1F&l&n&m_&#F6C614&l&n&m_&#FACE0A&l&n&m_&#FFD700&l&n&m_"
+  legendary:
+    emoji: "&6🔥"
+    name: "&#FFD700&lLegendary {cosmetic} Scroll"
+    lore:
+      - "&#FFD700&l&n&m_&#FDCE00&l&n&m_&#FAC600&l&n&m_&#F8BD00&l&n&m_&#F5B500&l&n&m_&#F3AC00&l&n&m_&#F0A300&l&n&m_&#EE9B00&l&n&m_&#EB9200&l&n&m_&#E98A00&l&n&m_&#E78100&l&n&m_&#E47800&l&n&m_&#E27000&l&n&m_&#DF6700&l&n&m_&#DD5F00&l&n&m_&#DA5600&l&n&m_&#D84D00&l&n&m_&#D64500&l&n&m_&#D33C00&l&n&m_&#D13400&l&n&m_&#CE2B00&l&n&m_&#CC2200&l&n&m_&#C91A00&l&n&m_&#C71100&l&n&m_&#C40900&l&n&m_&#C20000&l&n&m_"
+      - "&f"
+      - "&7Add a splash of style to your equipment"
+      - "&7and stand out with exclusive &acosmetics&7!"
+      - "&f"
+      - "§8§m=§r &8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "§8§m=§r &8ᴏɴᴛᴏ ᴀ {slot} ᴛᴏ ᴀᴘᴘʟʏ!"
+      - "&#FFD700&l&n&m_&#FDCE00&l&n&m_&#FAC600&l&n&m_&#F8BD00&l&n&m_&#F5B500&l&n&m_&#F3AC00&l&n&m_&#F0A300&l&n&m_&#EE9B00&l&n&m_&#EB9200&l&n&m_&#E98A00&l&n&m_&#E78100&l&n&m_&#E47800&l&n&m_&#E27000&l&n&m_&#DF6700&l&n&m_&#DD5F00&l&n&m_&#DA5600&l&n&m_&#D84D00&l&n&m_&#D64500&l&n&m_&#D33C00&l&n&m_&#D13400&l&n&m_&#CE2B00&l&n&m_&#CC2200&l&n&m_&#C91A00&l&n&m_&#C71100&l&n&m_&#C40900&l&n&m_&#C20000&l&n&m_"
+      - "§f#FFD700§m=§r #FFD700&lLegendary"
+      - "&#FFD700&l&n&m_&#FDCE00&l&n&m_&#FAC600&l&n&m_&#F8BD00&l&n&m_&#F5B500&l&n&m_&#F3AC00&l&n&m_&#F0A300&l&n&m_&#EE9B00&l&n&m_&#EB9200&l&n&m_&#E98A00&l&n&m_&#E78100&l&n&m_&#E47800&l&n&m_&#E27000&l&n&m_&#DF6700&l&n&m_&#DD5F00&l&n&m_&#DA5600&l&n&m_&#D84D00&l&n&m_&#D64500&l&n&m_&#D33C00&l&n&m_&#D13400&l&n&m_&#CE2B00&l&n&m_&#CC2200&l&n&m_&#C91A00&l&n&m_&#C71100&l&n&m_&#C40900&l&n&m_&#C20000&l&n&m_"

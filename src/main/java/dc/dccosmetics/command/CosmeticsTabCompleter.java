@@ -2,6 +2,7 @@ package dc.dccosmetics.command;
 
 import dc.dccosmetics.DCCosmetics;
 import dc.dccosmetics.model.CosmeticTemplate;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -24,6 +25,7 @@ public class CosmeticsTabCompleter implements TabCompleter {
                 completions.add("import");
                 completions.add("debugnode");
                 completions.add("debugbb");
+                completions.add("scroll");
             }
         } else if (args.length == 2 && sender.hasPermission("dccosmetics.admin")) {
             if (args[0].equalsIgnoreCase("sculpt")) {
@@ -48,8 +50,17 @@ public class CosmeticsTabCompleter implements TabCompleter {
                 completions.add("ratio");
                 completions.add("corners");
             }
+            else if (args[0].equalsIgnoreCase("scroll")) {
+                for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
+                    completions.add(p.getName());
+                }
+            }
         } else if (args.length == 3 && sender.hasPermission("dccosmetics.admin")) {
-            if (args[0].equalsIgnoreCase("debugbb") && args[1].equalsIgnoreCase("ratio")) {
+            if (args[0].equalsIgnoreCase("scroll")) {
+                for (CosmeticTemplate template : DCCosmetics.getInstance().getTemplateRegistry().getAllTemplates()) {
+                    completions.add(template.getId());
+                }
+            } else if (args[0].equalsIgnoreCase("debugbb") && args[1].equalsIgnoreCase("ratio")) {
                 completions.add("0.92"); // Suggest default X
             }
         } else if (args.length == 4 && sender.hasPermission("dccosmetics.admin")) {
