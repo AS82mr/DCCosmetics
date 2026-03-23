@@ -97,6 +97,7 @@ public class TemplateRegistry {
                 boolean compAnim = comp.getBoolean("animated", false);
                 String compAnimType = comp.getString("animation-type", "spin");
                 float compAnimSpeed = (float) comp.getDouble("animation-speed", 4.0);
+                double compOpacity = comp.getDouble("opacity", 1.0);
 
                 // THE FIX: Safely parse the YAML color!
                 String compColor = parseColor(comp.getString("color"));
@@ -108,7 +109,7 @@ public class TemplateRegistry {
                         float angleDeg = i * (360.0f / sides);
                         Vector3f scale = new Vector3f(width, length, 0.1f);
                         Vector3f rot = new Vector3f((float)pitch, angleDeg, 0);
-                        nodes.put(compKey + "_" + i, new CosmeticNode(compKey + "_" + i, scale, localOffset, rot, compColor, compAnim, compAnimType, compAnimSpeed));
+                        nodes.put(compKey + "_" + i, new CosmeticNode(compKey + "_" + i, scale, localOffset, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
                     }
                 }
                 else if (type.equals("star")) {
@@ -120,7 +121,7 @@ public class TemplateRegistry {
                         float currentLength = (i % 2 == 0) ? longLength : shortLength;
                         Vector3f scale = new Vector3f(width, currentLength, 0.1f);
                         Vector3f rot = new Vector3f((float)pitch, angleDeg, 0);
-                        nodes.put(compKey + "_" + i, new CosmeticNode(compKey + "_" + i, scale, localOffset, rot, compColor, compAnim, compAnimType, compAnimSpeed));
+                        nodes.put(compKey + "_" + i, new CosmeticNode(compKey + "_" + i, scale, localOffset, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
                     }
                 }
                 else if (type.equals("flat_ring")) {
@@ -135,7 +136,7 @@ public class TemplateRegistry {
                         Vector3f scale = new Vector3f(segLength, width, 0.1f);
                         Vector3f trans = new Vector3f(transX, localOffset.y, transZ);
                         Vector3f rot = new Vector3f(90.0f, angleDeg, 0);
-                        nodes.put(compKey + "_" + i, new CosmeticNode(compKey + "_" + i, scale, trans, rot, compColor, compAnim, compAnimType, compAnimSpeed));
+                        nodes.put(compKey + "_" + i, new CosmeticNode(compKey + "_" + i, scale, trans, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
                     }
                 }
                 else if (type.equals("cylinder")) {
@@ -150,7 +151,7 @@ public class TemplateRegistry {
                         Vector3f scale = new Vector3f(segLength, height, 0.1f);
                         Vector3f trans = new Vector3f(transX, localOffset.y, transZ);
                         Vector3f rot = new Vector3f(0.0f, angleDeg, 0);
-                        nodes.put(compKey + "_" + i, new CosmeticNode(compKey + "_" + i, scale, trans, rot, compColor, compAnim, compAnimType, compAnimSpeed));
+                        nodes.put(compKey + "_" + i, new CosmeticNode(compKey + "_" + i, scale, trans, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
                     }
                 }
                 else if (type.equals("cone")) {
@@ -166,7 +167,7 @@ public class TemplateRegistry {
                         Vector3f scale = new Vector3f(width, height, 0.1f);
                         Vector3f trans = new Vector3f(transX, localOffset.y, transZ);
                         Vector3f rot = new Vector3f(inwardPitch, angleDeg, 0);
-                        nodes.put(compKey + "_" + i, new CosmeticNode(compKey + "_" + i, scale, trans, rot, compColor, compAnim, compAnimType, compAnimSpeed));
+                        nodes.put(compKey + "_" + i, new CosmeticNode(compKey + "_" + i, scale, trans, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
                     }
                 }
                 else if (type.equals("hourglass")) {
@@ -185,7 +186,7 @@ public class TemplateRegistry {
                             Vector3f scale = new Vector3f(width, height, 0.1f);
                             Vector3f trans = new Vector3f(transX, passY, transZ);
                             Vector3f rot = new Vector3f(passPitch, angleDeg, 0);
-                            nodes.put(compKey + "_" + pass + "_" + i, new CosmeticNode(compKey + "_" + pass + "_" + i, scale, trans, rot, compColor, compAnim, compAnimType, compAnimSpeed));
+                            nodes.put(compKey + "_" + pass + "_" + i, new CosmeticNode(compKey + "_" + pass + "_" + i, scale, trans, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
                         }
                     }
                 }
@@ -199,14 +200,35 @@ public class TemplateRegistry {
                         float yawDeg = (float) Math.toDegrees(theta);
                         Vector3f scale = new Vector3f(width, length, 0.1f);
                         Vector3f rot = new Vector3f(pitchDeg, yawDeg, 0);
-                        nodes.put(compKey + "_" + i, new CosmeticNode(compKey + "_" + i, scale, localOffset, rot, compColor, compAnim, compAnimType, compAnimSpeed));
+                        nodes.put(compKey + "_" + i, new CosmeticNode(compKey + "_" + i, scale, localOffset, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
+                    }
+                }
+                else if (type.equals("cube")) {
+                    float width = (float) comp.getDouble("width", 1.0);
+                    float height = (float) comp.getDouble("height", 1.0);
+                    float depth = (float) comp.getDouble("depth", 1.0);
+                    Vector3f rot = getVector(comp, "rotation", new Vector3f(0, 0, 0));
+                    Vector3f pivotOffset = getVector(comp, "pivot-offset", new Vector3f(0, 0, 0));
+                    java.util.List<String> hidden = comp.getStringList("hidden-faces");
+
+                    if (width > 0 && height > 0) {
+                        if (!hidden.contains("north")) addCubeFace(nodes, compKey + "_north", width, height, new Vector3f(0, 0, -depth/2), new Vector3f(0, 180, 0), rot, localOffset, pivotOffset, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed);
+                        if (!hidden.contains("south")) addCubeFace(nodes, compKey + "_south", width, height, new Vector3f(0, 0, depth/2), new Vector3f(0, 0, 0), rot, localOffset, pivotOffset, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed);
+                    }
+                    if (depth > 0 && height > 0) {
+                        if (!hidden.contains("west")) addCubeFace(nodes, compKey + "_west", depth, height, new Vector3f(-width/2, 0, 0), new Vector3f(0, -90, 0), rot, localOffset, pivotOffset, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed);
+                        if (!hidden.contains("east")) addCubeFace(nodes, compKey + "_east", depth, height, new Vector3f(width/2, 0, 0), new Vector3f(0, 90, 0), rot, localOffset, pivotOffset, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed);
+                    }
+                    if (width > 0 && depth > 0) {
+                        if (!hidden.contains("up")) addCubeFace(nodes, compKey + "_up", width, depth, new Vector3f(0, height/2, 0), new Vector3f(-90, 0, 0), rot, localOffset, pivotOffset, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed);
+                        if (!hidden.contains("down")) addCubeFace(nodes, compKey + "_down", width, depth, new Vector3f(0, -height/2, 0), new Vector3f(90, 0, 0), rot, localOffset, pivotOffset, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed);
                     }
                 }
                 else if (type.equals("raw_node")) {
                     Vector3f scale = getVector(comp, "scale", new Vector3f(1, 1, 1));
                     Vector3f trans = getVector(comp, "translation", new Vector3f(0, 0, 0));
                     Vector3f rot = getVector(comp, "rotation", new Vector3f(0, 0, 0));
-                    nodes.put(compKey, new CosmeticNode(compKey, scale, trans, rot, compColor, compAnim, compAnimType, compAnimSpeed));
+                    nodes.put(compKey, new CosmeticNode(compKey, scale, trans, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
                 }
             }
         }
@@ -220,10 +242,11 @@ public class TemplateRegistry {
                     Vector3f trans = getVector(n, "translation", new Vector3f(0, 0, 0));
                     Vector3f rot = getVector(n, "rotation", new Vector3f(0, 0, 0));
                     String nodeColor = parseColor(n.getString("color")); // THE FIX
+                    double nodeOpacity = n.getDouble("opacity", 1.0);
                     boolean nAnim = n.getBoolean("animated", false);
                     String nAnimType = n.getString("animation-type", "spin");
                     float nAnimSpeed = (float) n.getDouble("animation-speed", 4.0);
-                    nodes.put(nodeKey, new CosmeticNode(nodeKey, scale, trans, rot, nodeColor, nAnim, nAnimType, nAnimSpeed));
+                    nodes.put(nodeKey, new CosmeticNode(nodeKey, scale, trans, rot, nodeColor, nodeOpacity, nAnim, nAnimType, nAnimSpeed));
                 } catch (Exception e) {
                     logger.warning("[ERROR] Failed to parse node: " + nodeKey);
                 }
@@ -234,6 +257,33 @@ public class TemplateRegistry {
         templates.put(id, template);
         templateFiles.put(id, file);
         return null; // Return null if success
+    }
+
+    private void addCubeFace(Map<String, CosmeticNode> nodes, String id, float w, float h, Vector3f faceOffsetFromCenter, Vector3f faceRotEulers, Vector3f cubeRotEulers, Vector3f localOffset, Vector3f pivotOffset, String color, double opacity, boolean anim, String animType, float animSpeed) {
+        org.joml.Quaternionf qRot = new org.joml.Quaternionf().rotationXYZ(
+            (float) Math.toRadians(cubeRotEulers.x()),
+            (float) Math.toRadians(cubeRotEulers.y()),
+            (float) Math.toRadians(cubeRotEulers.z())
+        );
+        
+        Vector3f totalOffset = new Vector3f(pivotOffset).add(faceOffsetFromCenter);
+        totalOffset.rotate(qRot);
+        
+        org.joml.Quaternionf faceRot = new org.joml.Quaternionf().rotationXYZ(
+            (float) Math.toRadians(faceRotEulers.x()),
+            (float) Math.toRadians(faceRotEulers.y()),
+            (float) Math.toRadians(faceRotEulers.z())
+        );
+        
+        org.joml.Quaternionf finalRot = new org.joml.Quaternionf(qRot).mul(faceRot);
+        Vector3f finalEulers = new Vector3f();
+        finalRot.getEulerAnglesXYZ(finalEulers); // THE FIX: Uniform XYZ Gimbal Matrix!
+        
+        Vector3f finalTrans = new Vector3f(localOffset).add(totalOffset);
+        Vector3f finalRotVec = new Vector3f((float)Math.toDegrees(finalEulers.x()), (float)Math.toDegrees(finalEulers.y()), (float)Math.toDegrees(finalEulers.z()));
+        
+        // Passing TRUE so faces remain perfectly double sided!
+        nodes.put(id, new CosmeticNode(id, new Vector3f(w, h, 0.1f), finalTrans, finalRotVec, color, opacity, anim, animType, animSpeed, true));
     }
 
     private Vector3f getVector(ConfigurationSection section, String key, Vector3f def) {

@@ -32,13 +32,15 @@ public class ProtocolDisplayWrapper implements DisplayWrapper {
     private String textShape = null;
     private boolean blockbenchMode = false;
     private org.joml.Quaternionf rawQuaternion = null;
+    private double opacity = 1.0; // Defaults to 100% visible!
 
     // ADVANCED DEBUGGING: Live Tunable Matrix Magic Numbers
-    public static float BB_MAGIC_X = 0.9524f; // Perfect Holotools Math (1.0 / 1.05)
-    public static float BB_MAGIC_Y = 3.6363f; // Perfect Holotools Math (1.0 / 0.275)
+    public static float BB_MAGIC_X = 0.998f; 
+    public static float BB_MAGIC_Y = 3.99f; 
     public static float BB_MAGIC_Z = 1.0f;
     public static float BB_PIVOT_Y = 2.0f;
-    public static float BB_OFFSET_Z = 0.0f; // 0.0 is mathematically perfect for aligned TextDisplays
+    public static float BB_OFFSET_Z = 0.0f; 
+    public static float BB_BACK_OFFSET_X = 0.0f; 
 
     public ProtocolDisplayWrapper(List<Player> viewers, Location location, ProtocolManager protocolManager) {
         this.protocolManager = protocolManager;
@@ -93,6 +95,8 @@ public class ProtocolDisplayWrapper implements DisplayWrapper {
 
     public void setRawQuaternion(org.joml.Quaternionf q) { this.rawQuaternion = q; }
 
+    public void setOpacity(double opacity) { this.opacity = opacity; }
+
     @Override
     public void update() {
         PacketContainer metadataPacket = protocolManager.createPacket(PacketType.Play.Server.ENTITY_METADATA);
@@ -103,9 +107,9 @@ public class ProtocolDisplayWrapper implements DisplayWrapper {
             qRot = new org.joml.Quaternionf(this.rawQuaternion); // Gimbal-Lock Free Matrix!
         } else {
             // Legacy Fallback
-            qRot = new org.joml.Quaternionf().rotationYXZ(
-                    (float) Math.toRadians(rotation.y()), 
+            qRot = new org.joml.Quaternionf().rotationXYZ(
                     (float) Math.toRadians(rotation.x()), 
+                    (float) Math.toRadians(rotation.y()), 
                     (float) Math.toRadians(rotation.z())  
             );
         }
@@ -140,7 +144,7 @@ public class ProtocolDisplayWrapper implements DisplayWrapper {
         // PERFECT DOUBLE-SIDED SEALING
         // TextDisplays have a native background thickness. When placed back-to-back, they leave a tiny gap.
         // By pushing the plane slightly backward along its local Z normal, they perfectly fuse together!
-        if (this.blockbenchMode && BB_OFFSET_Z != 0.0f) {
+        if (BB_OFFSET_Z != 0.0f) {
             org.joml.Vector3f depthPush = new org.joml.Vector3f(0, 0, BB_OFFSET_Z);
             depthPush.rotate(qRot);
             adjustedTranslation.add(depthPush);
@@ -169,10 +173,11 @@ public class ProtocolDisplayWrapper implements DisplayWrapper {
             dummy.setText("          ");
             dummy.setDefaultBackground(false);
             try {
+                int alpha = (int) Math.max(0, Math.min(255, this.opacity * 255.0)); // Maps 0.0-1.0 to 0-255 ARGB!
                 java.awt.Color javaColor = java.awt.Color.decode(this.hexColor);
-                finalColor = org.bukkit.Color.fromARGB(180, javaColor.getRed(), javaColor.getGreen(), javaColor.getBlue());
+                finalColor = org.bukkit.Color.fromARGB(alpha, javaColor.getRed(), javaColor.getGreen(), javaColor.getBlue());
             } catch (Exception e) {
-                finalColor = org.bukkit.Color.fromARGB(180, 255, 255, 255);
+                finalColor = org.bukkit.Color.fromARGB((int) Math.max(0, Math.min(255, this.opacity * 255.0)), 255, 255, 255);
             }
         }
         

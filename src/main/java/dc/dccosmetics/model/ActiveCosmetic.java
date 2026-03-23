@@ -66,9 +66,10 @@ public class ActiveCosmetic {
             Vector3f frontRot = new Vector3f(nodeData.getRotation());
             spawnNode(nodeData, frontRot, finalColor, entry.getKey() + "_front", isVanillaHead, isBlockbench);
 
-            // Auto-generate back faces for EVERY node so everything is inherently two-sided!
-            Vector3f backRot = new Vector3f(-nodeData.getRotation().x(), nodeData.getRotation().y() + 180, -nodeData.getRotation().z());
-            spawnNode(nodeData, backRot, finalColor, entry.getKey() + "_back", isVanillaHead, isBlockbench);
+            if (nodeData.isTwoSided()) {
+                Vector3f backRot = new Vector3f(-nodeData.getRotation().x(), nodeData.getRotation().y() + 180, -nodeData.getRotation().z());
+                spawnNode(nodeData, backRot, finalColor, entry.getKey() + "_back", isVanillaHead, isBlockbench);
+            }
         }
 
         startTracking(isBoots, isChest, isWaist, isHead, isVanillaHead);
@@ -80,6 +81,7 @@ public class ActiveCosmetic {
 
         if (nodeDisplay instanceof dc.dccosmetics.nms.ProtocolDisplayWrapper pNode) {
             pNode.setBlockbenchMode(isBlockbench);
+            pNode.setOpacity(nodeData.getOpacity());
         }
 
         nodeDisplay.setScale(nodeData.getScale());
@@ -141,16 +143,16 @@ public class ActiveCosmetic {
             }
 
             // --- 2. BODY YAW SIMULATION (Prevents Turntable Spinning) ---
-            if (isBlockbench) {
-                // UNIFIED RIGID BODY: Blockbench items do not drift or delay! They lock perfectly to the camera!
+            if (isHead) {
+                // Head items lock instantly to the camera
                 currentBodyYaw = pYaw;
             } else {
-                // Legacy smooth shoulder tracking for procedural shapes
+                // Chest, Waist, and Boots use smooth shoulder tracking (delayed body yaw) to stay on the back!
                 if (dist > 0.02) {
                     float diff = (pYaw - currentBodyYaw) % 360;
                     if (diff < -180) diff += 360;
                     if (diff > 180) diff -= 360;
-                    currentBodyYaw += diff * 0.4f;
+                    currentBodyYaw += diff * 0.65f; // Quicker catchup when moving
                     stationaryTicks = 0;
                 } else {
                     stationaryTicks++;
@@ -158,14 +160,14 @@ public class ActiveCosmetic {
                     if (yawDiff < -180) yawDiff += 360;
                     if (yawDiff > 180) yawDiff -= 360;
                     
-                    // THE FIX: Tighter constraints for Chest/Wings so they don't clip into the arms!
-                    int maxDiff = isChest ? 25 : 50; 
+                    // Better equilibrium between locked back and natural body rotation
+                    int maxDiff = 45; 
                     if (Math.abs(yawDiff) > maxDiff) {
                         float targetBodyYaw = pYaw - (yawDiff > 0 ? maxDiff : -maxDiff);
                         float catchUp = (targetBodyYaw - currentBodyYaw) % 360;
                         if (catchUp < -180) catchUp += 360;
                         if (catchUp > 180) catchUp -= 360;
-                        currentBodyYaw += catchUp * 0.35f; // Faster catch-up!
+                        currentBodyYaw += catchUp * 0.5f; 
                     }
                 }
             }
@@ -247,9 +249,10 @@ public class ActiveCosmetic {
                     
                     boolean isBack = id.endsWith("_back");
 
-                    org.joml.Quaternionf localQ = new org.joml.Quaternionf().rotationYXZ(
-                            (float) Math.toRadians(originalNode.getRotation().y()),
+                    // UNIFIED XYZ MATRIX: Prevents Gimbal Lock and perfectly matches the Importer math!
+                    org.joml.Quaternionf localQ = new org.joml.Quaternionf().rotationXYZ(
                             (float) Math.toRadians(originalNode.getRotation().x()),
+                            (float) Math.toRadians(originalNode.getRotation().y()),
                             (float) Math.toRadians(originalNode.getRotation().z())
                     );
 
@@ -299,9 +302,9 @@ public class ActiveCosmetic {
 
                     // UNIFIED RIGID BODY GLOBAL ROTATION (Gimbal Lock Free)
                     if (template.getGlobalRotation().lengthSquared() > 0) {
-                        org.joml.Quaternionf gRot = new org.joml.Quaternionf().rotationYXZ(
-                                (float) Math.toRadians(template.getGlobalRotation().y()),
+                        org.joml.Quaternionf gRot = new org.joml.Quaternionf().rotationXYZ(
                                 (float) Math.toRadians(template.getGlobalRotation().x()),
+                                (float) Math.toRadians(template.getGlobalRotation().y()),
                                 (float) Math.toRadians(template.getGlobalRotation().z())
                         );
                         newTrans.rotate(gRot);
@@ -313,7 +316,7 @@ public class ActiveCosmetic {
                     newTrans.add(0, verticalTranslation, 0);
 
                     // Orbit around Player Yaw
-                    float targetYaw = (isHead || isBlockbench) ? pLoc.getYaw() : currentBodyYaw;
+                    float targetYaw = isHead ? pLoc.getYaw() : currentBodyYaw;
                     float globalOrbitYaw = targetYaw + globalAnimYaw;
                     newTrans.rotateY((float) Math.toRadians(-globalOrbitYaw));
                     

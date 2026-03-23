@@ -58,6 +58,7 @@ public class CosmeticWatcher extends BukkitRunnable {
                         if (error == null) {
                             broadcastAdmin("§a[DCCosmetics] Auto-Reloaded: §e" + file.getName());
                             plugin.getProfileManager().refreshAllOnlinePlayers();
+                            plugin.getSculptManager().refreshAllDummies();
                         } else {
                             broadcastAdmin("§c[DCCosmetics] Auto-Reload Failed: §e" + file.getName());
                             broadcastAdmin("§7" + error);

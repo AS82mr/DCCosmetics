@@ -69,7 +69,7 @@ public class SculptManager {
             admin.sendMessage("§cYou are not currently sculpting anything! Use /cosmetics sculpt <id> first.");
             return;
         }
-        DCCosmetics.getInstance().getDialogEditorManager().openMainMenu(admin, currentId);
+        DCCosmetics.getInstance().getDialogEditorManager().reopenLastMenu(admin, currentId);
     }
 
     public void toggleDummyVisibility(Player admin) {

@@ -30,6 +30,17 @@ public class DialogEditorManager implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
+    public void reopenLastMenu(Player player, String templateId) {
+        String lastComp = activeComponent.get(player.getUniqueId());
+        String lastTemplate = activeTemplate.get(player.getUniqueId());
+        if (lastTemplate != null && lastTemplate.equals(templateId) && lastComp != null) {
+            if (lastComp.equals("GLOBAL")) openGeneralSettingsMenu(player, templateId);
+            else openComponentMenu(player, templateId, lastComp);
+        } else {
+            openMainMenu(player, templateId);
+        }
+    }
+
     public void openMainMenu(Player player, String templateId) {
         activeTemplate.put(player.getUniqueId(), templateId);
         activeComponent.remove(player.getUniqueId());
@@ -124,18 +135,33 @@ public class DialogEditorManager implements Listener {
         inv.setItem(slot++, createPropertyItem("local-offset.y", getVectorVal(config, path + ".local-offset", 1)));
         inv.setItem(slot++, createPropertyItem("local-offset.z", getVectorVal(config, path + ".local-offset", 2)));
         
-        if (type.equals("raw_node")) {
+        inv.setItem(slot++, createPropertyItem("opacity", config.getDouble(path + ".opacity", 1.0)));
+
+        if (type.equals("raw_node") || type.equals("cube")) {
             inv.setItem(slot++, createPropertyItem("rotation.x", getVectorVal(config, path + ".rotation", 0)));
             inv.setItem(slot++, createPropertyItem("rotation.y", getVectorVal(config, path + ".rotation", 1)));
             inv.setItem(slot++, createPropertyItem("rotation.z", getVectorVal(config, path + ".rotation", 2)));
-            inv.setItem(slot++, createPropertyItem("scale.x", getVectorVal(config, path + ".scale", 0, 1.0)));
-            inv.setItem(slot++, createPropertyItem("scale.y", getVectorVal(config, path + ".scale", 1, 1.0)));
-            inv.setItem(slot++, createPropertyItem("scale.z", getVectorVal(config, path + ".scale", 2, 1.0)));
+            if (type.equals("raw_node")) {
+                inv.setItem(slot++, createPropertyItem("scale.x", getVectorVal(config, path + ".scale", 0, 1.0)));
+                inv.setItem(slot++, createPropertyItem("scale.y", getVectorVal(config, path + ".scale", 1, 1.0)));
+                inv.setItem(slot++, createPropertyItem("scale.z", getVectorVal(config, path + ".scale", 2, 1.0)));
+            }
         } else {
             inv.setItem(slot++, createPropertyItem("pitch", config.getDouble(path + ".pitch", 90.0)));
         }
 
-        if (type.equals("solid")) {
+        if (type.equals("cube")) {
+            inv.setItem(slot++, createPropertyItem("pivot-offset.x", getVectorVal(config, path + ".pivot-offset", 0)));
+            inv.setItem(slot++, createPropertyItem("pivot-offset.y", getVectorVal(config, path + ".pivot-offset", 1)));
+            inv.setItem(slot++, createPropertyItem("pivot-offset.z", getVectorVal(config, path + ".pivot-offset", 2)));
+            inv.setItem(slot++, createPropertyItem("width", config.getDouble(path + ".width", 1.0)));
+            inv.setItem(slot++, createPropertyItem("height", config.getDouble(path + ".height", 1.0)));
+            inv.setItem(slot++, createPropertyItem("depth", config.getDouble(path + ".depth", 1.0)));
+            
+            List<String> hidden = config.getStringList(path + ".hidden-faces");
+            String hiddenStr = hidden.isEmpty() ? "None" : String.join(",", hidden);
+            inv.setItem(slot++, createItem(Material.GLASS, "§bhidden-faces", "§7Current: " + hiddenStr, "", "§eDrop (Q) to type hidden faces in chat!", "§8(e.g., north,up)"));
+        } else if (type.equals("solid")) {
             inv.setItem(slot++, createPropertyItem("length", config.getDouble(path + ".length", 1.0)));
             inv.setItem(slot++, createPropertyItem("width", config.getDouble(path + ".width", 1.0)));
         } else if (type.equals("star")) {
@@ -222,6 +248,12 @@ public class DialogEditorManager implements Listener {
                 awaitingChatInput.remove(player.getUniqueId());
                 player.sendMessage("§cInput cancelled.");
                 Bukkit.getScheduler().runTask(plugin, () -> openComponentMenu(player, templateId, compName));
+                return;
+            }
+
+            if (prop.equals("hidden-faces")) {
+                awaitingChatInput.remove(player.getUniqueId());
+                Bukkit.getScheduler().runTask(plugin, () -> applyHiddenFaces(player, templateId, compName, input));
                 return;
             }
 
@@ -336,7 +368,7 @@ public class DialogEditorManager implements Listener {
 
             if (event.getSlot() == 4) {
                 String currentType = config.getString("components." + compName + ".type", "solid");
-                String[] types = {"solid", "star", "flat_ring", "cylinder", "cone", "hourglass", "burst", "raw_node"};
+                String[] types = {"solid", "star", "flat_ring", "cylinder", "cone", "hourglass", "burst", "cube", "raw_node"};
                 String nextType = "solid";
                 for (int i = 0; i < types.length; i++) {
                     if (types[i].equals(currentType)) {
@@ -361,6 +393,10 @@ public class DialogEditorManager implements Listener {
             if (event.getCurrentItem().getType() == Material.PAPER) {
                 String prop = org.bukkit.ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName());
                 handlePropertyClick(player, event, templateId, compName, prop);
+            } else if (event.getCurrentItem().getType() == Material.GLASS && event.getClick() == org.bukkit.event.inventory.ClickType.DROP) {
+                player.closeInventory();
+                awaitingChatInput.put(player.getUniqueId(), templateId + ":" + compName + ":hidden-faces");
+                player.sendMessage("§eType hidden faces separated by commas (e.g. north,up), type 'none' to clear, or 'cancel'.");
             } else if (event.getCurrentItem().getType() == Material.CYAN_DYE && event.getClick() == org.bukkit.event.inventory.ClickType.DROP) {
                 player.closeInventory();
                 awaitingChatInput.put(player.getUniqueId(), templateId + ":" + compName + ":color");
@@ -405,6 +441,21 @@ public class DialogEditorManager implements Listener {
         openComponentMenu(player, templateId, compName);
     }
 
+    public void applyHiddenFaces(Player player, String templateId, String compName, String input) {
+        File file = plugin.getTemplateRegistry().getTemplateFile(templateId);
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+        String path = "components." + compName + ".hidden-faces";
+        if (input.equalsIgnoreCase("none")) {
+            config.set(path, null);
+        } else {
+            List<String> faces = new ArrayList<>();
+            for (String f : input.split(",")) faces.add(f.trim().toLowerCase());
+            config.set(path, faces);
+        }
+        saveAndReload(file, config);
+        openComponentMenu(player, templateId, compName);
+    }
+
     public void applyShift(String templateId, String compName, String prop, double shiftAmt, boolean isAbsolute) {
         File file = plugin.getTemplateRegistry().getTemplateFile(templateId);
         if (file == null) return;
@@ -415,7 +466,7 @@ public class DialogEditorManager implements Listener {
             basePath = (config.contains("nodes." + compName) ? "nodes." : "components.") + compName + ".";
         }
         
-        if (prop.startsWith("local-offset.") || prop.startsWith("global-offset.") || prop.startsWith("global-scale.") || prop.startsWith("global-rotation.") || prop.startsWith("scale.") || prop.startsWith("rotation.")) {
+        if (prop.startsWith("local-offset.") || prop.startsWith("pivot-offset.") || prop.startsWith("global-offset.") || prop.startsWith("global-scale.") || prop.startsWith("global-rotation.") || prop.startsWith("scale.") || prop.startsWith("rotation.")) {
             int axis = prop.endsWith(".x") ? 0 : (prop.endsWith(".y") ? 1 : 2);
             
             String listPath = basePath + prop.substring(0, prop.length() - 2);

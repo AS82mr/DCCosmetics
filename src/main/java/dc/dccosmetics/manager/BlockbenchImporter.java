@@ -95,40 +95,6 @@ public class BlockbenchImporter {
                     rotX = rot.get(0).getAsFloat(); rotY = rot.get(1).getAsFloat(); rotZ = rot.get(2).getAsFloat();
                 }
 
-                // Blockbench base rotation quaternion
-                Quaternionf qRot = new Quaternionf().rotationYXZ(
-                        (float) Math.toRadians(rotY),
-                        (float) Math.toRadians(rotX),
-                        (float) Math.toRadians(rotZ)
-                );
-
-                java.util.List<FaceDef> faces = new java.util.ArrayList<>();
-                
-                // 3. True 3D Cube Generation: Generate 6 TextDisplay planes for every cube to give it actual depth!
-                if (sx > 0 && sy > 0) {
-                    // North face: Normal = -Z -> Yaw = 180
-                    faces.add(new FaceDef("north", sx, sy, new Vector3f(0, 0, -sz/2.0f), new Vector3f(0, 180, 0)));
-                    // South face: Normal = +Z -> Yaw = 0
-                    faces.add(new FaceDef("south", sx, sy, new Vector3f(0, 0, sz/2.0f), new Vector3f(0, 0, 0)));
-                }
-                if (sz > 0 && sy > 0) {
-                    // West face: Normal = -X -> Yaw = -90
-                    faces.add(new FaceDef("west", sz, sy, new Vector3f(-sx/2.0f, 0, 0), new Vector3f(0, -90, 0)));
-                    // East face: Normal = +X -> Yaw = 90
-                    faces.add(new FaceDef("east", sz, sy, new Vector3f(sx/2.0f, 0, 0), new Vector3f(0, 90, 0)));
-                }
-                if (sx > 0 && sz > 0) {
-                    // Up face: Normal = +Y -> Pitch = -90
-                    faces.add(new FaceDef("up", sx, sz, new Vector3f(0, sy/2.0f, 0), new Vector3f(-90, 0, 0)));
-                    // Down face: Normal = -Y -> Pitch = 90
-                    faces.add(new FaceDef("down", sx, sz, new Vector3f(0, -sy/2.0f, 0), new Vector3f(90, 0, 0)));
-                }
-
-                // If it's literally a 2D plane in Blockbench, spawn 1 face. The engine will auto-duplicate it!
-                if (faces.isEmpty()) {
-                    faces.add(new FaceDef("flat", sx > 0 ? sx : 1, sy > 0 ? sy : 1, new Vector3f(0,0,0), new Vector3f(0,0,0)));
-                }
-
                 // Process Colors
                 String hexColor = "#FFFFFF";
                 if (element.has("color")) {
@@ -143,47 +109,31 @@ public class BlockbenchImporter {
                     }
                 }
 
-                for (FaceDef face : faces) {
-                    // Orbit the face center around the BB origin
-                    Vector3f faceCenter = new Vector3f(cx + face.offset.x, cy + face.offset.y, cz + face.offset.z);
-                    Vector3f faceOffsetFromOrigin = new Vector3f(faceCenter).sub(origin);
-                    faceOffsetFromOrigin.rotate(qRot);
-                    Vector3f finalCenter = new Vector3f(origin).add(faceOffsetFromOrigin);
+                String compName = name;
+                String path = "components." + compName;
 
-                    // Center the 16x16 BB grid around [0,0,0] so it attaches cleanly to the player's mount point!
-                    float transX = ((finalCenter.x - 8.0f) / 16.0f) * globalScale;
-                    float transY = ((finalCenter.y - 8.0f) / 16.0f) * globalScale;
-                    float transZ = ((finalCenter.z - 8.0f) / 16.0f) * globalScale;
+                float originX = ((origin.x - 8.0f) / 16.0f) * globalScale;
+                float originY = ((origin.y - 8.0f) / 16.0f) * globalScale;
+                float originZ = ((origin.z - 8.0f) / 16.0f) * globalScale;
 
-                    // Combine rotations
-                    Quaternionf baseFaceRot = new Quaternionf().rotationYXZ(
-                        (float) Math.toRadians(face.rot.y),
-                        (float) Math.toRadians(face.rot.x),
-                        (float) Math.toRadians(face.rot.z)
-                    );
-                    Quaternionf finalQuat = new Quaternionf(qRot).mul(baseFaceRot);
-                    Vector3f euler = new Vector3f();
-                    finalQuat.getEulerAnglesYXZ(euler);
+                float pivotOffsetX = ((cx - origin.x) / 16.0f) * globalScale;
+                float pivotOffsetY = ((cy - origin.y) / 16.0f) * globalScale;
+                float pivotOffsetZ = ((cz - origin.z) / 16.0f) * globalScale;
 
-                    // JOML getEulerAnglesYXZ maps: x=Pitch, y=Yaw, z=Roll
-                    float pitch = (float) Math.toDegrees(euler.x);
-                    float yaw = (float) Math.toDegrees(euler.y);
-                    float roll = (float) Math.toDegrees(euler.z);
+                float width = (sx / 16.0f) * globalScale;
+                float height = (sy / 16.0f) * globalScale;
+                float depth = (sz / 16.0f) * globalScale;
 
-                    float scaleX = (face.w / 16.0f) * globalScale;
-                    float scaleY = (face.h / 16.0f) * globalScale;
+                config.set(path + ".type", "cube");
+                config.set(path + ".width", width == 0 ? 0.001 : width);
+                config.set(path + ".height", height == 0 ? 0.001 : height);
+                config.set(path + ".depth", depth == 0 ? 0.001 : depth);
 
-                    if (scaleX == 0) scaleX = 0.01f;
-                    if (scaleY == 0) scaleY = 0.01f;
-
-                    String nodeName = name + "_" + face.suffix;
-                    String path = "nodes." + nodeName;
-                    
-                    config.set(path + ".scale", Arrays.asList(scaleX, scaleY, 0.01f));
-                    config.set(path + ".translation", Arrays.asList(-transX, transY, transZ)); // Invert X for Minecraft!
-                    config.set(path + ".rotation", Arrays.asList(pitch, -yaw, -roll)); // Invert Yaw and Roll for mirroring
-                    config.set(path + ".color", hexColor);
-                }
+                // Invert X for Minecraft space mirroring
+                config.set(path + ".local-offset", Arrays.asList(-originX, originY, originZ));
+                config.set(path + ".pivot-offset", Arrays.asList(-pivotOffsetX, pivotOffsetY, pivotOffsetZ));
+                config.set(path + ".rotation", Arrays.asList(rotX, -rotY, -rotZ));
+                config.set(path + ".color", hexColor);
 
                 count++;
             }
@@ -221,17 +171,6 @@ public class BlockbenchImporter {
         } catch (Exception e) {
             sender.sendMessage(ChatColor.RED + "Failed to parse Blockbench model: " + e.getMessage());
             e.printStackTrace();
-        }
-    }
-
-    private static class FaceDef {
-        String suffix; float w, h; Vector3f offset, rot;
-        FaceDef(String suffix, float w, float h, Vector3f offset, Vector3f rot) {
-            this.suffix = suffix;
-            this.w = w;
-            this.h = h;
-            this.offset = offset;
-            this.rot = rot;
         }
     }
 }

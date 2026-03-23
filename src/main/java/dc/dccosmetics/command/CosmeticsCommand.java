@@ -111,14 +111,17 @@ public class CosmeticsCommand implements CommandExecutor {
                     if (args.length >= 6) {
                         dc.dccosmetics.nms.ProtocolDisplayWrapper.BB_OFFSET_Z = Float.parseFloat(args[5]);
                     }
-                    player.sendMessage(ChatColor.GREEN + "Set Ratios -> X: " + args[2] + ", Y: " + args[3] + ", Z: " + args[4] + (args.length >= 6 ? ", Gap: " + args[5] : ""));
+                    if (args.length >= 7) {
+                        dc.dccosmetics.nms.ProtocolDisplayWrapper.BB_BACK_OFFSET_X = Float.parseFloat(args[6]);
+                    }
+                    player.sendMessage(ChatColor.GREEN + "Set Ratios -> X: " + args[2] + ", Y: " + args[3] + ", Z: " + args[4] + (args.length >= 6 ? ", Gap: " + args[5] : "") + (args.length >= 7 ? ", Slide: " + args[6] : ""));
                     DCCosmetics.getInstance().getSculptManager().refreshAllDummies();
                 } catch (NumberFormatException e) {
                     player.sendMessage(ChatColor.RED + "Invalid numbers. Use formats like: 0.95");
                 }
                 return true;
             }
-            player.sendMessage(ChatColor.RED + "Usage: /cosmetics debugbb <corners | ratio x y z [gap]>");
+            player.sendMessage(ChatColor.RED + "Usage: /cosmetics debugbb <corners | ratio x y z [gap] [slide_x]>");
             return true;
         }
 

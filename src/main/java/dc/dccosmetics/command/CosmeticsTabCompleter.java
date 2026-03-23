@@ -64,6 +64,10 @@ public class CosmeticsTabCompleter implements TabCompleter {
             if (args[0].equalsIgnoreCase("debugbb") && args[1].equalsIgnoreCase("ratio")) {
                 completions.add("0.0"); // Suggest default Gap
             }
+        } else if (args.length == 7 && sender.hasPermission("dccosmetics.admin")) {
+            if (args[0].equalsIgnoreCase("debugbb") && args[1].equalsIgnoreCase("ratio")) {
+                completions.add("0.0"); // Suggest default Slide
+            }
         }
 
         // Filter results based on what the user is typing
