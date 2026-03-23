@@ -41,35 +41,16 @@ public class ProfileManager {
         // If offline, create a temporary profile just to read their data for the GUI
         PlayerProfile profile = new PlayerProfile(target);
         File file = new File(playersFolder, target.getUniqueId() + ".yml");
-        if (file.exists()) {
-            YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-            if (config.contains("equipped")) {
-                for (String slot : config.getConfigurationSection("equipped").getKeys(false)) {
-                    String cosmeticId = config.getString("equipped." + slot + ".id");
-                    String color = config.getString("equipped." + slot + ".color", "#FFFFFF");
-                    profile.setEquipped(slot, cosmeticId, color);
-                }
-            }
-        }
         return profile;
     }
 
     public void loadProfile(Player player) {
         PlayerProfile profile = new PlayerProfile(player);
         profiles.put(player.getUniqueId(), profile);
-
-        File file = new File(playersFolder, player.getUniqueId() + ".yml");
-        if (file.exists()) {
-            YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-            if (config.contains("equipped")) {
-                for (String slot : config.getConfigurationSection("equipped").getKeys(false)) {
-                    String cosmeticId = config.getString("equipped." + slot + ".id");
-                    String color = config.getString("equipped." + slot + ".color", "#FFFFFF");
-                    profile.setEquipped(slot, cosmeticId, color);
-                }
-            }
-        }
-        DCCosmetics.getInstance().getLogger().info("[DEBUG] Loaded profile for " + player.getName());
+        
+        // NO MORE DISK LOADING! 
+        // The dynamic scanner will seamlessly pick up the items in their inventory instantly!
+        DCCosmetics.getInstance().getLogger().info("[DEBUG] Loaded fresh session profile for " + player.getName());
 
         // CRASH LOOP PROTECTION: Wait 40 ticks (2 seconds) before spawning holograms
         Bukkit.getScheduler().runTaskLater(DCCosmetics.getInstance(), () -> {
@@ -95,17 +76,6 @@ public class ProfileManager {
             for (String s : slots) {
                 // 1. Despawn all holograms safely
                 if (profile.getActiveCosmetic(s) != null) profile.getActiveCosmetic(s).despawn();
-                
-                if (profile.getEquippedCosmetic(s) != null) {
-                    config.set("equipped." + s + ".id", profile.getEquippedCosmetic(s));
-                    config.set("equipped." + s + ".color", profile.getEquippedColor(s));
-                }
-            }
-
-            try {
-                config.save(file);
-            } catch (IOException e) {
-                e.printStackTrace();
             }
 
             profiles.remove(player.getUniqueId());
@@ -145,7 +115,6 @@ public class ProfileManager {
                 PlayerProfile profile = getProfile(p);
                 if (profile != null) {
                     checkSlot(p, profile, "sword", p.getInventory().getItemInMainHand());
-                    checkSlot(p, profile, "offhand", p.getInventory().getItemInOffHand());
                     checkSlot(p, profile, "head", p.getInventory().getHelmet());
                     checkSlot(p, profile, "chest", p.getInventory().getChestplate());
                     checkSlot(p, profile, "waist", p.getInventory().getLeggings());
@@ -169,7 +138,7 @@ public class ProfileManager {
             NamespacedKey colorKey = new NamespacedKey(DCCosmetics.getInstance(), "cosmetic_color");
             if (pdc.has(idKey, PersistentDataType.STRING)) {
                 targetId = pdc.get(idKey, PersistentDataType.STRING);
-                targetColor = pdc.get(colorKey, PersistentDataType.STRING);
+                targetColor = pdc.has(colorKey, PersistentDataType.STRING) ? pdc.get(colorKey, PersistentDataType.STRING) : "#FFFFFF"; // Safely catch missing colors!
             }
         }
 
@@ -183,15 +152,17 @@ public class ProfileManager {
 
         ActiveCosmetic active = profile.getActiveCosmetic(slot);
         String currentId = active != null ? active.getTemplate().getId() : null;
+        String currentColor = active != null ? active.getColorHex() : null;
 
         // If target changed, swap cosmetics instantly
-        if (targetId != null && !targetId.equals(currentId)) {
+        if (targetId != null && (!targetId.equals(currentId) || !java.util.Objects.equals(targetColor, currentColor))) {
             if (active != null) active.despawn();
             CosmeticTemplate temp = DCCosmetics.getInstance().getTemplateRegistry().getTemplate(targetId);
             if (temp != null) {
                 ActiveCosmetic newActive = new ActiveCosmetic(p, temp, targetColor != null ? targetColor : "#FFFFFF");
                 newActive.spawn();
                 profile.setActiveCosmetic(slot, newActive);
+                // We explicitly DO NOT call profile.setEquipped() here. That is strictly for Admin GUI overrides!
             }
         } else if (targetId == null && active != null) {
             active.despawn();

@@ -2,6 +2,7 @@ package dc.dccosmetics.gui;
 
 import dc.dccosmetics.DCCosmetics;
 import dc.dccosmetics.model.CosmeticTemplate;
+import dc.dccosmetics.model.ActiveCosmetic;
 import dc.dccosmetics.model.PlayerProfile;
 import dc.dccosmetics.util.HeadUtil;
 import org.bukkit.Bukkit;
@@ -122,13 +123,13 @@ public class ProfileGUI implements InventoryHolder {
     }
 
     private void renderCosmeticSlot(int slot, String internalSlot, ConfigurationSection fallbackConfig) {
-        String equippedId = targetProfile.getEquippedCosmetic(internalSlot);
+        // Fetch the LIVE rendering cosmetic, seamlessly supporting both GUI overrides and Item Scrolls!
+        ActiveCosmetic active = targetProfile.getActiveCosmetic(internalSlot);
         
-        if (equippedId != null) {
-            CosmeticTemplate template = DCCosmetics.getInstance().getTemplateRegistry().getTemplate(equippedId);
+        if (active != null) {
+            CosmeticTemplate template = active.getTemplate();
             if (template != null) {
-                String hexColor = targetProfile.getEquippedColor(internalSlot);
-                // Convert hex to ChatColor for the display name
+                String hexColor = active.getColorHex();
                 String colorPrefix = net.md_5.bungee.api.ChatColor.of(hexColor).toString();
                 
                 ItemStack item = HeadUtil.getCustomHead(template.getGuiIconBase64());

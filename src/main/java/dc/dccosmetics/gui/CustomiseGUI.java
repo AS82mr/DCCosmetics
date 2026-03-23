@@ -55,6 +55,10 @@ public class CustomiseGUI implements InventoryHolder {
         renderConfigItem(cfg.getConfigurationSection("infoItem"));
         renderConfigItem(cfg.getConfigurationSection("detachItem"));
 
+        if (template.getEquipmentSlot().equalsIgnoreCase("boots")) {
+            renderConfigItem(cfg.getConfigurationSection("soundItem"));
+        }
+
         List<String> colors = template.getAllowedColors();
         int slot = cfg.getInt("colorsStartSlot", 19);
         int maxSlot = cfg.getInt("colorsMaxSlot", 25);
@@ -116,6 +120,20 @@ public class CustomiseGUI implements InventoryHolder {
         org.bukkit.configuration.file.YamlConfiguration cfg = DCCosmetics.getInstance().getCustomiseConfig();
         int detachSlot = cfg != null ? cfg.getInt("detachItem.slot", 40) : 40;
 
+        int soundSlot = cfg != null ? cfg.getInt("soundItem.slot", 31) : 31;
+        if (slot == soundSlot && template.getEquipmentSlot().equalsIgnoreCase("boots")) {
+            if (dc.dccosmetics.listener.FootstepListener.MUTED_PLAYERS.contains(player.getUniqueId())) {
+                dc.dccosmetics.listener.FootstepListener.MUTED_PLAYERS.remove(player.getUniqueId());
+                DCCosmetics.getInstance().getLanguageManager().sendMessage(player, "footstep_unmuted");
+            } else {
+                dc.dccosmetics.listener.FootstepListener.MUTED_PLAYERS.add(player.getUniqueId());
+                DCCosmetics.getInstance().getLanguageManager().sendMessage(player, "footstep_muted");
+            }
+            player.playSound(player.getLocation(), org.bukkit.Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f);
+            player.closeInventory();
+            return;
+        }
+
         if (slot == detachSlot) {
             // DETACH LOGIC
             ItemMeta meta = heldItem.getItemMeta();
@@ -141,7 +159,7 @@ public class CustomiseGUI implements InventoryHolder {
             heldItem.setItemMeta(meta);
 
             player.getInventory().addItem(DCCosmetics.getInstance().createScroll(cosmeticId, color));
-            player.sendMessage(ChatColor.GREEN + "Detached the cosmetic scroll!");
+            DCCosmetics.getInstance().getLanguageManager().sendMessage(player, "scroll_detached");
             player.closeInventory();
             return;
         }
@@ -162,7 +180,8 @@ public class CustomiseGUI implements InventoryHolder {
         heldItem.setItemMeta(meta);
         DCCosmetics.getInstance().updateCosmeticItem(heldItem);
         
-        player.sendMessage(ChatColor.GREEN + "Dyed cosmetic to " + clicked.getItemMeta().getDisplayName() + ChatColor.GREEN + "!");
+        String msg = DCCosmetics.getInstance().getLanguageManager().getMessage("cosmetic_dyed").replace("{color}", clicked.getItemMeta().getDisplayName());
+        player.sendMessage(msg);
         player.closeInventory();
     }
 

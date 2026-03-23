@@ -69,8 +69,8 @@ public class FootstepListener implements Listener {
         }
 
         // 3. TRANSIENT HOLOGRAPHIC FOOTPRINT ENGINE!
-        // ALways use the GUI selected color if available, fallback to template default
-        String finalColor = profile.getEquippedColor("boots");
+        // The ActiveCosmetic object natively stores the fully-resolved exact color!
+        String finalColor = boots.getColorHex();
         if (finalColor == null || finalColor.isEmpty()) finalColor = template.getFootstepColor();
         
         if (finalColor != null) {

@@ -29,9 +29,9 @@ public class CosmeticsCommand implements CommandExecutor {
         if (args.length > 0 && args[0].equalsIgnoreCase("reload")) {
             if (sender.hasPermission("dccosmetics.admin")) {
                 DCCosmetics.getInstance().reloadConfigs();
-                sender.sendMessage(ChatColor.GREEN + "[DCCosmetics] Successfully reloaded gui.yml and all cosmetics!");
+                DCCosmetics.getInstance().getLanguageManager().sendMessage(sender, "reloaded");
             } else {
-                sender.sendMessage(ChatColor.RED + "You do not have permission to use this command.");
+                DCCosmetics.getInstance().getLanguageManager().sendMessage(sender, "no_permission");
             }
             return true;
         }
@@ -42,11 +42,12 @@ public class CosmeticsCommand implements CommandExecutor {
         // =========================================
         if (args.length >= 2 && args[0].equalsIgnoreCase("import")) {
             if (!sender.hasPermission("dccosmetics.admin")) {
-                sender.sendMessage(ChatColor.RED + "You need admin permissions to import models.");
+                DCCosmetics.getInstance().getLanguageManager().sendMessage(sender, "no_permission");
                 return true;
             }
             String filename = args[1];
-            DCCosmetics.getInstance().getBlockbenchImporter().importModel(filename, sender);
+            String type = args.length >= 3 ? args[2] : "chest";
+            DCCosmetics.getInstance().getBlockbenchImporter().importModel(filename, type, sender);
             return true;
         }
 
@@ -57,18 +58,31 @@ public class CosmeticsCommand implements CommandExecutor {
             if (!sender.hasPermission("dccosmetics.admin")) return true;
             Player target = Bukkit.getPlayer(args[1]);
             if (target == null) {
-                sender.sendMessage(ChatColor.RED + "Player not found!");
+                DCCosmetics.getInstance().getLanguageManager().sendMessage(sender, "player_not_found");
                 return true;
             }
             String id = args[2];
             dc.dccosmetics.model.CosmeticTemplate temp = DCCosmetics.getInstance().getTemplateRegistry().getTemplate(id);
             if (temp == null) {
-                sender.sendMessage(ChatColor.RED + "Cosmetic not found!");
+                DCCosmetics.getInstance().getLanguageManager().sendMessage(sender, "cosmetic_not_found");
                 return true;
             }
             
             target.getInventory().addItem(DCCosmetics.getInstance().createScroll(id, args.length >= 4 ? args[3] : "#FFFFFF"));
-            sender.sendMessage(ChatColor.GREEN + "Given scroll to " + target.getName());
+            String msg = DCCosmetics.getInstance().getLanguageManager().getMessage("scroll_given").replace("{player}", target.getName());
+            sender.sendMessage(msg);
+            return true;
+        }
+
+        // =========================================
+        // DEBUG HIT COMMAND
+        // =========================================
+        if (args.length >= 2 && args[0].equalsIgnoreCase("debughit") && sender instanceof Player p) {
+            if (!sender.hasPermission("dccosmetics.admin")) return true;
+            dc.dccosmetics.model.CosmeticTemplate temp = DCCosmetics.getInstance().getTemplateRegistry().getTemplate(args[1]);
+            if (temp != null) {
+                dc.dccosmetics.listener.PlayerListener.spawnHitPhysicsEffect(p.getLocation().add(0, 1.5, 0).add(p.getLocation().getDirection().multiply(2)), temp, args.length >= 3 ? args[2] : "#FFFFFF");
+            }
             return true;
         }
 

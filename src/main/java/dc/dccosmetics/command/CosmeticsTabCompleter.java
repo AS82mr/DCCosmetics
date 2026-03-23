@@ -64,6 +64,12 @@ public class CosmeticsTabCompleter implements TabCompleter {
                 for (CosmeticTemplate template : DCCosmetics.getInstance().getTemplateRegistry().getAllTemplates()) {
                     completions.add(template.getId());
                 }
+            } else if (args[0].equalsIgnoreCase("import")) {
+                completions.add("head");
+                completions.add("chest");
+                completions.add("waist");
+                completions.add("boots");
+                completions.add("sword");
             } else if (args[0].equalsIgnoreCase("editcmd")) {
                 completions.add("main");
                 completions.add("add");

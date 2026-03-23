@@ -7,12 +7,14 @@ import dc.dccosmetics.command.ProfileCommand;
 import dc.dccosmetics.command.CustomiseCommand;
 import dc.dccosmetics.gui.GuiManager;
 import dc.dccosmetics.listener.PlayerListener;
+import dc.dccosmetics.listener.EnchantmentDragListener;
 import dc.dccosmetics.manager.ProfileManager;
 import dc.dccosmetics.manager.TemplateRegistry;
 import dc.dccosmetics.manager.SculptManager;
 import dc.dccosmetics.manager.DialogEditorManager;
 import dc.dccosmetics.manager.BlockbenchImporter;
 import dc.dccosmetics.manager.CosmeticWatcher;
+import dc.dccosmetics.manager.LanguageManager;
 import dc.dccosmetics.nms.ProtocolLibAdapter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -43,6 +45,7 @@ public final class DCCosmetics extends JavaPlugin {
     private DialogEditorManager dialogEditorManager;
     private BlockbenchImporter blockbenchImporter;
     private CosmeticWatcher watcher;
+    private LanguageManager languageManager;
 
     @Override
     public void onEnable() {
@@ -61,6 +64,8 @@ public final class DCCosmetics extends JavaPlugin {
         this.sculptManager = new SculptManager();
         this.dialogEditorManager = new DialogEditorManager();
         this.blockbenchImporter = new BlockbenchImporter();
+        this.languageManager = new LanguageManager();
+        this.languageManager.load();
 
         saveDefaultConfig(); // Automatically saves config.yml from resources!
 
@@ -105,6 +110,7 @@ public final class DCCosmetics extends JavaPlugin {
 
         // 4. Register Listeners (Cleaned up the duplicates!)
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
+        getServer().getPluginManager().registerEvents(new EnchantmentDragListener(), this);
         getServer().getPluginManager().registerEvents(new FootstepListener(), this);
 
         // 5. Register Command (Now guiManager is fully loaded!)
@@ -149,6 +155,7 @@ public final class DCCosmetics extends JavaPlugin {
             this.customiseConfig = YamlConfiguration.loadConfiguration(customiseFile);
         }
         this.templateRegistry.loadAll();
+        this.languageManager.load();
         this.profileManager.refreshAllOnlinePlayers();
         this.sculptManager.refreshAllDummies();
     }
@@ -315,4 +322,5 @@ public final class DCCosmetics extends JavaPlugin {
     public BlockbenchImporter getBlockbenchImporter() { return blockbenchImporter; }
     public YamlConfiguration getProfileConfig() { return profileConfig; }
     public YamlConfiguration getCustomiseConfig() { return customiseConfig; }
+    public LanguageManager getLanguageManager() { return languageManager; }
 }

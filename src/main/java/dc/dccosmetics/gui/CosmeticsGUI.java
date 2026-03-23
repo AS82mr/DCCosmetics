@@ -53,12 +53,11 @@ public class CosmeticsGUI implements InventoryHolder {
         inventory.setItem(5, createFilterItem(Material.ORANGE_DYE, Material.ORANGE_STAINED_GLASS_PANE, "legendary", ChatColor.GOLD, state.getSelectedRarity()));
 
         // 4. Row 1: Type/Slot Filters
-        inventory.setItem(12, createFilterItem(Material.LEATHER_HELMET, Material.GOLDEN_HELMET, "head", ChatColor.YELLOW, state.getSelectedType()));
-        inventory.setItem(13, createFilterItem(Material.LEATHER_CHESTPLATE, Material.GOLDEN_CHESTPLATE, "chest", ChatColor.YELLOW, state.getSelectedType()));
-        inventory.setItem(14, createFilterItem(Material.LEATHER_LEGGINGS, Material.GOLDEN_LEGGINGS, "waist", ChatColor.YELLOW, state.getSelectedType()));
-        inventory.setItem(15, createFilterItem(Material.LEATHER_BOOTS, Material.GOLDEN_BOOTS, "boots", ChatColor.YELLOW, state.getSelectedType()));
-        inventory.setItem(16, createFilterItem(Material.IRON_SWORD, Material.GOLDEN_SWORD, "sword", ChatColor.YELLOW, state.getSelectedType()));
-        inventory.setItem(17, createFilterItem(Material.SHIELD, Material.TOTEM_OF_UNDYING, "offhand", ChatColor.YELLOW, state.getSelectedType()));
+        inventory.setItem(11, createFilterItem(Material.LEATHER_HELMET, Material.GOLDEN_HELMET, "head", ChatColor.YELLOW, state.getSelectedType()));
+        inventory.setItem(12, createFilterItem(Material.LEATHER_CHESTPLATE, Material.GOLDEN_CHESTPLATE, "chest", ChatColor.YELLOW, state.getSelectedType()));
+        inventory.setItem(13, createFilterItem(Material.LEATHER_LEGGINGS, Material.GOLDEN_LEGGINGS, "waist", ChatColor.YELLOW, state.getSelectedType()));
+        inventory.setItem(14, createFilterItem(Material.LEATHER_BOOTS, Material.GOLDEN_BOOTS, "boots", ChatColor.YELLOW, state.getSelectedType()));
+        inventory.setItem(15, createFilterItem(Material.IRON_SWORD, Material.GOLDEN_SWORD, "sword", ChatColor.YELLOW, state.getSelectedType()));
 
         // 5. Rows 2 & 3: Render Filtered Cosmetics
         renderCosmetics();
@@ -126,12 +125,11 @@ public class CosmeticsGUI implements InventoryHolder {
         else if (slot == 5) { state.setSelectedRarity("legendary"); build(); }
 
         // Handle Type Clicks
-        else if (slot == 12) { state.setSelectedType("head"); state.setViewedCosmeticId(null); build(); }
-        else if (slot == 13) { state.setSelectedType("chest"); state.setViewedCosmeticId(null); build(); }
-        else if (slot == 14) { state.setSelectedType("waist"); state.setViewedCosmeticId(null); build(); }
-        else if (slot == 15) { state.setSelectedType("boots"); state.setViewedCosmeticId(null); build(); }
-        else if (slot == 16) { state.setSelectedType("sword"); state.setViewedCosmeticId(null); build(); }
-        else if (slot == 17) { state.setSelectedType("offhand"); state.setViewedCosmeticId(null); build(); }
+        else if (slot == 11) { state.setSelectedType("head"); state.setViewedCosmeticId(null); build(); }
+        else if (slot == 12) { state.setSelectedType("chest"); state.setViewedCosmeticId(null); build(); }
+        else if (slot == 13) { state.setSelectedType("waist"); state.setViewedCosmeticId(null); build(); }
+        else if (slot == 14) { state.setSelectedType("boots"); state.setViewedCosmeticId(null); build(); }
+        else if (slot == 15) { state.setSelectedType("sword"); state.setViewedCosmeticId(null); build(); }
 
         // Handle Back / External Navigation
         else if (slot == 49) {

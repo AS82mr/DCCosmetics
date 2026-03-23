@@ -21,7 +21,7 @@ public class BlockbenchImporter {
 
     private final DCCosmetics plugin = DCCosmetics.getInstance();
 
-    public void importModel(String filename, CommandSender sender) {
+    public void importModel(String filename, String typeArg, CommandSender sender) {
         File importsFolder = new File(plugin.getDataFolder(), "imports");
         if (!importsFolder.exists()) importsFolder.mkdirs();
 
@@ -50,10 +50,33 @@ public class BlockbenchImporter {
             String id = file.getName().replace(".bbmodel", "").replace(".json", "").toLowerCase();
             
             config.set("id", id);
-            config.set("type", "chest");
+            config.set("type", typeArg.toLowerCase());
             config.set("rarity", "epic");
             config.set("blockbench", true);
             config.set("global-offset", Arrays.asList(0.0, 0.0, 0.0));
+            config.set("global-rotation", Arrays.asList(0.0, 0.0, 0.0));
+            config.set("global-scale", Arrays.asList(1.0, 1.0, 1.0));
+
+            // THE FIX: Automatically extract Hand Placement physics from Blockbench!
+            if (bbmodel.has("display")) {
+                JsonObject display = bbmodel.getAsJsonObject("display");
+                if (display.has("thirdperson_righthand")) {
+                    JsonObject tr = display.getAsJsonObject("thirdperson_righthand");
+                    if (tr.has("translation")) {
+                        JsonArray t = tr.getAsJsonArray("translation");
+                        // Blockbench scales translations differently, converting pixels to standard block space
+                        config.set("global-offset", Arrays.asList(t.get(0).getAsDouble() / 16.0, t.get(1).getAsDouble() / 16.0, t.get(2).getAsDouble() / 16.0));
+                    }
+                    if (tr.has("rotation")) {
+                        JsonArray r = tr.getAsJsonArray("rotation");
+                        config.set("global-rotation", Arrays.asList(r.get(0).getAsDouble(), r.get(1).getAsDouble(), r.get(2).getAsDouble()));
+                    }
+                    if (tr.has("scale")) {
+                        JsonArray s = tr.getAsJsonArray("scale");
+                        config.set("global-scale", Arrays.asList(s.get(0).getAsDouble(), s.get(1).getAsDouble(), s.get(2).getAsDouble()));
+                    }
+                }
+            }
 
             int count = 0;
             Map<String, Integer> nameCounter = new HashMap<>();
@@ -125,7 +148,6 @@ public class BlockbenchImporter {
                 float depth = (sz / 16.0f) * globalScale;
 
                 config.set(path + ".type", "cube");
-                // THE FIX: Allow exact 0.0 dimensions! This stops the engine from creating microscopic intersecting side-walls!
                 config.set(path + ".width", width);
                 config.set(path + ".height", height);
                 config.set(path + ".depth", depth);
@@ -139,7 +161,7 @@ public class BlockbenchImporter {
                 count++;
             }
 
-            File outputDir = new File(plugin.getDataFolder(), "cosmetics" + File.separator + "chest");
+            File outputDir = new File(plugin.getDataFolder(), "cosmetics" + File.separator + typeArg.toLowerCase());
             if (!outputDir.exists() && !outputDir.mkdirs()) {
                 sender.sendMessage(ChatColor.RED + "Failed to create directory: " + outputDir.getAbsolutePath());
                 return;

@@ -26,20 +26,20 @@ public class CustomiseCommand implements CommandExecutor {
 
         ItemStack item = player.getInventory().getItemInMainHand();
         if (item == null || !item.hasItemMeta()) {
-            player.sendMessage(ChatColor.RED + "You must hold an enchanted cosmetic item to customise it!");
+            DCCosmetics.getInstance().getLanguageManager().sendMessage(player, "customise_must_hold");
             return true;
         }
         PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
         NamespacedKey idKey = new NamespacedKey(DCCosmetics.getInstance(), "cosmetic_id");
         if (!pdc.has(idKey, PersistentDataType.STRING)) {
-            player.sendMessage(ChatColor.RED + "The item in your hand does not have a cosmetic applied to it!");
+            DCCosmetics.getInstance().getLanguageManager().sendMessage(player, "customise_no_cosmetic");
             return true;
         }
 
         String id = pdc.get(idKey, PersistentDataType.STRING);
         CosmeticTemplate temp = DCCosmetics.getInstance().getTemplateRegistry().getTemplate(id);
         if (temp == null) {
-            player.sendMessage(ChatColor.RED + "The cosmetic on this item is corrupt or no longer exists.");
+            DCCosmetics.getInstance().getLanguageManager().sendMessage(player, "customise_corrupt");
             return true;
         }
 
