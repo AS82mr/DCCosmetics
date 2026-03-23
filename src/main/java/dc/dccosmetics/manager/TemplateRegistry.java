@@ -91,150 +91,19 @@ public class TemplateRegistry {
         Map<String, CosmeticNode> nodes = new HashMap<>();
 
         ConfigurationSection componentsSec = config.getConfigurationSection("components");
-        if (componentsSec != null) {
-            for (String compKey : componentsSec.getKeys(false)) {
-                ConfigurationSection comp = componentsSec.getConfigurationSection(compKey);
-                String type = comp.getString("type", "solid");
-                int sides = comp.getInt("sides", 6);
-                double pitch = comp.getDouble("pitch", 90.0);
-                Vector3f localOffset = getVector(comp, "local-offset", new Vector3f(0, 0, 0));
-                
-                boolean compAnim = comp.getBoolean("animated", false);
-                String compAnimType = comp.getString("animation-type", "spin");
-                float compAnimSpeed = (float) comp.getDouble("animation-speed", 4.0);
-                double compOpacity = comp.getDouble("opacity", 1.0);
+        parseComponents(componentsSec, nodes, "");
+        
+        Map<String, Integer> attackDurations = new HashMap<>();
+        Map<String, Integer> attackFades = new HashMap<>();
 
-                // THE FIX: Safely parse the YAML color!
-                String compColor = parseColor(comp.getString("color"));
-
-                if (type.equals("solid")) {
-                    float length = (float) comp.getDouble("length", 1.0);
-                    float width = (float) comp.getDouble("width", 1.0);
-                    for (int i = 0; i < sides; i++) {
-                        float angleDeg = i * (360.0f / sides);
-                        Vector3f scale = new Vector3f(width, length, 0.1f);
-                        Vector3f rot = new Vector3f((float)pitch, angleDeg, 0);
-                        nodes.put(compKey + "_" + i, new CosmeticNode(compKey + "_" + i, scale, localOffset, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
-                    }
-                }
-                else if (type.equals("star")) {
-                    float longLength = (float) comp.getDouble("length", 1.0);
-                    float shortLength = (float) comp.getDouble("short-length", 0.5);
-                    float width = (float) comp.getDouble("width", 0.2);
-                    for (int i = 0; i < sides; i++) {
-                        float angleDeg = i * (360.0f / sides);
-                        float currentLength = (i % 2 == 0) ? longLength : shortLength;
-                        Vector3f scale = new Vector3f(width, currentLength, 0.1f);
-                        Vector3f rot = new Vector3f((float)pitch, angleDeg, 0);
-                        nodes.put(compKey + "_" + i, new CosmeticNode(compKey + "_" + i, scale, localOffset, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
-                    }
-                }
-                else if (type.equals("flat_ring")) {
-                    double radius = comp.getDouble("radius", 0.5);
-                    float width = (float) comp.getDouble("width", 0.1);
-                    float segLength = (float) (2 * radius * Math.tan(Math.PI / sides)) * 1.05f;
-                    for (int i = 0; i < sides; i++) {
-                        float angleDeg = i * (360.0f / sides);
-                        float angleRad = (float) Math.toRadians(angleDeg);
-                        float transX = (float) (-Math.sin(angleRad) * radius) + localOffset.x;
-                        float transZ = (float) (Math.cos(angleRad) * radius) + localOffset.z;
-                        Vector3f scale = new Vector3f(segLength, width, 0.1f);
-                        Vector3f trans = new Vector3f(transX, localOffset.y, transZ);
-                        Vector3f rot = new Vector3f(90.0f, angleDeg, 0);
-                        nodes.put(compKey + "_" + i, new CosmeticNode(compKey + "_" + i, scale, trans, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
-                    }
-                }
-                else if (type.equals("cylinder")) {
-                    double radius = comp.getDouble("radius", 0.5);
-                    float height = (float) comp.getDouble("height", 0.4);
-                    float segLength = (float) (2 * radius * Math.tan(Math.PI / sides)) * 1.05f;
-                    for (int i = 0; i < sides; i++) {
-                        float angleDeg = i * (360.0f / sides);
-                        float angleRad = (float) Math.toRadians(angleDeg);
-                        float transX = (float) (-Math.sin(angleRad) * radius) + localOffset.x;
-                        float transZ = (float) (Math.cos(angleRad) * radius) + localOffset.z;
-                        Vector3f scale = new Vector3f(segLength, height, 0.1f);
-                        Vector3f trans = new Vector3f(transX, localOffset.y, transZ);
-                        Vector3f rot = new Vector3f(0.0f, angleDeg, 0);
-                        nodes.put(compKey + "_" + i, new CosmeticNode(compKey + "_" + i, scale, trans, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
-                    }
-                }
-                else if (type.equals("cone")) {
-                    double radius = comp.getDouble("radius", 0.5);
-                    float height = (float) comp.getDouble("height", 0.6);
-                    float width = (float) comp.getDouble("width", 0.1);
-                    float inwardPitch = (float) comp.getDouble("inward-pitch", 35.0);
-                    for (int i = 0; i < sides; i++) {
-                        float angleDeg = i * (360.0f / sides);
-                        float angleRad = (float) Math.toRadians(angleDeg);
-                        float transX = (float) (-Math.sin(angleRad) * radius) + localOffset.x;
-                        float transZ = (float) (Math.cos(angleRad) * radius) + localOffset.z;
-                        Vector3f scale = new Vector3f(width, height, 0.1f);
-                        Vector3f trans = new Vector3f(transX, localOffset.y, transZ);
-                        Vector3f rot = new Vector3f(inwardPitch, angleDeg, 0);
-                        nodes.put(compKey + "_" + i, new CosmeticNode(compKey + "_" + i, scale, trans, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
-                    }
-                }
-                else if (type.equals("hourglass")) {
-                    double radius = comp.getDouble("radius", 0.5);
-                    float height = (float) comp.getDouble("height", 0.6);
-                    float width = (float) comp.getDouble("width", 0.1);
-                    float inwardPitch = (float) comp.getDouble("inward-pitch", 35.0);
-                    for (int pass = 0; pass < 2; pass++) {
-                        float passPitch = (pass == 0) ? inwardPitch : -inwardPitch;
-                        float passY = (pass == 0) ? localOffset.y : localOffset.y + (height * 0.7f);
-                        for (int i = 0; i < sides; i++) {
-                            float angleDeg = i * (360.0f / sides);
-                            float angleRad = (float) Math.toRadians(angleDeg);
-                            float transX = (float) (-Math.sin(angleRad) * radius) + localOffset.x;
-                            float transZ = (float) (Math.cos(angleRad) * radius) + localOffset.z;
-                            Vector3f scale = new Vector3f(width, height, 0.1f);
-                            Vector3f trans = new Vector3f(transX, passY, transZ);
-                            Vector3f rot = new Vector3f(passPitch, angleDeg, 0);
-                            nodes.put(compKey + "_" + pass + "_" + i, new CosmeticNode(compKey + "_" + pass + "_" + i, scale, trans, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
-                        }
-                    }
-                }
-                else if (type.equals("burst")) {
-                    float length = (float) comp.getDouble("length", 0.6);
-                    float width = (float) comp.getDouble("width", 0.1);
-                    for (int i = 0; i < sides; i++) {
-                        float phi = (float) Math.acos(1 - 2 * (i + 0.5f) / sides);
-                        float theta = (float) (Math.PI * (1 + Math.sqrt(5)) * i);
-                        float pitchDeg = (float) Math.toDegrees(phi - Math.PI / 2);
-                        float yawDeg = (float) Math.toDegrees(theta);
-                        Vector3f scale = new Vector3f(width, length, 0.1f);
-                        Vector3f rot = new Vector3f(pitchDeg, yawDeg, 0);
-                        nodes.put(compKey + "_" + i, new CosmeticNode(compKey + "_" + i, scale, localOffset, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
-                    }
-                }
-                else if (type.equals("cube")) {
-                    float width = (float) comp.getDouble("width", 1.0);
-                    float height = (float) comp.getDouble("height", 1.0);
-                    float depth = (float) comp.getDouble("depth", 1.0);
-                    Vector3f rot = getVector(comp, "rotation", new Vector3f(0, 0, 0));
-                    Vector3f pivotOffset = getVector(comp, "pivot-offset", new Vector3f(0, 0, 0));
-                    java.util.List<String> hidden = comp.getStringList("hidden-faces");
-
-                    if (width > 0 && height > 0) {
-                        if (!hidden.contains("north")) addCubeFace(nodes, compKey + "_north", width, height, new Vector3f(0, 0, -depth/2), new Vector3f(0, 180, 0), rot, localOffset, pivotOffset, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed);
-                        if (!hidden.contains("south")) addCubeFace(nodes, compKey + "_south", width, height, new Vector3f(0, 0, depth/2), new Vector3f(0, 0, 0), rot, localOffset, pivotOffset, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed);
-                    }
-                    if (depth > 0 && height > 0) {
-                        if (!hidden.contains("west")) addCubeFace(nodes, compKey + "_west", depth, height, new Vector3f(-width/2, 0, 0), new Vector3f(0, -90, 0), rot, localOffset, pivotOffset, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed);
-                        if (!hidden.contains("east")) addCubeFace(nodes, compKey + "_east", depth, height, new Vector3f(width/2, 0, 0), new Vector3f(0, 90, 0), rot, localOffset, pivotOffset, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed);
-                    }
-                    if (width > 0 && depth > 0) {
-                        if (!hidden.contains("up")) addCubeFace(nodes, compKey + "_up", width, depth, new Vector3f(0, height/2, 0), new Vector3f(-90, 0, 0), rot, localOffset, pivotOffset, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed);
-                        if (!hidden.contains("down")) addCubeFace(nodes, compKey + "_down", width, depth, new Vector3f(0, -height/2, 0), new Vector3f(90, 0, 0), rot, localOffset, pivotOffset, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed);
-                    }
-                }
-                else if (type.equals("raw_node")) {
-                    Vector3f scale = getVector(comp, "scale", new Vector3f(1, 1, 1));
-                    Vector3f trans = getVector(comp, "translation", new Vector3f(0, 0, 0));
-                    Vector3f rot = getVector(comp, "rotation", new Vector3f(0, 0, 0));
-                    nodes.put(compKey, new CosmeticNode(compKey, scale, trans, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
-                }
+        ConfigurationSection attackTypesSec = config.getConfigurationSection("attack_types");
+        if (attackTypesSec != null) {
+            for (String aType : attackTypesSec.getKeys(false)) {
+                ConfigurationSection aSec = attackTypesSec.getConfigurationSection(aType);
+                if (aSec == null) continue;
+                attackDurations.put(aType, aSec.getInt("duration", 10));
+                attackFades.put(aType, aSec.getInt("fade", 10));
+                parseComponents(aSec, nodes, aType + "_");
             }
         }
 
@@ -258,10 +127,159 @@ public class TemplateRegistry {
             }
         }
 
-        CosmeticTemplate template = new CosmeticTemplate(id, itemName, slot, rarity, permission, iconBase64, globalOffset, globalScale, globalRotation, allowedColors, lore, blockbench, animated, animationType, animationSpeed, footstepParticle, footstepColor, footstepSound, soundVol, soundPitch, nodes);
+        CosmeticTemplate template = new CosmeticTemplate(id, itemName, slot, rarity, permission, iconBase64, globalOffset, globalScale, globalRotation, allowedColors, lore, attackDurations, attackFades, blockbench, animated, animationType, animationSpeed, footstepParticle, footstepColor, footstepSound, soundVol, soundPitch, nodes);
         templates.put(id, template);
         templateFiles.put(id, file);
         return null; // Return null if success
+    }
+
+    private void parseComponents(ConfigurationSection section, Map<String, CosmeticNode> nodes, String prefix) {
+        if (section == null) return;
+        for (String compKey : section.getKeys(false)) {
+            ConfigurationSection comp = section.getConfigurationSection(compKey);
+            if (comp == null) continue; // Prevent NPE from properties like 'duration' or 'fade'!
+            String type = comp.getString("type", "solid");
+            int sides = comp.getInt("sides", 6);
+            double pitch = comp.getDouble("pitch", 90.0);
+            Vector3f localOffset = getVector(comp, "local-offset", new Vector3f(0, 0, 0));
+            
+            boolean compAnim = comp.getBoolean("animated", false);
+            String compAnimType = comp.getString("animation-type", "spin");
+            float compAnimSpeed = (float) comp.getDouble("animation-speed", 4.0);
+            double compOpacity = comp.getDouble("opacity", 1.0);
+
+            String compColor = parseColor(comp.getString("color"));
+            String finalKey = prefix + compKey;
+
+            if (type.equals("solid")) {
+                float length = (float) comp.getDouble("length", 1.0);
+                float width = (float) comp.getDouble("width", 1.0);
+                for (int i = 0; i < sides; i++) {
+                    float angleDeg = i * (360.0f / sides);
+                    Vector3f scale = new Vector3f(width, length, 0.1f);
+                    Vector3f rot = new Vector3f((float)pitch, angleDeg, 0);
+                    nodes.put(finalKey + "_" + i, new CosmeticNode(finalKey + "_" + i, scale, localOffset, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
+                }
+            }
+            else if (type.equals("star")) {
+                float longLength = (float) comp.getDouble("length", 1.0);
+                float shortLength = (float) comp.getDouble("short-length", 0.5);
+                float width = (float) comp.getDouble("width", 0.2);
+                for (int i = 0; i < sides; i++) {
+                    float angleDeg = i * (360.0f / sides);
+                    float currentLength = (i % 2 == 0) ? longLength : shortLength;
+                    Vector3f scale = new Vector3f(width, currentLength, 0.1f);
+                    Vector3f rot = new Vector3f((float)pitch, angleDeg, 0);
+                    nodes.put(finalKey + "_" + i, new CosmeticNode(finalKey + "_" + i, scale, localOffset, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
+                }
+            }
+            else if (type.equals("flat_ring")) {
+                double radius = comp.getDouble("radius", 0.5);
+                float width = (float) comp.getDouble("width", 0.1);
+                float segLength = (float) (2 * radius * Math.tan(Math.PI / sides)) * 1.05f;
+                for (int i = 0; i < sides; i++) {
+                    float angleDeg = i * (360.0f / sides);
+                    float angleRad = (float) Math.toRadians(angleDeg);
+                    float transX = (float) (-Math.sin(angleRad) * radius) + localOffset.x;
+                    float transZ = (float) (Math.cos(angleRad) * radius) + localOffset.z;
+                    Vector3f scale = new Vector3f(segLength, width, 0.1f);
+                    Vector3f trans = new Vector3f(transX, localOffset.y, transZ);
+                    Vector3f rot = new Vector3f(90.0f, angleDeg, 0);
+                    nodes.put(finalKey + "_" + i, new CosmeticNode(finalKey + "_" + i, scale, trans, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
+                }
+            }
+            else if (type.equals("cylinder")) {
+                double radius = comp.getDouble("radius", 0.5);
+                float height = (float) comp.getDouble("height", 0.4);
+                float segLength = (float) (2 * radius * Math.tan(Math.PI / sides)) * 1.05f;
+                for (int i = 0; i < sides; i++) {
+                    float angleDeg = i * (360.0f / sides);
+                    float angleRad = (float) Math.toRadians(angleDeg);
+                    float transX = (float) (-Math.sin(angleRad) * radius) + localOffset.x;
+                    float transZ = (float) (Math.cos(angleRad) * radius) + localOffset.z;
+                    Vector3f scale = new Vector3f(segLength, height, 0.1f);
+                    Vector3f trans = new Vector3f(transX, localOffset.y, transZ);
+                    Vector3f rot = new Vector3f(0.0f, angleDeg, 0);
+                    nodes.put(finalKey + "_" + i, new CosmeticNode(finalKey + "_" + i, scale, trans, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
+                }
+            }
+            else if (type.equals("cone")) {
+                double radius = comp.getDouble("radius", 0.5);
+                float height = (float) comp.getDouble("height", 0.6);
+                float width = (float) comp.getDouble("width", 0.1);
+                float inwardPitch = (float) comp.getDouble("inward-pitch", 35.0);
+                for (int i = 0; i < sides; i++) {
+                    float angleDeg = i * (360.0f / sides);
+                    float angleRad = (float) Math.toRadians(angleDeg);
+                    float transX = (float) (-Math.sin(angleRad) * radius) + localOffset.x;
+                    float transZ = (float) (Math.cos(angleRad) * radius) + localOffset.z;
+                    Vector3f scale = new Vector3f(width, height, 0.1f);
+                    Vector3f trans = new Vector3f(transX, localOffset.y, transZ);
+                    Vector3f rot = new Vector3f(inwardPitch, angleDeg, 0);
+                    nodes.put(finalKey + "_" + i, new CosmeticNode(finalKey + "_" + i, scale, trans, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
+                }
+            }
+            else if (type.equals("hourglass")) {
+                double radius = comp.getDouble("radius", 0.5);
+                float height = (float) comp.getDouble("height", 0.6);
+                float width = (float) comp.getDouble("width", 0.1);
+                float inwardPitch = (float) comp.getDouble("inward-pitch", 35.0);
+                for (int pass = 0; pass < 2; pass++) {
+                    float passPitch = (pass == 0) ? inwardPitch : -inwardPitch;
+                    float passY = (pass == 0) ? localOffset.y : localOffset.y + (height * 0.7f);
+                    for (int i = 0; i < sides; i++) {
+                        float angleDeg = i * (360.0f / sides);
+                        float angleRad = (float) Math.toRadians(angleDeg);
+                        float transX = (float) (-Math.sin(angleRad) * radius) + localOffset.x;
+                        float transZ = (float) (Math.cos(angleRad) * radius) + localOffset.z;
+                        Vector3f scale = new Vector3f(width, height, 0.1f);
+                        Vector3f trans = new Vector3f(transX, passY, transZ);
+                        Vector3f rot = new Vector3f(passPitch, angleDeg, 0);
+                        nodes.put(finalKey + "_" + pass + "_" + i, new CosmeticNode(finalKey + "_" + pass + "_" + i, scale, trans, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
+                    }
+                }
+            }
+            else if (type.equals("burst")) {
+                float length = (float) comp.getDouble("length", 0.6);
+                float width = (float) comp.getDouble("width", 0.1);
+                for (int i = 0; i < sides; i++) {
+                    float phi = (float) Math.acos(1 - 2 * (i + 0.5f) / sides);
+                    float theta = (float) (Math.PI * (1 + Math.sqrt(5)) * i);
+                    float pitchDeg = (float) Math.toDegrees(phi - Math.PI / 2);
+                    float yawDeg = (float) Math.toDegrees(theta);
+                    Vector3f scale = new Vector3f(width, length, 0.1f);
+                    Vector3f rot = new Vector3f(pitchDeg, yawDeg, 0);
+                    nodes.put(finalKey + "_" + i, new CosmeticNode(finalKey + "_" + i, scale, localOffset, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
+                }
+            }
+            else if (type.equals("cube")) {
+                float width = (float) comp.getDouble("width", 1.0);
+                float height = (float) comp.getDouble("height", 1.0);
+                float depth = (float) comp.getDouble("depth", 1.0);
+                Vector3f rot = getVector(comp, "rotation", new Vector3f(0, 0, 0));
+                Vector3f pivotOffset = getVector(comp, "pivot-offset", new Vector3f(0, 0, 0));
+                java.util.List<String> hidden = comp.getStringList("hidden-faces");
+
+                if (width > 0 && height > 0) {
+                    if (!hidden.contains("north")) addCubeFace(nodes, finalKey + "_north", width, height, new Vector3f(0, 0, -depth/2), new Vector3f(0, 180, 0), rot, localOffset, pivotOffset, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed);
+                    if (!hidden.contains("south")) addCubeFace(nodes, finalKey + "_south", width, height, new Vector3f(0, 0, depth/2), new Vector3f(0, 0, 0), rot, localOffset, pivotOffset, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed);
+                }
+                if (depth > 0 && height > 0) {
+                    if (!hidden.contains("west")) addCubeFace(nodes, finalKey + "_west", depth, height, new Vector3f(-width/2, 0, 0), new Vector3f(0, -90, 0), rot, localOffset, pivotOffset, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed);
+                    if (!hidden.contains("east")) addCubeFace(nodes, finalKey + "_east", depth, height, new Vector3f(width/2, 0, 0), new Vector3f(0, 90, 0), rot, localOffset, pivotOffset, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed);
+                }
+                if (width > 0 && depth > 0) {
+                    if (!hidden.contains("up")) addCubeFace(nodes, finalKey + "_up", width, depth, new Vector3f(0, height/2, 0), new Vector3f(-90, 0, 0), rot, localOffset, pivotOffset, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed);
+                    if (!hidden.contains("down")) addCubeFace(nodes, finalKey + "_down", width, depth, new Vector3f(0, -height/2, 0), new Vector3f(90, 0, 0), rot, localOffset, pivotOffset, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed);
+                }
+            }
+            else if (type.equals("raw_node")) {
+                Vector3f scale = getVector(comp, "scale", new Vector3f(1, 1, 1));
+                Vector3f trans = getVector(comp, "translation", new Vector3f(0, 0, 0));
+                Vector3f rot = getVector(comp, "rotation", new Vector3f(0, 0, 0));
+                nodes.put(finalKey, new CosmeticNode(finalKey, scale, trans, rot, compColor, compOpacity, compAnim, compAnimType, compAnimSpeed));
+            }
+        }
     }
 
     private void addCubeFace(Map<String, CosmeticNode> nodes, String id, float w, float h, Vector3f faceOffsetFromCenter, Vector3f faceRotEulers, Vector3f cubeRotEulers, Vector3f localOffset, Vector3f pivotOffset, String color, double opacity, boolean anim, String animType, float animSpeed) {

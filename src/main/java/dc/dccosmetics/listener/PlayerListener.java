@@ -25,7 +25,7 @@ import org.joml.Vector3f;
 import java.util.ArrayList;
 import java.util.List;
 
-record HitNode(dc.dccosmetics.api.DisplayWrapper display, org.joml.Vector3f baseScale, Location currentLoc, org.joml.Vector3f velocity, org.joml.Quaternionf baseRot, org.joml.Vector3f rotSpeed) {}
+record HitNode(dc.dccosmetics.api.DisplayWrapper display, org.joml.Vector3f baseScale, org.joml.Vector3f currentTrans, org.joml.Vector3f velocity, org.joml.Quaternionf baseRot, org.joml.Vector3f rotSpeed, int delay, double baseOpacity) {}
 
 public class PlayerListener implements Listener {
 
@@ -145,62 +145,112 @@ public class PlayerListener implements Listener {
         dc.dccosmetics.model.ActiveCosmetic sword = profile.getActiveCosmetic("sword");
         if (sword == null || sword.getTemplate() == null) return;
 
-        spawnHitPhysicsEffect(target.getLocation().add(0, target.getHeight() / 2.0, 0), sword.getTemplate(), sword.getColorHex());
+        String attackType = "regular";
+        if (event.getCause() == org.bukkit.event.entity.EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK) {
+            attackType = "sweep";
+        } else if (event.isCritical()) {
+            attackType = "crit";
+        }
+
+        // DESTROY VANILLA PARTICLES INSTANTLY (Cancel for 100ms)
+        dc.dccosmetics.nms.ProtocolLibAdapter.suppressParticles(target.getLocation(), 100);
+
+        spawnHitPhysicsEffect(target.getLocation().add(0, target.getHeight() / 2.0, 0), sword.getTemplate(), sword.getColorHex(), attackType, damager.getLocation().getYaw());
     }
 
-    public static void spawnHitPhysicsEffect(Location baseLoc, dc.dccosmetics.model.CosmeticTemplate template, String hexColor) {
+    public static void spawnHitPhysicsEffect(Location baseLoc, dc.dccosmetics.model.CosmeticTemplate template, String hexColor, String attackType, float attackerYaw) {
         List<Player> viewers = new ArrayList<>(baseLoc.getWorld().getPlayers()); // Safe mutable copy!
         
         List<HitNode> effectNodes = new ArrayList<>();
         
+        // Fallback logic: If they didn't map a specific hit type, default to regular!
+        boolean foundAny = false;
+        for (String key : template.getNodes().keySet()) {
+            if (key.startsWith(attackType + "_")) { foundAny = true; break; }
+        }
+        String fallbackType = foundAny ? attackType : "regular";
+
         for (java.util.Map.Entry<String, dc.dccosmetics.model.CosmeticNode> entry : template.getNodes().entrySet()) {
+            if (!entry.getKey().startsWith(fallbackType + "_") && !entry.getKey().startsWith(attackType + "_")) continue;
+
             dc.dccosmetics.model.CosmeticNode nodeData = entry.getValue();
-            String finalColor = (nodeData.getColor() != null && !nodeData.getColor().trim().isEmpty()) ? nodeData.getColor() : hexColor;
             
-            // Create physics trajectory for each component (scatter outward and up)
-            org.joml.Vector3f vel = new org.joml.Vector3f(
-                (float)(Math.random() - 0.5) * 0.4f,
-                (float)(Math.random() * 0.3) + 0.1f,
-                (float)(Math.random() - 0.5) * 0.4f
-            );
+            // Auto-override White #FFFFFF so users can use the Customise GUI!
+            String finalColor = nodeData.getColor();
+            if (finalColor == null || finalColor.trim().isEmpty() || finalColor.equalsIgnoreCase("#FFFFFF")) {
+                finalColor = hexColor;
+            }
+
+            int duration = template.getAttackDurations().getOrDefault(fallbackType, 10);
             
-            // Create erratic spin logic
-            org.joml.Vector3f rotSpeed = new org.joml.Vector3f(
-                (float)(Math.random() * 30 - 15),
-                (float)(Math.random() * 30 - 15),
-                (float)(Math.random() * 30 - 15)
-            );
+            org.joml.Vector3f vel;
+            org.joml.Vector3f rotSpeed;
+            int delay = 0;
+
+            // THE 3-TIER COMBAT PHYSICS ENGINE
+            if (attackType.equals("sweep")) {
+                vel = new org.joml.Vector3f(0, 0, 0); // Stays perfectly anchored to the impact point
+                // Sweep rapidly across the Y-axis!
+                rotSpeed = new org.joml.Vector3f(0, 45, 0); 
+                
+                // PROGRESSIVE DRAWING: Stagger the spawn delay based on the Y-Rotation angle!
+                float angle = nodeData.getRotation().y() % 360;
+                if (angle < 0) angle += 360;
+                delay = (int) ((angle / 360.0f) * (duration * 0.8f));
+            } else if (attackType.equals("crit")) {
+                vel = new org.joml.Vector3f(
+                    (float)(Math.random() - 0.5) * 0.6f,
+                    (float)(Math.random() * 0.4) + 0.2f,
+                    (float)(Math.random() - 0.5) * 0.6f
+                );
+                rotSpeed = new org.joml.Vector3f(
+                    (float)(Math.random() * 50 - 25),
+                    (float)(Math.random() * 50 - 25),
+                    (float)(Math.random() * 50 - 25)
+                );
+            } else { // regular
+                vel = new org.joml.Vector3f(
+                    (float)(Math.random() - 0.5) * 0.2f,
+                    (float)(Math.random() * 0.2) + 0.1f,
+                    (float)(Math.random() - 0.5) * 0.2f
+                );
+                rotSpeed = new org.joml.Vector3f(0, (float)(Math.random() * 20 - 10), 0);
+            }
 
             dc.dccosmetics.api.DisplayWrapper display = DCCosmetics.getInstance().getPacketAdapter().createBlockDisplay(viewers, baseLoc);
-            effectNodes.add(setupPhysicsNode(display, nodeData, finalColor, template, false, vel, rotSpeed));
+            effectNodes.add(setupPhysicsNode(display, nodeData, finalColor, template, false, vel, rotSpeed, attackerYaw, delay));
             
             if (nodeData.isTwoSided()) {
                 dc.dccosmetics.api.DisplayWrapper backDisplay = DCCosmetics.getInstance().getPacketAdapter().createBlockDisplay(viewers, baseLoc);
-                effectNodes.add(setupPhysicsNode(backDisplay, nodeData, finalColor, template, true, vel, rotSpeed));
+                effectNodes.add(setupPhysicsNode(backDisplay, nodeData, finalColor, template, true, vel, rotSpeed, attackerYaw, delay));
             }
         }
         
+        int duration = template.getAttackDurations().getOrDefault(fallbackType, 10);
+        int fade = template.getAttackFades().getOrDefault(fallbackType, 10);
+        int maxTicks = duration + fade;
+
         new org.bukkit.scheduler.BukkitRunnable() {
             int ticks = 0;
             @Override
             public void run() {
-                if (ticks > 25) { // Physics animation lasts 1.25 seconds!
+                if (ticks > maxTicks) {
                     for (HitNode n : effectNodes) n.display().destroy();
                     this.cancel();
                     return;
                 }
                 
-                float scaleMult = Math.max(0.001f, 1.0f - (ticks / 25.0f)); // Shrink as they fall
-                
                 for (HitNode n : effectNodes) {
+                    if (ticks < n.delay()) continue;
+
                     if (n.display() instanceof dc.dccosmetics.nms.ProtocolDisplayWrapper pNode) {
-                        // Apply Gravity & Movement
-                        n.velocity().y -= 0.04f; 
-                        n.currentLoc().add(n.velocity().x, n.velocity().y, n.velocity().z);
-                        pNode.teleport(n.currentLoc());
                         
-                        // Apply Shrink
-                        pNode.setScale(new org.joml.Vector3f(n.baseScale()).mul(scaleMult));
+                        if (!attackType.equals("sweep")) {
+                            // Apply Gravity & Movement purely via Translation Matrix! (NO TELEPORT PACKETS!)
+                            n.velocity().y -= 0.02f; 
+                            n.currentTrans().add(n.velocity());
+                            pNode.setTranslation(n.currentTrans());
+                        }
                         
                         // Apply erratic spin
                         n.baseRot().rotateXYZ(
@@ -209,6 +259,27 @@ public class PlayerListener implements Listener {
                             (float) Math.toRadians(n.rotSpeed().z)
                         );
                         pNode.setRawQuaternion(n.baseRot());
+
+                        // Calculate visual progress based strictly on time alive since delay
+                        int aliveTicks = ticks - n.delay();
+                        int localMax = maxTicks - n.delay();
+                        float progress = localMax > 0 ? (float) aliveTicks / localMax : 1.0f;
+                        
+                        float scaleMult;
+                        if (attackType.equals("sweep")) {
+                            scaleMult = Math.max(0.001f, (float) Math.sin(progress * Math.PI)); // Pop out, hold, snap back!
+                        } else {
+                            scaleMult = Math.max(0.001f, 1.0f - progress); // Shrink out
+                        }
+                        pNode.setScale(new org.joml.Vector3f(n.baseScale()).mul(scaleMult));
+
+                        // Smooth Alpha Fade-Out!
+                        if (aliveTicks > duration && fade > 0) {
+                            float fadeProgress = Math.min(1.0f, (float) (aliveTicks - duration) / fade);
+                            pNode.setOpacity(n.baseOpacity() * (1.0 - fadeProgress));
+                        } else {
+                            pNode.setOpacity(n.baseOpacity());
+                        }
                         
                         pNode.update();
                     }
@@ -218,10 +289,11 @@ public class PlayerListener implements Listener {
         }.runTaskTimer(DCCosmetics.getInstance(), 0L, 1L);
     }
 
-    private static HitNode setupPhysicsNode(dc.dccosmetics.api.DisplayWrapper display, dc.dccosmetics.model.CosmeticNode nodeData, String color, dc.dccosmetics.model.CosmeticTemplate template, boolean isBack, org.joml.Vector3f velocity, org.joml.Vector3f rotSpeed) {
+    private static HitNode setupPhysicsNode(dc.dccosmetics.api.DisplayWrapper display, dc.dccosmetics.model.CosmeticNode nodeData, String color, dc.dccosmetics.model.CosmeticTemplate template, boolean isBack, org.joml.Vector3f velocity, org.joml.Vector3f rotSpeed, float attackerYaw, int delay) {
         dc.dccosmetics.nms.ProtocolDisplayWrapper pNode = (dc.dccosmetics.nms.ProtocolDisplayWrapper) display;
         pNode.setBlockbenchMode(template.isBlockbench());
-        pNode.setOpacity(nodeData.getOpacity());
+        
+        org.joml.Quaternionf playerYawRot = new org.joml.Quaternionf().rotationY((float) Math.toRadians(-attackerYaw));
         
         org.joml.Quaternionf localQ = nodeData.getOrientation() != null ? new org.joml.Quaternionf(nodeData.getOrientation()) 
                 : new org.joml.Quaternionf().rotationXYZ((float) Math.toRadians(nodeData.getRotation().x()), (float) Math.toRadians(nodeData.getRotation().y()), (float) Math.toRadians(nodeData.getRotation().z()));
@@ -238,14 +310,18 @@ public class PlayerListener implements Listener {
         
         newTrans.add(template.getGlobalOffset());
 
+        // Align entire effect to face the same way the attacker is facing!
+        newTrans.rotate(playerYawRot);
+        playerYawRot.mul(localQ, localQ);
+        
+        velocity.rotateY((float) Math.toRadians(-attackerYaw));
+
         pNode.setRawQuaternion(localQ);
-        pNode.setScale(baseScale); // Spawn instantly at full size!
-        pNode.setTranslation(newTrans); // THE FIX: ACTUALLY APPLY THE SHAPE MATH!
+        pNode.setScale(new org.joml.Vector3f(0.001f, 0.001f, 0.001f)); // Wait for delay!
+        pNode.setTranslation(newTrans); 
         pNode.setColor(color);
         pNode.update();
         
-        // Offset initial spawn location by the translation matrix to preserve the 3D shape!
-        Location startLoc = pNode.getLocation().clone().add(newTrans.x, newTrans.y, newTrans.z);
-        return new HitNode(display, baseScale, startLoc, new org.joml.Vector3f(velocity), localQ, new org.joml.Vector3f(rotSpeed));
+        return new HitNode(display, baseScale, newTrans, new org.joml.Vector3f(velocity), localQ, new org.joml.Vector3f(rotSpeed), delay, nodeData.getOpacity());
     }
 }

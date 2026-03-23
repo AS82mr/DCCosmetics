@@ -81,7 +81,14 @@ public class CosmeticsCommand implements CommandExecutor {
             if (!sender.hasPermission("dccosmetics.admin")) return true;
             dc.dccosmetics.model.CosmeticTemplate temp = DCCosmetics.getInstance().getTemplateRegistry().getTemplate(args[1]);
             if (temp != null) {
-                dc.dccosmetics.listener.PlayerListener.spawnHitPhysicsEffect(p.getLocation().add(0, 1.5, 0).add(p.getLocation().getDirection().multiply(2)), temp, args.length >= 3 ? args[2] : "#FFFFFF");
+                String type = args.length >= 3 ? args[2] : "regular";
+                String color = args.length >= 4 ? args[3] : "#FFFFFF";
+                dc.dccosmetics.listener.PlayerListener.spawnHitPhysicsEffect(
+                    p.getLocation().add(0, 1.5, 0).add(p.getLocation().getDirection().multiply(2)), 
+                    temp, color, 
+                    type,
+                    p.getLocation().getYaw()
+                );
             }
             return true;
         }

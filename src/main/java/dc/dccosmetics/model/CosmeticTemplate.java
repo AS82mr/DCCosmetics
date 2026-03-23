@@ -17,6 +17,8 @@ public class CosmeticTemplate {
     private final List<String> allowedColors;
     private final List<String> lore;
 
+    private final Map<String, Integer> attackDurations;
+    private final Map<String, Integer> attackFades;
     private final boolean blockbench;
     private final boolean animated;
     private final String animationType;
@@ -30,7 +32,7 @@ public class CosmeticTemplate {
     private final float soundVolume;
     private final float soundPitch;
 
-    public CosmeticTemplate(String id, String itemName, String equipmentSlot, String rarity, String permission, String guiIconBase64, Vector3f globalOffset, Vector3f globalScale, Vector3f globalRotation, List<String> allowedColors, List<String> lore, boolean blockbench, boolean animated, String animationType, float animationSpeed, String footstepParticle, String footstepColor, String footstepSound, float soundVolume, float soundPitch, Map<String, CosmeticNode> nodes) {
+    public CosmeticTemplate(String id, String itemName, String equipmentSlot, String rarity, String permission, String guiIconBase64, Vector3f globalOffset, Vector3f globalScale, Vector3f globalRotation, List<String> allowedColors, List<String> lore, Map<String, Integer> attackDurations, Map<String, Integer> attackFades, boolean blockbench, boolean animated, String animationType, float animationSpeed, String footstepParticle, String footstepColor, String footstepSound, float soundVolume, float soundPitch, Map<String, CosmeticNode> nodes) {
         this.id = id;
         this.itemName = itemName;
         this.equipmentSlot = equipmentSlot;
@@ -42,6 +44,8 @@ public class CosmeticTemplate {
         this.globalRotation = globalRotation;
         this.allowedColors = allowedColors;
         this.lore = lore;
+        this.attackDurations = attackDurations;
+        this.attackFades = attackFades;
         this.blockbench = blockbench;
         this.animated = animated;
         this.animationType = animationType;
@@ -66,6 +70,8 @@ public class CosmeticTemplate {
     public Vector3f getGlobalRotation() { return globalRotation; }
     public List<String> getAllowedColors() { return allowedColors; }
     public List<String> getLore() { return lore; }
+    public Map<String, Integer> getAttackDurations() { return attackDurations; }
+    public Map<String, Integer> getAttackFades() { return attackFades; }
     public boolean isBlockbench() { return blockbench; }
     public boolean isAnimated() { return animated; }
     public String getAnimationType() { return animationType; }

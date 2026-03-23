@@ -31,9 +31,24 @@ public class ProtocolLibAdapter implements dc.dccosmetics.api.PacketAdapter {
     // Keep track of which fake entities belong to which player so we can mount them
     public static final Map<Integer, List<Integer>> playerCosmeticPassengers = new ConcurrentHashMap<>();
 
+    // Suppresses vanilla particles for custom combat hits!
+    public static final java.util.List<SuppressedLoc> suppressedParticleLocs = new java.util.concurrent.CopyOnWriteArrayList<>();
+    public static class SuppressedLoc {
+        public final Location loc;
+        public final long expireTime;
+        public SuppressedLoc(Location loc, long expireTime) {
+            this.loc = loc;
+            this.expireTime = expireTime;
+        }
+    }
+    public static void suppressParticles(Location loc, long durationMs) {
+        suppressedParticleLocs.add(new SuppressedLoc(loc, System.currentTimeMillis() + durationMs));
+    }
+
     public ProtocolLibAdapter() {
         this.protocolManager = ProtocolLibrary.getProtocolManager();
         registerMountListener();
+        registerParticleListener();
         logger.info("[DEBUG] ProtocolLib Adapter initialized successfully.");
     }
 
@@ -72,6 +87,43 @@ public class ProtocolLibAdapter implements dc.dccosmetics.api.PacketAdapter {
         });
     }
 
+    private void registerParticleListener() {
+        protocolManager.addPacketListener(new PacketAdapter(plugin, ListenerPriority.HIGHEST, PacketType.Play.Server.WORLD_PARTICLES) {
+            @Override
+            public void onPacketSending(PacketEvent event) {
+                if (suppressedParticleLocs.isEmpty()) return;
+                
+                double x = event.getPacket().getDoubles().read(0);
+                double y = event.getPacket().getDoubles().read(1);
+                double z = event.getPacket().getDoubles().read(2);
+                
+                long now = System.currentTimeMillis();
+                suppressedParticleLocs.removeIf(s -> now > s.expireTime);
+                
+                for (SuppressedLoc s : suppressedParticleLocs) {
+                    if (s.loc.getWorld().equals(event.getPlayer().getWorld())) {
+                        double distSq = Math.pow(s.loc.getX() - x, 2) + Math.pow(s.loc.getY() - y, 2) + Math.pow(s.loc.getZ() - z, 2);
+                        if (distSq < 9.0) { // Cancel ALL combat particles within 3 blocks of the hit!
+                            event.setCancelled(true);
+                            return;
+                        }
+                    }
+                }
+            }
+        });
+
+        protocolManager.addPacketListener(new PacketAdapter(plugin, ListenerPriority.HIGHEST, PacketType.Play.Server.ANIMATION) {
+            @Override
+            public void onPacketSending(PacketEvent event) {
+                if (suppressedParticleLocs.isEmpty()) return;
+                
+                int animationId = event.getPacket().getIntegers().read(1);
+                if (animationId == 4 || animationId == 5) { // 4 = Crit, 5 = Magic Crit
+                    event.setCancelled(true); // Eradicate crits globally for everyone else!
+                }
+            }
+        });
+    }
 
     @Override
     public void injectPlayer(Player player) {
