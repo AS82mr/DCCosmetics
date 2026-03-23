@@ -13,6 +13,7 @@ import org.joml.Vector3f;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class ActiveCosmetic {
     private final LivingEntity owner;
@@ -230,6 +231,18 @@ public class ActiveCosmetic {
                 globalAnimYaw = (tickCounter * template.getAnimationSpeed()) % 360;
             }
 
+            // IDENTIFY THE EDITOR FOR HEARTBEAT ANIMATION
+            UUID editorId = null;
+            if (isDummy) {
+                for (Map.Entry<UUID, LivingEntity> e : DCCosmetics.getInstance().getSculptManager().getActiveDummies().entrySet()) {
+                    if (e.getValue().equals(owner)) {
+                        editorId = e.getKey();
+                        break;
+                    }
+                }
+            }
+            String activeComp = editorId != null ? DCCosmetics.getInstance().getDialogEditorManager().getActiveComponent(editorId) : null;
+
             for (Map.Entry<String, DisplayWrapper> entry : activeNodes.entrySet()) {
                 String id = entry.getKey();
                 DisplayWrapper node = entry.getValue();
@@ -249,12 +262,17 @@ public class ActiveCosmetic {
                     
                     boolean isBack = id.endsWith("_back");
 
-                    // UNIFIED XYZ MATRIX: Prevents Gimbal Lock and perfectly matches the Importer math!
-                    org.joml.Quaternionf localQ = new org.joml.Quaternionf().rotationXYZ(
-                            (float) Math.toRadians(originalNode.getRotation().x()),
-                            (float) Math.toRadians(originalNode.getRotation().y()),
-                            (float) Math.toRadians(originalNode.getRotation().z())
-                    );
+                    org.joml.Quaternionf localQ;
+                    if (originalNode.getOrientation() != null) {
+                        // THE ULTIMATE FIX: Bypass Euler extraction entirely! Prevents faces from stretching!
+                        localQ = new org.joml.Quaternionf(originalNode.getOrientation());
+                    } else {
+                        localQ = new org.joml.Quaternionf().rotationXYZ(
+                                (float) Math.toRadians(originalNode.getRotation().x()),
+                                (float) Math.toRadians(originalNode.getRotation().y()),
+                                (float) Math.toRadians(originalNode.getRotation().z())
+                        );
+                    }
 
                     // THE FIX: True Mathematical Mirroring!
                     // Manually flipping Euler angles causes precision overhangs (the "little extra" glitch).
@@ -331,6 +349,15 @@ public class ActiveCosmetic {
                     node.setTranslation(newTrans);
                     if (node instanceof dc.dccosmetics.nms.ProtocolDisplayWrapper pNode) {
                         pNode.setRawQuaternion(localQ);
+                        
+                        // THE HEARTBEAT FIX: Pulsing opacity for the actively edited component!
+                        if (activeComp != null && (originalId.equals(activeComp) || originalId.startsWith(activeComp + "_"))) {
+                            // Oscillates the opacity dynamically between 0.3 and 1.0!
+                            double pulse = 0.3 + (Math.abs(Math.sin(tickCounter * 0.1)) * 0.7); 
+                            pNode.setOpacity(pulse * originalNode.getOpacity());
+                        } else {
+                            pNode.setOpacity(originalNode.getOpacity());
+                        }
                     }
 
                     if (isHidden && !isDummy) {

@@ -30,6 +30,10 @@ public class DialogEditorManager implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
+    public String getActiveComponent(UUID uuid) {
+        return activeComponent.get(uuid);
+    }
+
     public void reopenLastMenu(Player player, String templateId) {
         String lastComp = activeComponent.get(player.getUniqueId());
         String lastTemplate = activeTemplate.get(player.getUniqueId());
@@ -115,7 +119,7 @@ public class DialogEditorManager implements Listener {
             inv = player.getOpenInventory().getTopInventory();
             inv.clear();
         } else {
-            inv = Bukkit.createInventory(null, 27, "§8Editing: " + compName);
+            inv = Bukkit.createInventory(null, 45, "§8Editing: " + compName);
         }
 
         File file = plugin.getTemplateRegistry().getTemplateFile(templateId);
@@ -182,10 +186,10 @@ public class DialogEditorManager implements Listener {
             inv.setItem(slot++, createPropertyItem("width", config.getDouble(path + ".width", 0.1)));
         }
 
-        inv.setItem(22, createItem(Material.ARROW, "§aBack to Main Menu"));
-        inv.setItem(26, createItem(Material.RED_DYE, "§cDelete Component", "§7Shift-Right-Click to delete."));
+        inv.setItem(40, createItem(Material.ARROW, "§aBack to Main Menu"));
+        inv.setItem(44, createItem(Material.RED_DYE, "§cDelete Component", "§7Shift-Right-Click to delete."));
         
-        inv.setItem(20, createItem(Material.CYAN_DYE, "§bEdit Color", "§7Current: " + config.getString(path + ".color", "#FFFFFF"), "", "§eDrop (Q) to type Hex Color in chat!"));
+        inv.setItem(38, createItem(Material.CYAN_DYE, "§bEdit Color", "§7Current: " + config.getString(path + ".color", "#FFFFFF"), "", "§eDrop (Q) to type Hex Color in chat!"));
 
         if (!player.getOpenInventory().getTitle().equals("§8Editing: " + compName)) {
             player.openInventory(inv);
@@ -358,7 +362,7 @@ public class DialogEditorManager implements Listener {
             String compName = activeComponent.get(player.getUniqueId());
             if (templateId == null || compName == null) return;
 
-            if (event.getSlot() == 22) {
+            if (event.getSlot() == 40) {
                 openMainMenu(player, templateId);
                 return;
             }
@@ -383,7 +387,7 @@ public class DialogEditorManager implements Listener {
                 return;
             }
 
-            if (event.getSlot() == 26 && event.getClick().isShiftClick() && event.getClick().isRightClick()) {
+            if (event.getSlot() == 44 && event.getClick().isShiftClick() && event.getClick().isRightClick()) {
                 config.set("components." + compName, null);
                 saveAndReload(file, config);
                 openMainMenu(player, templateId);

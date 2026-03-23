@@ -107,8 +107,10 @@ public class FootstepListener implements Listener {
         footprint.setScale(new Vector3f(2.0f, 2.0f, 2.0f)); // Give it a nice, flat uniform scale!
         footprint.setTranslation(new Vector3f(0, 0, 0));
 
-        // Pitch -90 faces straight UP towards the sky natively in Minecraft
-        footprint.setRotation(new Vector3f(-90.0f, loc.getYaw(), 0.0f));
+        // THE FIX: If you lay a plane flat on the ground (-90 X), spinning the Y-axis will flip it into the dirt!
+        // By spinning the Z-axis (Roll), it rotates like a steering wheel and always stays facing UP!
+        footprint.setRotation(new Vector3f(-90.0f, 0.0f, -loc.getYaw()));
+
         footprint.setColor(hexColor);
 
         footprint.update();

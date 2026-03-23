@@ -176,7 +176,7 @@ public class CosmeticsCommand implements CommandExecutor {
             }
             if (args[1].equalsIgnoreCase("editor")) {
                 String activeId = DCCosmetics.getInstance().getSculptManager().getActiveSculptId(player);
-                if (activeId != null) DCCosmetics.getInstance().getDialogEditorManager().openMainMenu(player, activeId);
+                if (activeId != null) DCCosmetics.getInstance().getDialogEditorManager().reopenLastMenu(player, activeId);
                 return true;
             }
             if (args[1].equalsIgnoreCase("toggle")) {

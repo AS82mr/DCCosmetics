@@ -125,9 +125,10 @@ public class BlockbenchImporter {
                 float depth = (sz / 16.0f) * globalScale;
 
                 config.set(path + ".type", "cube");
-                config.set(path + ".width", width == 0 ? 0.001 : width);
-                config.set(path + ".height", height == 0 ? 0.001 : height);
-                config.set(path + ".depth", depth == 0 ? 0.001 : depth);
+                // THE FIX: Allow exact 0.0 dimensions! This stops the engine from creating microscopic intersecting side-walls!
+                config.set(path + ".width", width);
+                config.set(path + ".height", height);
+                config.set(path + ".depth", depth);
 
                 // Invert X for Minecraft space mirroring
                 config.set(path + ".local-offset", Arrays.asList(-originX, originY, originZ));

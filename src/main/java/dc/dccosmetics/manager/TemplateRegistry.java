@@ -276,14 +276,11 @@ public class TemplateRegistry {
         );
         
         org.joml.Quaternionf finalRot = new org.joml.Quaternionf(qRot).mul(faceRot);
-        Vector3f finalEulers = new Vector3f();
-        finalRot.getEulerAnglesXYZ(finalEulers); // THE FIX: Uniform XYZ Gimbal Matrix!
         
         Vector3f finalTrans = new Vector3f(localOffset).add(totalOffset);
-        Vector3f finalRotVec = new Vector3f((float)Math.toDegrees(finalEulers.x()), (float)Math.toDegrees(finalEulers.y()), (float)Math.toDegrees(finalEulers.z()));
         
         // Passing TRUE so faces remain perfectly double sided!
-        nodes.put(id, new CosmeticNode(id, new Vector3f(w, h, 0.1f), finalTrans, finalRotVec, color, opacity, anim, animType, animSpeed, true));
+        nodes.put(id, new CosmeticNode(id, new Vector3f(w, h, 0.1f), finalTrans, new Vector3f(0,0,0), finalRot, color, opacity, anim, animType, animSpeed, true));
     }
 
     private Vector3f getVector(ConfigurationSection section, String key, Vector3f def) {
