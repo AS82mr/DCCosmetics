@@ -34,7 +34,8 @@ public class CosmeticWatcher extends BukkitRunnable {
     @Override
     public void run() {
         checkConfig(new File(plugin.getDataFolder(), "config.yml"));
-        checkConfig(new File(plugin.getDataFolder(), "gui.yml"));
+        checkConfig(new File(plugin.getDataFolder(), "profile.yml"));
+        checkConfig(new File(plugin.getDataFolder(), "customise.yml"));
         checkFolder(new File(plugin.getDataFolder(), "cosmetics"));
     }
 

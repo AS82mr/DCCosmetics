@@ -30,7 +30,7 @@ public class CustomiseGUI implements InventoryHolder {
         this.template = template;
         this.heldItem = heldItem;
         
-        ConfigurationSection cfg = DCCosmetics.getInstance().getGuiConfig().getConfigurationSection("customiseMenu");
+        org.bukkit.configuration.file.YamlConfiguration cfg = DCCosmetics.getInstance().getCustomiseConfig();
         String title = cfg != null ? cfg.getString("title", "&5Customise: {cosmetic}") : "&5Customise: {cosmetic}";
         title = ChatColor.translateAlternateColorCodes('&', title.replace("{cosmetic}", template.getItemName()));
         int size = cfg != null ? cfg.getInt("size", 45) : 45;
@@ -40,7 +40,7 @@ public class CustomiseGUI implements InventoryHolder {
     }
 
     private void build() {
-        ConfigurationSection cfg = DCCosmetics.getInstance().getGuiConfig().getConfigurationSection("customiseMenu");
+        org.bukkit.configuration.file.YamlConfiguration cfg = DCCosmetics.getInstance().getCustomiseConfig();
         if (cfg == null) return;
         
         if (cfg.getBoolean("fillItems.enabled", true)) {
@@ -113,7 +113,7 @@ public class CustomiseGUI implements InventoryHolder {
         ItemStack clicked = inventory.getItem(slot);
         if (clicked == null || !clicked.hasItemMeta()) return;
 
-        ConfigurationSection cfg = DCCosmetics.getInstance().getGuiConfig().getConfigurationSection("customiseMenu");
+        org.bukkit.configuration.file.YamlConfiguration cfg = DCCosmetics.getInstance().getCustomiseConfig();
         int detachSlot = cfg != null ? cfg.getInt("detachItem.slot", 40) : 40;
 
         if (slot == detachSlot) {
@@ -145,6 +145,11 @@ public class CustomiseGUI implements InventoryHolder {
             player.closeInventory();
             return;
         }
+
+        // Prevent clicking info books, background glass, or anything outside the designated color area!
+        int startSlot = cfg != null ? cfg.getInt("colorsStartSlot", 19) : 19;
+        int maxSlot = cfg != null ? cfg.getInt("colorsMaxSlot", 25) : 25;
+        if (slot < startSlot || slot > maxSlot) return;
 
         if (clicked.getItemMeta().getLore() == null || clicked.getType() == Material.BARRIER) return;
         

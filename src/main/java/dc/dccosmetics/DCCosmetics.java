@@ -37,7 +37,8 @@ public final class DCCosmetics extends JavaPlugin {
     private ProfileManager profileManager;
     private GuiManager guiManager;
     private PacketAdapter packetAdapter;
-    private YamlConfiguration guiConfig;
+    private YamlConfiguration profileConfig;
+    private YamlConfiguration customiseConfig;
     private SculptManager sculptManager;
     private DialogEditorManager dialogEditorManager;
     private BlockbenchImporter blockbenchImporter;
@@ -64,15 +65,29 @@ public final class DCCosmetics extends JavaPlugin {
         saveDefaultConfig(); // Automatically saves config.yml from resources!
 
         // 3. Load Data (Reads your cosmetics folder)
-        File guiFile = new File(getDataFolder(), "gui.yml");
-        if (!guiFile.exists()) {
+        File profileFile = new File(getDataFolder(), "profile.yml");
+        if (!profileFile.exists()) {
             try {
-                saveResource("gui.yml", false);
+                saveResource("profile.yml", false);
             } catch (IllegalArgumentException e) {
-                getLogger().warning("[WARNING] Default gui.yml not found in the compiled jar! Creating a blank one...");
+                getLogger().warning("[WARNING] Default profile.yml not found in the compiled jar! Creating a blank one...");
                 try {
-                    guiFile.getParentFile().mkdirs();
-                    guiFile.createNewFile();
+                    profileFile.getParentFile().mkdirs();
+                    profileFile.createNewFile();
+                } catch (java.io.IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+        File customiseFile = new File(getDataFolder(), "customise.yml");
+        if (!customiseFile.exists()) {
+            try {
+                saveResource("customise.yml", false);
+            } catch (IllegalArgumentException e) {
+                getLogger().warning("[WARNING] Default customise.yml not found! Creating a blank one...");
+                try {
+                    customiseFile.getParentFile().mkdirs();
+                    customiseFile.createNewFile();
                 } catch (java.io.IOException ex) {
                     ex.printStackTrace();
                 }
@@ -84,7 +99,8 @@ public final class DCCosmetics extends JavaPlugin {
         } else {
             getLogger().severe("[ERROR] Command 'customise' not found in plugin.yml!");
         }
-        this.guiConfig = YamlConfiguration.loadConfiguration(guiFile);
+        this.profileConfig = YamlConfiguration.loadConfiguration(profileFile);
+        this.customiseConfig = YamlConfiguration.loadConfiguration(customiseFile);
         this.templateRegistry.loadAll();
 
         // 4. Register Listeners (Cleaned up the duplicates!)
@@ -124,9 +140,13 @@ public final class DCCosmetics extends JavaPlugin {
 
     public void reloadConfigs() {
         reloadConfig(); // Reloads config.yml
-        File guiFile = new File(getDataFolder(), "gui.yml");
-        if (guiFile.exists()) {
-            this.guiConfig = YamlConfiguration.loadConfiguration(guiFile);
+        File profileFile = new File(getDataFolder(), "profile.yml");
+        if (profileFile.exists()) {
+            this.profileConfig = YamlConfiguration.loadConfiguration(profileFile);
+        }
+        File customiseFile = new File(getDataFolder(), "customise.yml");
+        if (customiseFile.exists()) {
+            this.customiseConfig = YamlConfiguration.loadConfiguration(customiseFile);
         }
         this.templateRegistry.loadAll();
         this.profileManager.refreshAllOnlinePlayers();
@@ -174,12 +194,24 @@ public final class DCCosmetics extends JavaPlugin {
     }
 
     public String getSafeColor(CosmeticTemplate temp, String requestedColor) {
-        if (requestedColor != null && !requestedColor.equals("#FFFFFF")) return requestedColor;
-        if (temp.getAllowedColors() != null && !temp.getAllowedColors().isEmpty()) {
+        if (temp != null && temp.getAllowedColors() != null && !temp.getAllowedColors().isEmpty()) {
+            boolean isValid = false;
+            if (requestedColor != null && requestedColor.matches("^#[0-9a-fA-F]{6}$")) {
+                for (String c : temp.getAllowedColors()) {
+                    if (c.toUpperCase().startsWith(requestedColor.toUpperCase())) {
+                        isValid = true; break;
+                    }
+                }
+            }
+            if (!isValid) {
             String first = temp.getAllowedColors().get(0);
             if (first.contains(":")) return first.split(":")[0];
             return first;
+            }
+            return requestedColor;
         }
+        // If no allowed-colors are defined, accept any valid hex
+        if (requestedColor != null && requestedColor.matches("^#[0-9a-fA-F]{6}$")) return requestedColor;
         return "#FFFFFF";
     }
 
@@ -235,6 +267,7 @@ public final class DCCosmetics extends JavaPlugin {
             CosmeticTemplate temp = getTemplateRegistry().getTemplate(id);
             if (temp != null) {
                 String color = pdc.has(cKey, PersistentDataType.STRING) ? pdc.get(cKey, PersistentDataType.STRING) : getSafeColor(temp, null);
+                color = getSafeColor(temp, color); // Force sanitize the color to fix any existing corrupted items!
                 String rarity = temp.getRarity().toLowerCase();
                 String emoji = getConfig().getString("scrolls." + rarity + ".emoji", "&f⬤");
                 String format = getConfig().getString("applied_item_format", "{emoji} &r{item_name} {color}[{cosmetic_name}]");
@@ -280,5 +313,6 @@ public final class DCCosmetics extends JavaPlugin {
     public SculptManager getSculptManager() { return sculptManager; }
     public DialogEditorManager getDialogEditorManager() { return dialogEditorManager; }
     public BlockbenchImporter getBlockbenchImporter() { return blockbenchImporter; }
-    public YamlConfiguration getGuiConfig() { return guiConfig; }
+    public YamlConfiguration getProfileConfig() { return profileConfig; }
+    public YamlConfiguration getCustomiseConfig() { return customiseConfig; }
 }

@@ -84,7 +84,7 @@ public class PlayerListener implements Listener {
                     event.getWhoClicked().sendMessage(ChatColor.RED + "This scroll's cosmetic no longer exists!");
                     return;
                 }
-                String color = pdc.has(colorKey, PersistentDataType.STRING) ? pdc.get(colorKey, PersistentDataType.STRING) : plugin.getSafeColor(template, null);
+                String color = pdc.has(colorKey, PersistentDataType.STRING) ? pdc.get(colorKey, PersistentDataType.STRING) : DCCosmetics.getInstance().getSafeColor(template, null);
 
                 if (!isCompatible(template.getEquipmentSlot(), clicked.getType())) {
                     event.getWhoClicked().sendMessage(ChatColor.RED + "You can only apply this to " + template.getEquipmentSlot().toUpperCase() + " items!");
@@ -110,13 +110,14 @@ public class PlayerListener implements Listener {
                 // Grab the original item name so we can wrap the cosmetic around it cleanly
                 String origName;
                 if (clickedMeta.getPersistentDataContainer().has(origKey, PersistentDataType.STRING)) {
+                    origName = clickedMeta.getPersistentDataContainer().get(origKey, PersistentDataType.STRING);
                 } else {
-                    origName = clickedMeta.hasDisplayName() ? clickedMeta.getDisplayName() : plugin.formatMaterialName(clicked.getType());
+                    origName = clickedMeta.hasDisplayName() ? clickedMeta.getDisplayName() : DCCosmetics.getInstance().formatMaterialName(clicked.getType());
                     clickedMeta.getPersistentDataContainer().set(origKey, PersistentDataType.STRING, origName);
                 }
 
                 clicked.setItemMeta(clickedMeta);
-                plugin.updateCosmeticItem(clicked);
+                DCCosmetics.getInstance().updateCosmeticItem(clicked);
 
                 // Consume scroll
                 cursor.setAmount(cursor.getAmount() - 1);
@@ -128,11 +129,5 @@ public class PlayerListener implements Listener {
                 }
             }
         }
-    }
-
-    private final DCCosmetics plugin = DCCosmetics.getInstance();
-
-    public PlayerListener() {
-        Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 }

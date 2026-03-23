@@ -42,7 +42,7 @@ public class ProfileGUI implements InventoryHolder {
         this.isSelf = viewer.getUniqueId().equals(target.getUniqueId());
         this.targetProfile = DCCosmetics.getInstance().getProfileManager().getOfflineProfile(target);
 
-        YamlConfiguration config = DCCosmetics.getInstance().getGuiConfig();
+        YamlConfiguration config = DCCosmetics.getInstance().getProfileConfig();
         String rawTitle = config.getString("title", "&8{target}'s Profile");
         String title = formatText(rawTitle);
         int size = config.getInt("size", 54);

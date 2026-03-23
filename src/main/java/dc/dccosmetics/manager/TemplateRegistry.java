@@ -30,6 +30,8 @@ public class TemplateRegistry {
         new File(cosmeticsFolder, "boots").mkdirs();
         new File(cosmeticsFolder, "chest").mkdirs();
         new File(cosmeticsFolder, "waist").mkdirs();
+        new File(cosmeticsFolder, "sword").mkdirs();
+        new File(cosmeticsFolder, "offhand").mkdirs();
 
         int count = loadFolder(cosmeticsFolder);
         logger.info("[DEBUG] Successfully loaded " + count + " cosmetic templates.");

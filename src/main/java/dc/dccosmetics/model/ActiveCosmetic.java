@@ -126,6 +126,21 @@ public class ActiveCosmetic {
             float pYaw = pLoc.getYaw() % 360;
             if (pYaw < 0) pYaw += 360;
 
+            // --- VIEWER TRACKER (Fixes the Join/Teleport Visibility Bug!) ---
+            List<Player> worldPlayers = owner.getWorld().getPlayers();
+            for (Player viewer : worldPlayers) {
+                if (!viewers.contains(viewer)) {
+                    viewers.add(viewer);
+                    for (DisplayWrapper node : activeNodes.values()) {
+                        if (node instanceof dc.dccosmetics.nms.ProtocolDisplayWrapper pNode) {
+                            pNode.addViewerAndShow(viewer, owner.getEntityId());
+                        }
+                    }
+                }
+            }
+            // Remove players who left or changed worlds
+            viewers.removeIf(v -> !v.isOnline() || !v.getWorld().equals(owner.getWorld()));
+
             // --- FLIGHT DISABLER ---
             boolean isHidden = (owner instanceof Player p) && (p.isFlying() || p.isGliding() || (!p.isOnGround() && p.getVelocity().lengthSquared() > 0.8));
 

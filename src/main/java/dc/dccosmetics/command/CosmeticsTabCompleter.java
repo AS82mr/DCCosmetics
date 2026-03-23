@@ -17,15 +17,15 @@ public class CosmeticsTabCompleter implements TabCompleter {
         List<String> completions = new ArrayList<>();
 
         if (args.length == 1) {
-            completions.add("reload");
             completions.add("sound");
-            completions.add("debugboots");
             if (sender.hasPermission("dccosmetics.admin")) {
+                completions.add("reload");
                 completions.add("sculpt");
                 completions.add("import");
                 completions.add("debugnode");
                 completions.add("debugbb");
                 completions.add("scroll");
+                completions.add("editcmd");
             }
         } else if (args.length == 2 && sender.hasPermission("dccosmetics.admin")) {
             if (args[0].equalsIgnoreCase("sculpt")) {
@@ -54,12 +54,22 @@ public class CosmeticsTabCompleter implements TabCompleter {
                 for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
                     completions.add(p.getName());
                 }
+            } else if (args[0].equalsIgnoreCase("editcmd")) {
+                for (CosmeticTemplate template : DCCosmetics.getInstance().getTemplateRegistry().getAllTemplates()) {
+                    completions.add(template.getId());
+                }
             }
         } else if (args.length == 3 && sender.hasPermission("dccosmetics.admin")) {
             if (args[0].equalsIgnoreCase("scroll")) {
                 for (CosmeticTemplate template : DCCosmetics.getInstance().getTemplateRegistry().getAllTemplates()) {
                     completions.add(template.getId());
                 }
+            } else if (args[0].equalsIgnoreCase("editcmd")) {
+                completions.add("main");
+                completions.add("add");
+                completions.add("delete");
+                completions.add("comp");
+                completions.add("shift");
             } else if (args[0].equalsIgnoreCase("debugbb") && args[1].equalsIgnoreCase("ratio")) {
                 completions.add("0.92"); // Suggest default X
             }

@@ -67,6 +67,23 @@ public class ProtocolDisplayWrapper implements DisplayWrapper {
         sendPacketToViewers(spawnPacket);
     }
 
+    public void addViewerAndShow(Player player, int targetId) {
+        if (!viewers.contains(player)) viewers.add(player);
+        
+        // Re-send the spawn packet to the new player
+        PacketContainer spawnPacket = protocolManager.createPacket(PacketType.Play.Server.SPAWN_ENTITY);
+        spawnPacket.getIntegers().write(0, entityId);
+        spawnPacket.getUUIDs().write(0, uuid);
+        spawnPacket.getEntityTypeModifier().write(0, EntityType.TEXT_DISPLAY);
+        spawnPacket.getDoubles().write(0, location.getX());
+        spawnPacket.getDoubles().write(1, location.getY());
+        spawnPacket.getDoubles().write(2, location.getZ());
+        protocolManager.sendServerPacket(player, spawnPacket);
+
+        // Instantly snap it to the owner
+        mountToEntity(targetId);
+    }
+
     public int getEntityId() { return entityId; }
     
     public Location getLocation() { return location; }
