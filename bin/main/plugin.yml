@@ -21,3 +21,10 @@ commands:
     description: Customise the cosmetic applied to your held item.
     aliases: [customize]
     usage: /<command>
+  setupcinematicworld:
+    description: "Generates custom biome datapacks and void worlds."
+    permission: dccosmetics.admin
+    usage: "/setupcinematicworld <datapack | create> [name]"
+  draincolors:
+    description: "Converts WE selection to Grayscale/Cyan."
+    permission: dccosmetics.admin

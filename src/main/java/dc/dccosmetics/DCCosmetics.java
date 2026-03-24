@@ -127,6 +127,14 @@ public final class DCCosmetics extends JavaPlugin {
             getLogger().severe("[ERROR] Command 'profile' not found in plugin.yml!");
         }
 
+        // 5.5 Register Cinematic Commands
+        if (getCommand("setupcinematicworld") != null) {
+            getCommand("setupcinematicworld").setExecutor(new dc.dccosmetics.cinematic.CinematicWorldCommand());
+        }
+        if (getCommand("draincolors") != null) {
+            getCommand("draincolors").setExecutor(new dc.dccosmetics.cinematic.DrainColorsCommand());
+        }
+
         // 6. Handle Reloads (If the plugin is reloaded while players are already online)
         for (Player player : Bukkit.getOnlinePlayers()) {
             profileManager.loadProfile(player);

@@ -1,0 +1,22 @@
+# The exact vibe you requested: Gray grass, but Ocean Cyan tint injected into the leaves and fog!
+desolation:
+  sky_color: "#101214"
+  fog_color: "#1A2626"
+  water_color: "#0A1718"
+  water_fog_color: "#051010"
+  grass_color: "#353A3A"
+  foliage_color: "#1B4D4D"
+
+# An example of a future second biome! (A red, corrupted wasteland)
+crimson_rot:
+  sky_color: "#1A0505"
+  fog_color: "#2B0A0A"
+  water_color: "#250000"
+  water_fog_color: "#150000"
+  grass_color: "#2A2020"
+  foliage_color: "#551111"
+
+# You can add as many as you want down here!
+# my_custom_biome:
+#   sky_color: "#..."
+#   ...
