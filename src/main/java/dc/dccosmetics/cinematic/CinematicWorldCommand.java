@@ -101,7 +101,11 @@ public class CinematicWorldCommand implements CommandExecutor {
                         "      \"block_search_extent\": 8,\n" +
                         "      \"offset\": 2.0\n" +
                         "    }\n" +
-                        "  }\n" +
+                        "  },\n" +
+                        "  \"spawners\": {},\n" +
+                        "  \"spawn_costs\": {},\n" +
+                        "  \"carvers\": [],\n" +
+                        "  \"features\": []\n" +
                         "}";
                 
                 try (FileWriter w = new FileWriter(biomeFile)) { w.write(biomeJson); }
