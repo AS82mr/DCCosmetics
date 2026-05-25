@@ -1,0 +1,71 @@
+# DCCosmetics Wardrobe Configuration
+
+room:
+  # The world where the wardrobe is located
+  world: "world"
+  
+  # Where the player spawns when entering the wardrobe
+  spawn:
+    x: 0.5
+    y: 100.0
+    z: 0.5
+    yaw: 0.0
+    pitch: 0.0
+    
+  # Where the mannequin NPC stands
+  npc:
+    x: 0.5
+    y: 100.0
+    z: 5.5
+    yaw: 180.0
+    pitch: 0.0
+    
+  # Where the player goes when they click "Exit Wardrobe"
+  # (If true, returns them to their previous location instead)
+  return_to_previous_location: true
+  fallback_exit:
+    x: 0.5
+    y: 64.0
+    z: 0.5
+    yaw: 0.0
+    pitch: 0.0
+    
+  # Region boundaries to prevent the player from walking out
+  # If they step outside this, they are teleported back to the spawn
+  region:
+    min:
+      x: -10
+      y: 90
+      z: -10
+    max:
+      x: 10
+      y: 110
+      z: 10
+
+hud:
+  # Positions of the holographic menus relative to the player's spawn point
+  # Adjust these to fit your room's layout
+  
+  categories_panel:
+    x: -3.0
+    y: 1.5
+    z: 3.0
+    yaw: 45.0
+    
+  rarities_panel:
+    x: -3.0
+    y: 0.5
+    z: 3.0
+    yaw: 45.0
+    
+  scroll_list_panel:
+    x: 3.0
+    y: 1.5
+    z: 3.0
+    yaw: -45.0
+    
+  info_panel:
+    x: 3.0
+    y: 0.5
+    z: 3.0
+    yaw: -45.0

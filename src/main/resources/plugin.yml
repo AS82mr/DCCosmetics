@@ -28,3 +28,6 @@ commands:
   draincolors:
     description: "Converts WE selection to Grayscale/Cyan."
     permission: dccosmetics.admin
+  wardrobe:
+    description: "Enter the gaming wardrobe or configure it."
+    usage: "/wardrobe [wand|setup|setspawn|setnpc|setexit]"

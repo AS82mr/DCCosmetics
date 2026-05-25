@@ -19,3 +19,32 @@ messages:
   cosmetic_unequipped: "&cUnequipped cosmetic!"
   footstep_muted: "&cFootstep sounds muted!"
   footstep_unmuted: "&aFootstep sounds unmuted!"
+
+wardrobe:
+  # ── Entry / Exit ────────────────────────────────────────────
+  entering_title: "&8Entering..."
+  entering_subtitle: ""
+  hud_title: "&6&lTHE WARDROBE"
+  hud_subtitle: "&7Select your style"
+  exiting_message: "&eExiting wardrobe..."
+  exited_message: "&aExited the wardrobe."
+
+  # ── Left panel headers ─────────────────────────────────────
+  panel_select_slot: "&#38bdf8&l◈ SELECT SLOT ◈"
+  panel_select_rarity: "&7Select Rarity"
+  panel_more_above: "&8  ▲ more..."
+  panel_more_below: "&8  ▼ more..."
+  panel_no_items: "&c  No items found."
+
+  # ── Info panel prompts ─────────────────────────────────────
+  info_preview_prompt: "&7Left-click to preview"
+  info_equip_prompt: "&e&l▶ &f&lLeft-click to &a&lEQUIP"
+  info_back_prompt: "&8Right-click to go back"
+
+  # ── Keybind hints panel ────────────────────────────────────
+  keybind_navigate: "&b⟨ SCROLL ⟩ &7Navigate"
+  keybind_select: "&e⟨ LEFT CLICK ⟩ &7Select / Equip"
+  keybind_back: "&c⟨ RIGHT CLICK ⟩ &c◄ Back"
+  keybind_back_none: "&8[none]"
+  keybind_exit: "&7⟨ SHIFT ⟩ &cExit wardrobe"
+  keybind_divider: "&8────────────────────"

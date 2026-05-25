@@ -16,6 +16,14 @@ import dc.dccosmetics.manager.BlockbenchImporter;
 import dc.dccosmetics.manager.CosmeticWatcher;
 import dc.dccosmetics.manager.LanguageManager;
 import dc.dccosmetics.nms.ProtocolLibAdapter;
+import dc.dccosmetics.wardrobe.WardrobeManager;
+import dc.dccosmetics.wardrobe.WardrobeRoom;
+import dc.dccosmetics.wardrobe.WardrobeRegionSelector;
+import dc.dccosmetics.wardrobe.command.WardrobeCommand;
+import dc.dccosmetics.wardrobe.command.WardrobeTabCompleter;
+import dc.dccosmetics.wardrobe.gui.WardrobeAdminGUI;
+import dc.dccosmetics.wardrobe.listener.WardrobeListener;
+import dc.dccosmetics.wardrobe.listener.WardrobePacketListener;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -46,6 +54,7 @@ public final class DCCosmetics extends JavaPlugin {
     private BlockbenchImporter blockbenchImporter;
     private CosmeticWatcher watcher;
     private LanguageManager languageManager;
+    private WardrobeManager wardrobeManager;
 
     @Override
     public void onEnable() {
@@ -66,6 +75,12 @@ public final class DCCosmetics extends JavaPlugin {
         this.blockbenchImporter = new BlockbenchImporter();
         this.languageManager = new LanguageManager();
         this.languageManager.load();
+        
+        WardrobeRoom wardrobeRoom = new WardrobeRoom();
+        wardrobeRoom.load();
+        this.wardrobeManager = new WardrobeManager(wardrobeRoom);
+        WardrobeRegionSelector regionSelector = new WardrobeRegionSelector(wardrobeRoom);
+        WardrobeAdminGUI adminGUI = new WardrobeAdminGUI(wardrobeRoom);
 
         saveDefaultConfig(); // Automatically saves config.yml from resources!
 
@@ -108,10 +123,11 @@ public final class DCCosmetics extends JavaPlugin {
         this.customiseConfig = YamlConfiguration.loadConfiguration(customiseFile);
         this.templateRegistry.loadAll();
 
-        // 4. Register Listeners (Cleaned up the duplicates!)
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
         getServer().getPluginManager().registerEvents(new EnchantmentDragListener(), this);
         getServer().getPluginManager().registerEvents(new FootstepListener(), this);
+        getServer().getPluginManager().registerEvents(new WardrobeListener(this.wardrobeManager), this);
+        new WardrobePacketListener(this.wardrobeManager).register();
 
         // 5. Register Command (Now guiManager is fully loaded!)
         if (getCommand("cosmetics") != null) {
@@ -133,6 +149,10 @@ public final class DCCosmetics extends JavaPlugin {
         }
         if (getCommand("draincolors") != null) {
             getCommand("draincolors").setExecutor(new dc.dccosmetics.cinematic.DrainColorsCommand());
+        }
+        if (getCommand("wardrobe") != null) {
+            getCommand("wardrobe").setExecutor(new WardrobeCommand(this.wardrobeManager, wardrobeRoom, regionSelector, adminGUI));
+            getCommand("wardrobe").setTabCompleter(new WardrobeTabCompleter());
         }
 
         // 6. Handle Reloads (If the plugin is reloaded while players are already online)
@@ -331,4 +351,5 @@ public final class DCCosmetics extends JavaPlugin {
     public YamlConfiguration getProfileConfig() { return profileConfig; }
     public YamlConfiguration getCustomiseConfig() { return customiseConfig; }
     public LanguageManager getLanguageManager() { return languageManager; }
+    public WardrobeManager getWardrobeManager() { return wardrobeManager; }
 }

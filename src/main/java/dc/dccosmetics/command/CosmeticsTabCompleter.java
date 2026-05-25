@@ -17,6 +17,7 @@ public class CosmeticsTabCompleter implements TabCompleter {
         List<String> completions = new ArrayList<>();
 
         if (args.length == 1) {
+            completions.add("help");
             completions.add("sound");
             if (sender.hasPermission("dccosmetics.admin")) {
                 completions.add("reload");

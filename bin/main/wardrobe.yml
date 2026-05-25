@@ -1,0 +1,67 @@
+# DCCosmetics Wardrobe Configuration
+
+room:
+  # The world where the wardrobe is located
+  world: "world"
+  
+  # Where the player spawns when entering the wardrobe (camera lock point)
+  spawn:
+    x: 0.5
+    y: 100.0
+    z: 0.5
+    yaw: 0.0
+    pitch: 0.0
+    
+  # Where the mannequin NPC stands
+  npc:
+    x: 0.5
+    y: 100.0
+    z: 5.5
+    yaw: 180.0
+    pitch: 0.0
+    
+  # Players are sent here during camera mode (prevents them floating in the open)
+  # Set via: /wardrobe setsaferoom
+  # safe_room:
+  #   x: 0.0
+  #   y: 64.0
+  #   z: 0.0
+  #   yaw: 0.0
+  #   pitch: 0.0
+
+  # Where the player goes when they exit the wardrobe
+  return_to_previous_location: true
+  fallback_exit:
+    x: 0.5
+    y: 64.0
+    z: 0.5
+    yaw: 0.0
+    pitch: 0.0
+    
+  # Region boundaries — if set, player is teleported back to spawn if they walk out
+  region:
+    min:
+      x: -10
+      y: 90
+      z: -10
+    max:
+      x: 10
+      y: 110
+      z: 10
+
+# ── HUD Feature Toggles ────────────────────────────────────────────────────────
+hud:
+  # When true, each menu row is a separate hologram entity.
+  # This enables individual row highlight animations on scroll (pop-out effect).
+  # When false, all rows are merged into one unified panel (old behaviour).
+  # Toggle this to test without breaking anything.
+  modular-buttons: false
+
+  # When true, a thin BlockDisplay laser line is drawn from the CCTV camera rig
+  # lens pointing at the currently selected menu button.
+  # Requires modular-buttons: true to know which button to target.
+  laser-pointer: false
+
+  # Per-angle panel positions (configured via /wardrobe studio)
+  # Do not edit manually unless you know what you're doing.
+  angles: {}

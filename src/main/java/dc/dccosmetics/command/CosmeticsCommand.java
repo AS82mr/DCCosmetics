@@ -23,6 +23,28 @@ public class CosmeticsCommand implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 
         // =========================================
+        // 0. HELP COMMAND: /cosmetics help
+        // =========================================
+        if (args.length > 0 && args[0].equalsIgnoreCase("help")) {
+            sender.sendMessage(ChatColor.GOLD + "=== DCCosmetics Commands ===");
+            sender.sendMessage(ChatColor.YELLOW + "/cosmetics" + ChatColor.WHITE + " - Open the cosmetics menu");
+            sender.sendMessage(ChatColor.YELLOW + "/customise" + ChatColor.WHITE + " - Customise cosmetic on held item");
+            sender.sendMessage(ChatColor.YELLOW + "/profile [player]" + ChatColor.WHITE + " - View a player's profile");
+            sender.sendMessage(ChatColor.YELLOW + "/wardrobe" + ChatColor.WHITE + " - Enter the gaming wardrobe");
+            if (sender.hasPermission("dccosmetics.admin")) {
+                sender.sendMessage(ChatColor.RED + "--- Admin Commands ---");
+                sender.sendMessage(ChatColor.YELLOW + "/cosmetics reload" + ChatColor.WHITE + " - Reload configurations");
+                sender.sendMessage(ChatColor.YELLOW + "/cosmetics import <file>" + ChatColor.WHITE + " - Import a blockbench model");
+                sender.sendMessage(ChatColor.YELLOW + "/cosmetics scroll <player> <id>" + ChatColor.WHITE + " - Give a cosmetic scroll");
+                sender.sendMessage(ChatColor.YELLOW + "/wardrobe admin" + ChatColor.WHITE + " - Open Wardrobe setup GUI");
+                sender.sendMessage(ChatColor.YELLOW + "/wardrobe [wand|setup|setspawn|setnpc|setexit]" + ChatColor.WHITE + " - Setup tools");
+                sender.sendMessage(ChatColor.YELLOW + "/setupcinematicworld" + ChatColor.WHITE + " - Create a void world");
+                sender.sendMessage(ChatColor.YELLOW + "/draincolors" + ChatColor.WHITE + " - Drain colors from WE selection");
+            }
+            return true;
+        }
+
+        // =========================================
         // 1. ADMIN COMMAND: /cosmetics reload
         // (Can be run by players OR the console)
         // =========================================
