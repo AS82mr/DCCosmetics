@@ -173,7 +173,7 @@ public class WardrobeStudioCommand {
         if (selAngle != null) {
             player.spigot().sendMessage(txt("  §7Panel:"));
             ComponentBuilder panelRow = new ComponentBuilder("  ");
-            String[][] panels = {{"left", "§3LEFT"}, {"info", "§5INFO"}, {"keybind", "§cKEYBIND"}};
+            String[][] panels = {{"left", "§3LEFT"}, {"modular", "§dMODULAR"}, {"info", "§5INFO"}, {"keybind", "§cKEYBIND"}};
             for (String[] p : panels) {
                 boolean sel = p[0].equals(selPanel);
                 TextComponent btn = new TextComponent((sel ? "§a§l" : "§7") + "[" + p[1] + (sel ? " §a§l✔" : "") + "§7]  ");

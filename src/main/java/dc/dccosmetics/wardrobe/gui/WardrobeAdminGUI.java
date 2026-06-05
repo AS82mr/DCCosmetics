@@ -31,17 +31,30 @@ public class WardrobeAdminGUI implements Listener {
     public void open(Player player) {
         Inventory inv = Bukkit.createInventory(null, 27, TITLE);
 
-        inv.setItem(10, createItem(Material.ENDER_PEARL, ChatColor.AQUA + "Set Wardrobe Spawn", 
-            ChatColor.GRAY + "Click to set the player spawn", ChatColor.GRAY + "point to your current location."));
-            
-        inv.setItem(12, createItem(Material.ARMOR_STAND, ChatColor.GOLD + "Set NPC Location", 
-            ChatColor.GRAY + "Click to set the mannequin NPC", ChatColor.GRAY + "stand to your current location."));
-            
-        inv.setItem(14, createItem(Material.IRON_DOOR, ChatColor.GREEN + "Set Fallback Exit", 
-            ChatColor.GRAY + "Click to set the exit point", ChatColor.GRAY + "to your current location."));
+        inv.setItem(10, createItem(Material.ENDER_PEARL, ChatColor.AQUA + "Set Wardrobe Spawn",
+            ChatColor.GRAY + "Click to set the player (camera) spawn",
+            ChatColor.GRAY + "to your current location."));
 
-        inv.setItem(16, createItem(Material.GLOWSTONE_DUST, ChatColor.YELLOW + "Highlight Region", 
-            ChatColor.GRAY + "Click to spawn particles around", ChatColor.GRAY + "the configured wardrobe region boundaries."));
+        inv.setItem(11, createItem(Material.BLUE_BED, ChatColor.LIGHT_PURPLE + "Set Safe Room",
+            ChatColor.GRAY + "Click to set the safe room where",
+            ChatColor.GRAY + "players wait during camera mode."));
+
+        inv.setItem(12, createItem(Material.ARMOR_STAND, ChatColor.GOLD + "Set NPC Location",
+            ChatColor.GRAY + "Click to set the mannequin NPC",
+            ChatColor.GRAY + "stand to your current location."));
+
+        inv.setItem(13, createItem(Material.IRON_DOOR, ChatColor.GREEN + "Set Fallback Exit",
+            ChatColor.GRAY + "Click to set the exit point",
+            ChatColor.GRAY + "to your current location."));
+
+        inv.setItem(14, createItem(Material.GLOWSTONE_DUST, ChatColor.YELLOW + "Highlight Region",
+            ChatColor.GRAY + "Click to spawn particles around",
+            ChatColor.GRAY + "the configured wardrobe region boundaries."));
+
+        inv.setItem(15, createItem(Material.COMMAND_BLOCK, ChatColor.GRAY + "Studio (Chat)",
+            ChatColor.GRAY + "Opens the HUD studio panel",
+            ChatColor.GRAY + "in chat for fine-tuning panel positions.",
+            ChatColor.DARK_GRAY + "Command: /wardrobe studio"));
 
         player.openInventory(inv);
     }
@@ -72,7 +85,12 @@ public class WardrobeAdminGUI implements Listener {
         switch (name) {
             case "Set Wardrobe Spawn":
                 room.saveSpawn(player.getLocation());
-                player.sendMessage(ChatColor.GREEN + "Wardrobe spawn location set to your position!");
+                player.sendMessage(ChatColor.GREEN + "Wardrobe spawn (camera) location set to your position!");
+                player.closeInventory();
+                break;
+            case "Set Safe Room":
+                room.saveSafeRoom(player.getLocation());
+                player.sendMessage(ChatColor.LIGHT_PURPLE + "Safe room location set. Players will be held here during camera mode.");
                 player.closeInventory();
                 break;
             case "Set NPC Location":
@@ -88,6 +106,10 @@ public class WardrobeAdminGUI implements Listener {
             case "Highlight Region":
                 player.closeInventory();
                 highlightRegion(player);
+                break;
+            case "Studio (Chat)":
+                player.closeInventory();
+                player.performCommand("wardrobe studio");
                 break;
         }
     }

@@ -52,11 +52,11 @@ public class HudButton {
     private State   state          = State.NORMAL;
 
     // Shared serializer references (initialised once by HudTextDisplay)
-    private static WrappedDataWatcher.Serializer VEC3_SER  = null;
-    private static WrappedDataWatcher.Serializer QUAT_SER  = null;
-    private static WrappedDataWatcher.Serializer BYTE_SER  = null;
-    private static WrappedDataWatcher.Serializer INT_SER   = null;
-    private static WrappedDataWatcher.Serializer CHAT_SER  = null;
+    private static WrappedDataWatcher.Serializer VEC3_SER    = null;
+    private static WrappedDataWatcher.Serializer QUAT_SER    = null;
+    private static WrappedDataWatcher.Serializer BYTE_SER    = null;
+    private static WrappedDataWatcher.Serializer INT_SER     = null;
+    private static WrappedDataWatcher.Serializer CHAT_SER    = null;
     private static boolean serialisersReady = false;
 
     // ── Per-state visual config ──────────────────────────────────────────────
@@ -71,9 +71,9 @@ public class HudButton {
     private static final float SCALE_NORMAL   = 1.00f;
     private static final float SCALE_SELECTED = 1.10f; // 10% pop
 
-    // Animation interpolation settings
+    // Correct 1.21.x Display metadata indices (same as HudTextDisplay)
     private static final int INTERP_DELAY    = 0;
-    private static final int INTERP_DURATION = 5; // ticks for the pop animation
+    private static final int INTERP_DURATION = 5;
 
     public HudButton(Player viewer, Location location, float baseScale) {
         this.viewer    = viewer;
@@ -232,10 +232,12 @@ public class HudButton {
 
         List<WrappedDataValue> values = new ArrayList<>();
 
-        // ── Interpolation ─────────────────────────────────────────
+        // ── Interpolation (indices 8 = delay, 9 = transformation duration) ───
+        // Index 9 = DATA_TRANSFORMATION_INTERPOLATION_DURATION_ID (confirmed via NMS dump)
+        // Index 10 = DATA_POS_ROT_INTERPOLATION_DURATION_ID — do NOT send
         if (interpolate && INT_SER != null) {
-            values.add(new WrappedDataValue(10, INT_SER, INTERP_DELAY));
-            values.add(new WrappedDataValue(11, INT_SER, INTERP_DURATION));
+            values.add(new WrappedDataValue(8, INT_SER, INTERP_DELAY));    // transformation interp delay
+            values.add(new WrappedDataValue(9, INT_SER, INTERP_DURATION)); // transformation interp duration
         }
 
         // ── Scale + Rotation ──────────────────────────────────────
@@ -249,8 +251,10 @@ public class HudButton {
             } catch (Exception ignored) {}
         }
 
-        // ── Billboard: CENTER ──────────────────────────────────────
-        values.add(new WrappedDataValue(15, BYTE_SER, (byte) 3));
+        // ── Billboard: FIXED (0) instead of CENTER (3) ─────────────────────────
+        // This ensures all buttons in the group are perfectly parallel to the camera,
+        // preventing perspective distortion (the "diagonal Right X" bug).
+        values.add(new WrappedDataValue(15, BYTE_SER, (byte) 0));
 
         // ── Text ──────────────────────────────────────────────────
         values.add(new WrappedDataValue(23, CHAT_SER,

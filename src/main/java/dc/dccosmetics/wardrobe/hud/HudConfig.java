@@ -45,9 +45,10 @@ public class HudConfig {
         }
     }
 
-    // ── Per-angle config (3 panels) ──────────────────────────────
+    // ── Per-angle config (4 panels) ──────────────────────────────
     public static class AngleConfig {
         public PanelConfig left    = new PanelConfig(0.18f, 1.5, -2.6,  0.0);
+        public PanelConfig modular = new PanelConfig(0.18f, 1.5, -2.6,  0.0);
         public PanelConfig info    = new PanelConfig(0.18f, 1.5,  0.0, -0.15);
         public PanelConfig keybind = new PanelConfig(0.18f, 1.5,  0.0, -0.35);
     }
@@ -94,6 +95,7 @@ public class HudConfig {
         if (ac == null) return null;
         switch (panelKey) {
             case "left":    return ac.left;
+            case "modular": return ac.modular;
             case "info":    return ac.info;
             case "keybind": return ac.keybind;
         }
@@ -110,6 +112,7 @@ public class HudConfig {
             AngleConfig ac = angles.getOrDefault(angle, new AngleConfig());
             String base = "hud.angles." + angle + ".";
             ac.left    = readPanel(cfg, base + "left",    ac.left);
+            ac.modular = readPanel(cfg, base + "modular", ac.left); // fallback to left if modular not present
             ac.info    = readPanel(cfg, base + "info",    ac.info);
             ac.keybind = readPanel(cfg, base + "keybind", ac.keybind);
             angles.put(angle, ac);
@@ -137,6 +140,7 @@ public class HudConfig {
             AngleConfig ac = angles.getOrDefault(angle, new AngleConfig());
             String base = "hud.angles." + angle + ".";
             writePanel(cfg, base + "left",    ac.left);
+            writePanel(cfg, base + "modular", ac.modular);
             writePanel(cfg, base + "info",    ac.info);
             writePanel(cfg, base + "keybind", ac.keybind);
         }

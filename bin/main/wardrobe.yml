@@ -2,66 +2,207 @@
 
 room:
   # The world where the wardrobe is located
-  world: "world"
+  world: Spawn
   
-  # Where the player spawns when entering the wardrobe (camera lock point)
+  # Where the player spawns (camera lock point) when entering the wardrobe
   spawn:
-    x: 0.5
-    y: 100.0
-    z: 0.5
-    yaw: 0.0
-    pitch: 0.0
-    
+    x: 393.0204037378195
+    y: 79.0
+    z: -547.4047805289323
+    yaw: -66.4106
+    pitch: 0.4499422
+  
   # Where the mannequin NPC stands
   npc:
-    x: 0.5
-    y: 100.0
-    z: 5.5
-    yaw: 180.0
-    pitch: 0.0
-    
-  # Players are sent here during camera mode (prevents them floating in the open)
-  # Set via: /wardrobe setsaferoom
-  # safe_room:
-  #   x: 0.0
-  #   y: 64.0
-  #   z: 0.0
-  #   yaw: 0.0
-  #   pitch: 0.0
-
-  # Where the player goes when they exit the wardrobe
+    x: 396.53828236858163
+    y: 79.0
+    z: -544.462916622202
+    yaw: 118.689545
+    pitch: -1.3500094
+  
+  # Where the player goes when they click "Exit Wardrobe"
+  # (If true, returns them to their previous location instead)
   return_to_previous_location: true
   fallback_exit:
-    x: 0.5
-    y: 64.0
-    z: 0.5
-    yaw: 0.0
-    pitch: 0.0
-    
-  # Region boundaries — if set, player is teleported back to spawn if they walk out
+    x: 388.1108664535434
+    y: 78.0
+    z: -545.3675293710643
+    yaw: 90.48944
+    pitch: -2.700051
+  
+  # Region boundaries to prevent the player from walking out
   region:
     min:
-      x: -10
-      y: 90
-      z: -10
+      x: 398.0
+      y: 78.0
+      z: -542.0
     max:
-      x: 10
-      y: 110
-      z: 10
+      x: 391.0
+      y: 85.0
+      z: -551.0
 
-# ── HUD Feature Toggles ────────────────────────────────────────────────────────
+  # Where players' bodies are held during camera mode (set via /wardrobe setsaferoom)
+  safe_room:
+    x: 198.3082879636369
+    y: 144.0
+    z: -498.57923068196226
+    yaw: -86.95935
+    pitch: 5.550043
+
 hud:
-  # When true, each menu row is a separate hologram entity.
-  # This enables individual row highlight animations on scroll (pop-out effect).
-  # When false, all rows are merged into one unified panel (old behaviour).
-  # Toggle this to test without breaking anything.
+  # ── NEW: Feature Toggles ───────────────────────────────────────────────────
+  # Each menu row as its own separate hologram entity (individual highlight
+  # animations on scroll). false = legacy unified panel (default, safe).
   modular-buttons: false
 
-  # When true, a thin BlockDisplay laser line is drawn from the CCTV camera rig
-  # lens pointing at the currently selected menu button.
-  # Requires modular-buttons: true to know which button to target.
+  # Thin BlockDisplay laser from camera rig to selected button.
+  # Only works when modular-buttons is true.
   laser-pointer: false
 
-  # Per-angle panel positions (configured via /wardrobe studio)
-  # Do not edit manually unless you know what you're doing.
-  angles: {}
+  # ── Diagnostic: Step Limiter ───────────────────────────────────────────────
+  # Controls how far the wardrobe cinematic goes. Set to 6 for normal operation.
+  # Lower to isolate which step is causing a crash:
+  #   1 = title + chime only (no entities)
+  #   2 = + spawn HUD
+  #   3 = + spawn mannequin
+  #   4 = + lock camera
+  #   5 = + spawn CCTV rig
+  #   6 = + reposition HUD for camera (full — normal operation)
+  diagnostic-max-step: 6
+
+  # ── Panel Positions (tuned via /wardrobe studio) ───────────────────────────
+  scale: 0.07000000029802322
+  forward-dist: 1.5
+  left-offset: 2.6
+  info-y-offset: 0.1
+  keybind-y-offset: 0.35
+  panels:
+    left:
+      scale: 0.11999999731779099
+      forward: 1.5
+      right-offset: -2.6
+      y-offset: 0.0
+    info:
+      scale: 0.18000000715255737
+      forward: 1.5
+      right-offset: 0.0
+      y-offset: -0.15
+    keybind:
+      scale: 0.28999999165534973
+      forward: 0.75
+      right-offset: -0.05
+      y-offset: 2.8
+    slot-select-left:
+      scale: 0.6100000143051147
+      forward: 1.1
+      right-offset: -1.65
+      y-offset: 1.35
+    zoomed-left:
+      head:
+        scale: 0.18000000715255737
+        forward: 1.5
+        right-offset: -2.6
+        y-offset: 0.0
+      chest:
+        scale: 0.18000000715255737
+        forward: 1.5
+        right-offset: -2.6
+        y-offset: 0.0
+      waist:
+        scale: 0.18000000715255737
+        forward: 1.5
+        right-offset: -2.6
+        y-offset: 0.0
+      boots:
+        scale: 0.18000000715255737
+        forward: 1.5
+        right-offset: -2.6
+        y-offset: 0.0
+      sword:
+        scale: 0.18000000715255737
+        forward: 1.5
+        right-offset: -2.6
+        y-offset: 0.0
+
+  # ── Per-angle panel positions (camera zoom per slot) ───────────────────────
+  angles:
+    full-body:
+      left:
+        scale: 0.800000011920929
+        forward: 1.4
+        right-offset: -2.3
+        y-offset: 0.8
+      info:
+        scale: 0.18000000715255737
+        forward: 1.5
+        right-offset: 0.0
+        y-offset: -0.15
+      keybind:
+        scale: 0.3799999952316284
+        forward: 1.1
+        right-offset: -0.3
+        y-offset: 2.7
+    head:
+      left:
+        scale: 0.28999999165534973
+        forward: 0.2
+        right-offset: 1.2
+        y-offset: 2.0
+      info:
+        scale: 0.18000000715255737
+        forward: 0.2
+        right-offset: 0.0
+        y-offset: 1.35
+      keybind:
+        scale: 0.46000000834465027
+        forward: 0.2
+        right-offset: 0.0
+        y-offset: 3.25
+    chest:
+      left:
+        scale: 0.5600000023841858
+        forward: 1.55
+        right-offset: 2.4
+        y-offset: 2.15
+      info:
+        scale: 0.11999999731779099
+        forward: 0.2
+        right-offset: 0.0
+        y-offset: 1.85
+      keybind:
+        scale: 0.3199999928474426
+        forward: 0.7
+        right-offset: 0.0
+        y-offset: 2.6
+    waist:
+      left:
+        scale: 0.2800000011920929
+        forward: 1.5
+        right-offset: 1.4
+        y-offset: 1.7
+      info:
+        scale: 0.18000000715255737
+        forward: 1.5
+        right-offset: 0.0
+        y-offset: -0.15
+      keybind:
+        scale: 0.20999999344348907
+        forward: 1.15
+        right-offset: 0.0
+        y-offset: 2.0
+    boots:
+      left:
+        scale: 0.3799999952316284
+        forward: 2.0
+        right-offset: 1.6
+        y-offset: 0.95
+      info:
+        scale: 0.07999999821186066
+        forward: 1.0
+        right-offset: 0.0
+        y-offset: 1.1
+      keybind:
+        scale: 0.3199999928474426
+        forward: 2.7
+        right-offset: 0.0
+        y-offset: 1.95

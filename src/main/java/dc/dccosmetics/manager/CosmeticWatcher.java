@@ -36,7 +36,27 @@ public class CosmeticWatcher extends BukkitRunnable {
         checkConfig(new File(plugin.getDataFolder(), "config.yml"));
         checkConfig(new File(plugin.getDataFolder(), "profile.yml"));
         checkConfig(new File(plugin.getDataFolder(), "customise.yml"));
+        checkWardrobeConfig(new File(plugin.getDataFolder(), "wardrobe.yml"));
         checkFolder(new File(plugin.getDataFolder(), "cosmetics"));
+    }
+
+    private void checkWardrobeConfig(File file) {
+        if (!file.exists()) return;
+        long lastModified = file.lastModified();
+        Long previous = fileTimestamps.get(file.getAbsolutePath());
+        if (previous == null || lastModified > previous) {
+            fileTimestamps.put(file.getAbsolutePath(), lastModified);
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                dc.dccosmetics.wardrobe.hud.HudConfig.get().load();
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    dc.dccosmetics.wardrobe.WardrobeSession session = plugin.getWardrobeManager().getSession(player);
+                    if (session != null && session.getHud() != null) {
+                        session.getHud().renderAll();
+                    }
+                }
+                broadcastAdmin("§a[DCCosmetics] Auto-Reloaded Wardrobe Config: §e" + file.getName());
+            });
+        }
     }
 
     private void checkConfig(File file) {

@@ -11,7 +11,7 @@ import java.util.List;
 
 public class WardrobeTabCompleter implements TabCompleter {
 
-    private final List<String> adminCommands = Arrays.asList("wand", "setup", "setspawn", "setnpc", "setexit", "admin");
+    private final List<String> adminCommands = Arrays.asList("wand", "setup", "setspawn", "setnpc", "setexit", "admin", "studio");
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {

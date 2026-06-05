@@ -46,18 +46,31 @@ public class HudTextDisplay {
     private int    backgroundColor = 0x40000000;
     private byte   billboardMode   = 3;    // CENTER
     private float  scale           = 0.18f;
+    private boolean destroyed      = false; // guard against stale scheduler tasks
 
     // Cached NMS serializers (found once, reused)
-    private static WrappedDataWatcher.Serializer VEC3_SER   = null;
-    private static WrappedDataWatcher.Serializer QUAT_SER   = null;
-    private static WrappedDataWatcher.Serializer BYTE_SER   = null;
-    private static WrappedDataWatcher.Serializer INT_SER    = null;
-    private static WrappedDataWatcher.Serializer CHAT_SER   = null;
+    private static WrappedDataWatcher.Serializer VEC3_SER      = null;
+    private static WrappedDataWatcher.Serializer QUAT_SER      = null;
+    private static WrappedDataWatcher.Serializer BYTE_SER      = null;
+    private static WrappedDataWatcher.Serializer INT_SER       = null;
+    private static WrappedDataWatcher.Serializer CHAT_SER      = null;
     private static boolean serialisersInitialised = false;
 
     // Animation
-    private static final int INTERP_DELAY    = 0;
+    private static final int INTERP_DELAY    = 0; // scheduler handles the delay; start immediately when packet arrives
     private static final int INTERP_DURATION = 5; // ticks
+
+    // Correct metadata indices for 1.21.x Display entity:
+    //   8  = interpolation delay    (int)
+    //   9  = teleport duration      (int) [added 1.20.2]
+    //   10 = interpolation duration (int)
+    //   11 = translation            (Vector3f)  ← DO NOT write int here
+    //   12 = scale                  (Vector3f)
+    //   13 = left rotation          (Quaternionf)
+    //   14 = right rotation         (Quaternionf)
+    //   15 = billboard              (byte)
+    //   23 = text                   (Component)
+    //   25 = background color       (int ARGB)
 
     public HudTextDisplay(Player viewer, Location location) {
         this.viewer   = viewer;
@@ -96,8 +109,16 @@ public class HudTextDisplay {
             VEC3_SER = WrappedDataWatcher.Registry.fromHandle(nmsVec3);
             QUAT_SER = WrappedDataWatcher.Registry.fromHandle(nmsQuat);
 
+            // Obtain INT serializer via NMS reflection — same handle the server uses
+            // for interpolation fields (indices 8, 9). Registry.get(Integer.class) can
+            // return the wrong type-ID in some ProtocolLib builds.
+            Field intField = nmsSerializers.getDeclaredField("INT");
+            intField.setAccessible(true);
+            INT_SER = WrappedDataWatcher.Registry.fromHandle(intField.get(null));
+
             DCCosmetics.getInstance().getLogger().info(
-                    "[HudTextDisplay] Serializers initialized. Scale support: " + (VEC3_SER != null));
+                    "[HudTextDisplay] Serializers initialized. Scale support: " + (VEC3_SER != null)
+                    + " INT via NMS: " + (INT_SER != null));
 
         } catch (Exception e) {
             DCCosmetics.getInstance().getLogger().warning(
@@ -129,10 +150,27 @@ public class HudTextDisplay {
             return;
         }
 
-        // Send scale=0 immediately (entity invisible), then pop-in after 1 tick
+        // Always send scale=0, interp=false first — lets the client initialize
+        // entity state before any interpolation is attempted.
         sendMetadataWithScale(0.0f, false);
+    }
+
+    /**
+     * Snaps to {@code targetScale} after a 2-tick delay (lets the client initialise
+     * entity state after spawn). Single step — no visible scaling animation.
+     */
+    public void animateTo(float targetScale) {
+        if (destroyed) return;
+        this.scale = targetScale;
         DCCosmetics.getInstance().getServer().getScheduler().runTaskLater(
-                DCCosmetics.getInstance(), () -> sendMetadataWithScale(scale, true), 1L);
+                DCCosmetics.getInstance(),
+                () -> {
+                    if (!destroyed) {
+                        this.scale = targetScale;
+                        sendMetadataWithScale(targetScale, false);
+                    }
+                },
+                2L);
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -146,7 +184,7 @@ public class HudTextDisplay {
 
     public void setScale(float scale) {
         this.scale = scale;
-        sendMetadataWithScale(scale, true);
+        sendMetadataWithScale(scale, false); // interp=false — interp=true crashes client
     }
 
     public void setBackgroundColor(int argb) {
@@ -155,19 +193,22 @@ public class HudTextDisplay {
     }
 
     private void sendMetadataWithScale(float targetScale, boolean interpolate) {
-        if (BYTE_SER == null) return; // serializers not ready yet
+        if (destroyed) return;         // entity already removed — stale scheduler task, ignore
+        if (BYTE_SER == null) return;  // serializers not ready yet
 
+        DCCosmetics.getInstance().getLogger().info(
+            "[Wardrobe][DEBUG] metadata entity=" + entityId +
+            " scale=" + targetScale + " interp=" + interpolate +
+            " viewer=" + viewer.getName());
         PacketContainer meta = ProtocolLibrary.getProtocolManager()
                 .createPacket(PacketType.Play.Server.ENTITY_METADATA);
         meta.getIntegers().write(0, entityId);
 
         List<WrappedDataValue> values = new ArrayList<>();
 
-        // ── Interpolation (optional) ──────────────────────────────
-        if (interpolate && INT_SER != null) {
-            values.add(new WrappedDataValue(10, INT_SER, INTERP_DELAY));
-            values.add(new WrappedDataValue(11, INT_SER, INTERP_DURATION));
-        }
+        // NOTE: Display entity transformation interpolation (indices 8/9) is intentionally
+        // NOT used — sending interp=true consistently crashes this client (Fabric + Sodium).
+        // Animation is achieved via Bukkit scheduler step-animation in animateTo() instead.
 
         // ── Scale + Rotation (indices 12–14) ──────────────────────
         if (VEC3_SER != null && QUAT_SER != null) {
@@ -205,12 +246,14 @@ public class HudTextDisplay {
     }
 
     /**
-     * Animates scale to 0 then destroys the entity after the interpolation completes.
+     * Hides scale immediately (interp=false — interp=true crashes this client)
+     * then destroys the entity after 5 ticks.
      */
     public void destroyAnimated() {
-        sendMetadataWithScale(0.0f, true);
+        sendMetadataWithScale(0.0f, false); // snap to scale=0 first (must come before destroyed=true)
+        destroyed = true;                   // THEN block stale scheduler tasks from firing
         DCCosmetics.getInstance().getServer().getScheduler().runTaskLater(
-                DCCosmetics.getInstance(), this::destroy, 6L);
+                DCCosmetics.getInstance(), this::destroy, 5L);
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -218,6 +261,7 @@ public class HudTextDisplay {
     // ─────────────────────────────────────────────────────────────
 
     public void destroy() {
+        destroyed = true;  // prevent any future metadata sends to this entity ID
         PacketContainer destroyPacket = ProtocolLibrary.getProtocolManager()
                 .createPacket(PacketType.Play.Server.ENTITY_DESTROY);
         destroyPacket.getIntLists().write(0, java.util.Collections.singletonList(entityId));

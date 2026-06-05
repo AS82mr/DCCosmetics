@@ -114,6 +114,15 @@ public final class DCCosmetics extends JavaPlugin {
             }
         }
         
+        File cameraTemplate = new File(getDataFolder(), "cosmetics" + File.separator + "camera" + File.separator + "default_camera.yml");
+        if (!cameraTemplate.exists()) {
+            try {
+                saveResource("cosmetics/camera/default_camera.yml", false);
+            } catch (IllegalArgumentException e) {
+                getLogger().warning("[WARNING] Default camera template not found in jar!");
+            }
+        }
+        
         if (getCommand("customise") != null) {
             getCommand("customise").setExecutor(new CustomiseCommand(this.guiManager));
         } else {

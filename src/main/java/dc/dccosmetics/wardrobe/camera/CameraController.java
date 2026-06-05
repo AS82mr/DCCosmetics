@@ -27,9 +27,9 @@ public class CameraController {
         PacketContainer spawnPacket = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.SPAWN_ENTITY);
         spawnPacket.getIntegers().write(0, cameraEntityId);
         spawnPacket.getUUIDs().write(0, UUID.randomUUID());
-        spawnPacket.getEntityTypeModifier().write(0, EntityType.MARKER);
+        spawnPacket.getEntityTypeModifier().write(0, EntityType.ARMOR_STAND);
         spawnPacket.getDoubles().write(0, loc.getX());
-        spawnPacket.getDoubles().write(1, loc.getY() + 1.62);
+        spawnPacket.getDoubles().write(1, loc.getY()); // Armor stands naturally have an eye height
         spawnPacket.getDoubles().write(2, loc.getZ());
         spawnPacket.getBytes().write(0, (byte) (loc.getPitch() * 256.0F / 360.0F));
         spawnPacket.getBytes().write(1, (byte) (loc.getYaw() * 256.0F / 360.0F));
@@ -37,6 +37,17 @@ public class CameraController {
 
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(player, spawnPacket);
+            
+            // Send metadata to make armor stand invisible (index 0, bit 5 = 0x20)
+            PacketContainer meta = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_METADATA);
+            meta.getIntegers().write(0, cameraEntityId);
+            java.util.List<com.comphenix.protocol.wrappers.WrappedDataValue> values = new java.util.ArrayList<>();
+            values.add(new com.comphenix.protocol.wrappers.WrappedDataValue(
+                0, com.comphenix.protocol.wrappers.WrappedDataWatcher.Registry.get(Byte.class), (byte) 0x20
+            ));
+            meta.getDataValueCollectionModifier().write(0, values);
+            ProtocolLibrary.getProtocolManager().sendServerPacket(player, meta);
+            
         } catch (Exception e) {
             DCCosmetics.getInstance().getLogger().warning("[Wardrobe] Failed to spawn camera entity: " + e.getMessage());
         }
@@ -69,8 +80,8 @@ public class CameraController {
         }
 
         // Move CCTV camera rig to new location
-        if (session != null && session.getCctvRig() != null) {
-            session.getCctvRig().moveTo(loc);
+        if (session != null && session.getCctvRig() != null && mannequinLoc != null) {
+            session.getCctvRig().moveTo(loc, mannequinLoc);
         }
 
         // Reposition HUD panels in front of the new camera view

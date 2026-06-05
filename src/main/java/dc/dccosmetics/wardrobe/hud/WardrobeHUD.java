@@ -124,7 +124,7 @@ public class WardrobeHUD {
 
         if (modularMode) {
             if (buttonGroup != null) {
-                buttonGroup.reposition(camLoc, lastForward, lastRight, lastTrueUp, ac.left);
+                buttonGroup.reposition(camLoc, lastForward, lastRight, lastTrueUp, ac.modular);
             }
         } else {
             Location leftLoc = panelLoc(camLoc, lastForward, lastRight, lastTrueUp, ac.left);
@@ -161,8 +161,8 @@ public class WardrobeHUD {
         if (old != null) old.destroyAnimated();
 
         HudTextDisplay fresh = new HudTextDisplay(session.getPlayer(), loc);
-        fresh.spawn();
-        fresh.setScale(scale);
+        fresh.spawn();           // sends scale=0, interp=false
+        fresh.animateTo(scale);  // 2-tick deferred pop-in via interp=true
         panels.put(name, fresh);
     }
 
@@ -423,7 +423,7 @@ public class WardrobeHUD {
         if (!buttonGroupSpawned) {
             buttonGroupSpawned = true;
             buttonGroup.setRows(rows);
-            buttonGroup.spawn(lastCamLoc, lastForward, lastRight, lastTrueUp, ac.left);
+            buttonGroup.spawn(lastCamLoc, lastForward, lastRight, lastTrueUp, ac.modular);
         } else {
             buttonGroup.refresh(rows, states);
         }

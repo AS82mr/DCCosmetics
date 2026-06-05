@@ -36,16 +36,25 @@ public class ActiveCosmetic {
     public static boolean DEBUG_CORNERS = false;
 
     public ActiveCosmetic(LivingEntity owner, CosmeticTemplate template, String colorHex) {
+        this(owner, template, colorHex, null);
+    }
+
+    public ActiveCosmetic(LivingEntity owner, CosmeticTemplate template, String colorHex, List<Player> viewers) {
         this.owner = owner;
         this.template = template;
         this.colorHex = colorHex;
+        if (viewers != null) {
+            this.viewers.addAll(viewers);
+        }
     }
 
     public String getColorHex() { return colorHex; }
 
     public void spawn() {
         if (template == null) return;
-        viewers.addAll(owner.getWorld().getPlayers());
+        if (viewers.isEmpty()) {
+            viewers.addAll(owner.getWorld().getPlayers());
+        }
 
         currentBodyYaw = owner.getLocation().getYaw();
 

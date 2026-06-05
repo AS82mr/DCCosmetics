@@ -145,23 +145,9 @@ public class HudButtonGroup {
      */
     public void reposition(Location camLoc, Vector forward, Vector right, Vector up,
                            HudConfig.PanelConfig cfg) {
-        this.lastAnchorLoc = camLoc;
-        this.lastForward   = forward;
-        this.lastRight     = right;
-        this.lastUp        = up;
-        this.lastCfg       = cfg;
-
-        // If row count changed, respawn
-        if (buttons.size() != currentRows.size()) {
-            spawn(camLoc, forward, right, up, cfg);
-            return;
-        }
-
-        for (int i = 0; i < buttons.size(); i++) {
-            Location newLoc = buttonLocation(camLoc, forward, right, up, cfg, i, currentRows.size());
-            buttons.get(i).setBaseScale(cfg.scale);
-            buttons.get(i).teleportTo(newLoc);
-        }
+        // Display entities are sometimes stubborn with teleport packets depending on interpolation.
+        // It's 100% reliable to destroy and respawn them (the same way we do for info/keybind panels).
+        spawn(camLoc, forward, right, up, cfg);
     }
 
     /** Animates all buttons out (scale→0) then destroys. */
@@ -192,14 +178,18 @@ public class HudButtonGroup {
                 .add(right.clone().multiply(cfg.rightOffset))
                 .add(up.clone().multiply(cfg.yOffset));
 
-        // Centre the stack: offset from centre by (index - midIndex) * LINE_SPACING
+        // Compute line spacing relative to scale (0.28 * scale matches standard text line height)
+        double spacing = 0.28 * cfg.scale;
+        
+        // Centre the stack: offset from centre by (index - midIndex) * spacing
         double midIndex = (total - 1) / 2.0;
-        double yDelta = (midIndex - index) * LINE_SPACING;
+        double yDelta = (midIndex - index) * spacing;
         Location loc = anchor.clone().add(up.clone().multiply(yDelta));
 
-        // Face the camera (billboard will handle rotation visually, but Direction ensures facing is right)
-        loc.setDirection(camLoc.toVector().subtract(loc.toVector()));
-        loc.setPitch(0);
+        // Force all buttons to share the exact same yaw/pitch as the camera (inverted to face it)
+        // Combined with Billboard.FIXED, this makes the entire group act as a single perfectly flat plane!
+        loc.setYaw(camLoc.getYaw() - 180f);
+        loc.setPitch(-camLoc.getPitch());
         return loc;
     }
 }

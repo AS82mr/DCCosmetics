@@ -98,6 +98,18 @@ public class WardrobeMannequin {
 
             this.citizensNpc = npc;
             this.entity = (LivingEntity) npc.getEntity();
+            this.entity.removePotionEffect(org.bukkit.potion.PotionEffectType.INVISIBILITY);
+            this.entity.setInvisible(false);
+            
+            // Pl-Hide-Pro automatically hides other "players" from the viewer when the viewer is hidden.
+            // Since Citizens NPCs are EntityType.PLAYER, Pl-Hide-Pro intercepts the spawn packet!
+            // We must explicitly bypass this by revealing the NPC to the viewer.
+            DCCosmetics.getInstance().getServer().getScheduler().runTaskLater(DCCosmetics.getInstance(), () -> {
+                if (session.getPlayer().isOnline() && this.entity != null) {
+                    session.getPlayer().showPlayer(DCCosmetics.getInstance(), (Player) this.entity);
+                }
+            }, 5L);
+            
             return true;
         } catch (Exception e) {
             DCCosmetics.getInstance().getLogger().warning(
