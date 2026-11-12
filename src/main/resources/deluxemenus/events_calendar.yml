@@ -1,0 +1,177 @@
+# ==============================================================================
+# Dragoncote Server Events Calendar — Active Realm & Live Events (Page 1)
+# ==============================================================================
+menu_title: "&#FFD166&lServer Events &#84E2CD| &#ABE284&lActive Realm"
+open_command:
+  - eventcalendar
+  - eventsmenu
+  - dcecalendar
+size: 54
+update: true
+
+items:
+  "active_realm_banner":
+    material: SUNFLOWER
+    slot: 4
+    priority: 1
+    update: true
+    display_name: "&#FFD166&lCurrent Active Realm: &f%dragoncote_event_active_name%"
+    lore:
+      - "&8Dimensional World Cycle"
+      - "&f"
+      - "&#B996E2&l✦ &#84E2CDRealm World: &#ABE284&l%dragoncote_event_active_world%"
+      - "&#B996E2&l✦ &#84E2CDTimeline Status: &f%dragoncote_event_status%"
+      - "&#B996E2&l✦ &#84E2CDTime Remaining: &#FFD166&l%dragoncote_event_active_time% ⏳"
+      - "&f"
+      - "&#FFD166&lActive Perks & Features:"
+      - "&7• Dynamic environment ambiance & themed NPC interactions"
+      - "&7• Standard commerce, forge, quests & dimensional rewards"
+      - "&7• Direct connection via &e/spawn &7or &e/hub"
+      - "&f"
+      - "&#ABE284&l▶ &eClick to fast-travel to this realm now (/spawn)!"
+    left_click_commands:
+      - "[close]"
+      - "[player] spawn"
+    right_click_commands:
+      - "[close]"
+      - "[player] spawn"
+
+  "card_world_cycle":
+    material: ENDER_EYE
+    slot: 20
+    priority: 1
+    update: true
+    display_name: "&#84E2CD&lDimensional World Shift"
+    lore:
+      - "&8Multiverse Cycle System"
+      - "&f"
+      - "&7Current Realm: &#FFD166&l%dragoncote_event_active_name%"
+      - "&7Remaining Shift Time: &#FFD166%dragoncote_event_active_time%"
+      - "&f"
+      - "&7Upcoming Destination: &#ABE284&l%dragoncote_event_next_name%"
+      - "&7Next Realm World: &f%dragoncote_event_next_world%"
+      - "&f"
+      - "&7When time expires, players are automatically"
+      - "&7evacuated to &#ABE284LowerCity Mainland &7safe zone."
+      - "&f"
+      - "&#84E2CD&l▶ &eClick to fast-travel to current spawn!"
+    left_click_commands:
+      - "[close]"
+      - "[player] spawn"
+    right_click_commands:
+      - "[close]"
+      - "[player] spawn"
+
+  "card_colosseum_koth":
+    material: NETHERITE_SWORD
+    slot: 22
+    priority: 1
+    update: true
+    display_name: "&#E056FD&lColosseum: King of the Hill"
+    lore:
+      - "&8PvP Contest & Combat Master Valerius"
+      - "&f"
+      - "&7Status: &f%dragoncote_event_koth_status%"
+      - "&7Duration: &f20 minutes"
+      - "&7Location: &f/warp colosseum"
+      - "&f"
+      - "&6&lEvent Rewards:"
+      - "&7• Combat Mastery Tokens & Leaderboard Honor"
+      - "&7• Special weapons & armor upgrades from Valerius"
+      - "&f"
+      - "&#E056FD&l▶ &eClick to warp to Colosseum Arena!"
+    left_click_commands:
+      - "[close]"
+      - "[player] warp colosseum"
+    right_click_commands:
+      - "[close]"
+      - "[player] warp colosseum"
+
+  "card_adapt_boost":
+    material: EXPERIENCE_BOTTLE
+    slot: 24
+    priority: 1
+    update: true
+    display_name: "&#2ECC71&lAdapt EXP Surge"
+    lore:
+      - "&8Server-Wide Skill Mastery Multiplier"
+      - "&f"
+      - "&7Status: &f%dragoncote_event_adapt_status%"
+      - "&7Multiplier: &#2ECC71&l2x Skill Experience"
+      - "&7Applies to: &fAll Adapt Skills (Mining, Woodcutting, Combat...)"
+      - "&f"
+      - "&a&lEvent Perks:"
+      - "&7• Double mastery gains across all 23 skills"
+      - "&7• Faster talent tree unlock progression"
+      - "&f"
+      - "&#2ECC71&l✦ &7Active automatically across all dimensions!"
+
+  "card_iceboat_race":
+    material: OAK_BOAT
+    slot: 31
+    priority: 1
+    update: true
+    display_name: "&#00D2D3&lSupersonic IceBoat Rally"
+    lore:
+      - "&8Grand Prix Drift Trials"
+      - "&f"
+      - "&7Status: &f%dragoncote_event_iceboat_status%"
+      - "&7Location: &f/warp iceboat"
+      - "&f"
+      - "&b&lEvent Rewards:"
+      - "&7• Speedster Trophies & Drift Particle Trails"
+      - "&7• Rare cosmetic boat banners"
+      - "&f"
+      - "&#00D2D3&l▶ &eClick to join the IceBoat Rally queue!"
+    left_click_commands:
+      - "[close]"
+      - "[player] warp iceboat"
+    right_click_commands:
+      - "[close]"
+      - "[player] warp iceboat"
+
+  "btn_warp_spawn":
+    material: BEACON
+    slot: 40
+    display_name: "&#FFD166&lWarp to Active Realm &#DFE6E9(/spawn)"
+    lore:
+      - "&7Instantly travel to the current dimensional hub:"
+      - "&6%dragoncote_event_active_name% &8(%dragoncote_event_active_world%)"
+      - "&f"
+      - "&#ABE284&l▶ &eClick to fast-travel now!"
+    left_click_commands:
+      - "[close]"
+      - "[player] spawn"
+    right_click_commands:
+      - "[close]"
+      - "[player] spawn"
+
+  "btn_next_page":
+    material: ARROW
+    slot: 50
+    display_name: "&#ABE284&lUpcoming Schedule & Timeline ➔"
+    lore:
+      - "&7View upcoming world cycles and scheduled"
+      - "&7tournaments in chronological order."
+      - "&f"
+      - "&#ABE284&l▶ &eClick to view Page 2!"
+    left_click_commands:
+      - "[openguimenu] events_schedule"
+    right_click_commands:
+      - "[openguimenu] events_schedule"
+
+  "btn_close":
+    material: BARRIER
+    slot: 49
+    display_name: "&c&lClose Calendar"
+    lore:
+      - "&7Click to close this menu."
+    left_click_commands:
+      - "[close]"
+    right_click_commands:
+      - "[close]"
+
+  "border_black":
+    material: BLACK_STAINED_GLASS_PANE
+    slots: [0, 1, 2, 3, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 51, 52, 53]
+    display_name: " "

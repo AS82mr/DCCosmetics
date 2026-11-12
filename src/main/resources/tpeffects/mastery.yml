@@ -1,0 +1,74 @@
+# ====================================================================
+# MASTERY TELEPORTATION EFFECTS (Apex Multi-Axis Spatial Cinematics)
+# ====================================================================
+rarity: mastery
+
+effects:
+  chrono_singularity:
+    enabled: true
+    hidden: false
+    duration: 10.5s
+    display-name: "&#A855F7&lChrono Singularity"
+    permission: "dc.tpeffect.chrono_singularity"
+    type: CINEMATIC
+    cinematic-style: "CHRONO_SINGULARITY"
+    material: NETHER_STAR
+    custom-model-data: 0
+    lore:
+      - "&7Transform every warp & travel,"
+      - "&7with &#38BDF8t&#44B1F7e&#50A5F6l&#5C99F5e&#688DF4p&#7481F3o&#8075F2r&#8C69F1t &#985DF0e&#A451EFf&#B045EEf&#BC39EDe&#C82DECc&#D421EBt&#E015EAs!"
+      - "&f"
+      - "&7You can access all your effects,"
+      - "&7sorted by their &#00D725r&#2C04E2a&#5D06BAr&#8E0792i&#FFC800t&#A50404y&7 into different"
+      - "&bcategories&7, in the &c/wardrobe &7menu."
+      - "&f"
+      - "&7&l⥽ &7Preview: &#38BDF8C&#60A5FAh&#818CF8r&#A855F7o&#C084FCn&#E879F9o &#F472B6S&#A855F7i&#6366F1n&#38BDF8g&#84E2CDu&#FFFFFFl&#84E2CDa&#38BDF8r&#818CF8i&#A855F7t&#C084FCy!"
+      - "&7"
+      - "§8§m=§r &8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "§8§m=§r &8ᴛᴏ ᴄʟᴀɪᴍ ᴛʜɪꜱ ᴠᴏᴜᴄʜᴇʀ!"
+
+  shadow_drift:
+    enabled: true
+    hidden: false
+    duration: 3.2s
+    display-name: "&#38BDF8&lShadow Drift"
+    permission: "dc.tpeffect.shadow_drift"
+    type: CINEMATIC
+    cinematic-style: "SHADOW_DRIFT"
+    material: ECHO_SHARD
+    custom-model-data: 0
+    lore:
+      - "&7Transform every warp & travel,"
+      - "&7with &#38BDF8t&#44B1F7e&#50A5F6l&#5C99F5e&#688DF4p&#7481F3o&#8075F2r&#8C69F1t &#985DF0e&#A451EFf&#B045EEf&#BC39EDe&#C82DECc&#D421EBt&#E015EAs!"
+      - "&f"
+      - "&7You can access all your effects,"
+      - "&7sorted by their &#00D725r&#2C04E2a&#5D06BAr&#8E0792i&#FFC800t&#A50404y&7 into different"
+      - "&bcategories&7, in the &c/wardrobe &7menu."
+      - "&f"
+      - "&7&l⥽ &7Preview: &#0F172AS&#1E293Bh&#334155a&#475569d&#38BDF8o&#60A5FAw &#93C5FDD&#38BDF8r&#0284C7i&#1E293Bf&#0F172At!"
+      - "&7"
+      - "§8§m=§r &8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "§8§m=§r &8ᴛᴏ ᴄʟᴀɪᴍ ᴛʜɪꜱ ᴠᴏᴜᴄʜᴇʀ!"
+
+  skyline_switch:
+    enabled: true
+    hidden: false
+    duration: 4.8s
+    display-name: "&#F59E0B&lSkyline Switch"
+    permission: "dc.tpeffect.skyline_switch"
+    type: CINEMATIC
+    cinematic-style: "SKYLINE_SWITCH"
+    material: SPYGLASS
+    custom-model-data: 0
+    lore:
+      - "&7Transform every warp & travel,"
+      - "&7with &#38BDF8t&#44B1F7e&#50A5F6l&#5C99F5e&#688DF4p&#7481F3o&#8075F2r&#8C69F1t &#985DF0e&#A451EFf&#B045EEf&#BC39EDe&#C82DECc&#D421EBt&#E015EAs!"
+      - "&f"
+      - "&7You can access all your effects,"
+      - "&7sorted by their &#00D725r&#2C04E2a&#5D06BAr&#8E0792i&#FFC800t&#A50404y&7 into different"
+      - "&bcategories&7, in the &c/wardrobe &7menu."
+      - "&f"
+      - "&7&l⥽ &7Preview: &#F59E0BS&#FBBF24k&#FDE047y&#FFFFFFl&#38BDF8i&#0EA5E9n&#2563EBe &#F59E0BS&#FBBF24w&#FDE047i&#FFFFFFt&#38BDF8c&#0EA5E9h!"
+      - "&7"
+      - "§8§m=§r &8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "§8§m=§r &8ᴛᴏ ᴄʟᴀɪᴍ ᴛʜɪꜱ ᴠᴏᴜᴄʜᴇʀ!"

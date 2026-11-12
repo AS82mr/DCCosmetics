@@ -1,0 +1,166 @@
+# ==============================================================================
+# Dragoncote Server Events Calendar — Upcoming Schedule & Timeline (Page 2)
+# ==============================================================================
+menu_title: "&#FFD166&lServer Events &#84E2CD| &#54A0FF&lSchedule Timeline"
+open_command:
+  - eventschedule
+  - eventsched
+size: 54
+update: true
+
+items:
+  "schedule_header":
+    material: BOOK
+    slot: 4
+    priority: 1
+    display_name: "&#54A0FF&lDimensional Timeline & Event Schedule"
+    lore:
+      - "&8Dragoncote Multiverse Timetable"
+      - "&f"
+      - "&7Dragoncote cycles between three parallel spawn worlds:"
+      - "&7• &#FFD166Sanctuary Dawn &7(Prime Realm - spawn_main)"
+      - "&7• &#84E2CDThe Void Convergence &7(Monochrome Shadows - spawn_bw)"
+      - "&7• &#00D2D3Glacial Frost Grand Prix &7(Winter Iceboat - spawn_snow)"
+      - "&f"
+      - "&7Next dimensional shift in: &#FFD166&l%dragoncote_event_active_time% ⏳"
+
+  "cycle_slot_1":
+    material: SUNFLOWER
+    slot: 20
+    priority: 1
+    update: true
+    display_name: "&#FFD166&lCycle Slot 1: Sanctuary Dawn"
+    lore:
+      - "&8Prime Timeline (Standard)"
+      - "&f"
+      - "&7World: &fspawn_main"
+      - "&7Duration: &f180 minutes (3 hours)"
+      - "&7Status: &f%dragoncote_event_status%"
+      - "&f"
+      - "&6&lWorld Features:"
+      - "&7• Citadel Plaza vendors, Bank, and Forge"
+      - "&7• Core Storyline Quest progression"
+      - "&7• Daylight atmosphere & bustling trade"
+
+  "cycle_slot_2":
+    material: ENDER_EYE
+    slot: 22
+    priority: 1
+    update: true
+    display_name: "&#84E2CD&lCycle Slot 2: The Void Convergence"
+    lore:
+      - "&8Eclipse of Shadows (Spooky Realm)"
+      - "&f"
+      - "&7World: &fspawn_bw"
+      - "&7Duration: &f60 minutes (1 hour)"
+      - "&7Atmosphere: &5Monochrome void & flying ravens"
+      - "&f"
+      - "&5&lWorld Features:"
+      - "&7• Shadowy crows circling the broken towers"
+      - "&7• Dimensional void rifts & encrypted lore"
+      - "&7• +25% Shadow drop rates across all zones"
+
+  "cycle_slot_3":
+    material: PACKED_ICE
+    slot: 24
+    priority: 1
+    update: true
+    display_name: "&#00D2D3&lCycle Slot 3: Glacial Frost Grand Prix"
+    lore:
+      - "&8Winter Solstice & Ice Trials"
+      - "&f"
+      - "&7World: &fspawn_snow"
+      - "&7Duration: &f60 minutes (1 hour)"
+      - "&7Atmosphere: &bSnowfall & frozen canals"
+      - "&f"
+      - "&b&lWorld Features:"
+      - "&7• Supersonic IceBoat tournament track"
+      - "&7• Snow Colosseum PvP Duel Trials"
+      - "&7• Winter merchant souvenirs & cosmetic crates"
+
+  "mini_colosseum":
+    material: NETHERITE_SWORD
+    slot: 29
+    priority: 1
+    update: true
+    display_name: "&#E056FD&lColosseum: King of the Hill"
+    lore:
+      - "&8Tournament Frequency: &eEvery 2 hours"
+      - "&7Duration: &f20 minutes"
+      - "&7Current Status: &f%dragoncote_event_koth_status%"
+      - "&f"
+      - "&7Earn Combat Tokens, Valerius favor,"
+      - "&7and seasonal leaderboard honors."
+
+  "mini_adapt":
+    material: EXPERIENCE_BOTTLE
+    slot: 31
+    priority: 1
+    update: true
+    display_name: "&#2ECC71&lAdapt EXP Surge"
+    lore:
+      - "&8Event Frequency: &eEvery 3 hours"
+      - "&7Duration: &f30 minutes"
+      - "&7Current Status: &f%dragoncote_event_adapt_status%"
+      - "&f"
+      - "&7Doubles all experience gains across"
+      - "&7every Adapt skill category."
+
+  "mini_iceboat":
+    material: OAK_BOAT
+    slot: 33
+    priority: 1
+    update: true
+    display_name: "&#00D2D3&lSupersonic IceBoat Rally"
+    lore:
+      - "&8Event Frequency: &eEvery 1.5 hours"
+      - "&7Duration: &f15 minutes"
+      - "&7Current Status: &f%dragoncote_event_iceboat_status%"
+      - "&f"
+      - "&7Speed heats through frozen tunnels"
+      - "&7with top drift trophies."
+
+  "btn_prev_page":
+    material: ARROW
+    slot: 48
+    display_name: "&#ABE284&l⬅ Back to Active Events & Realm"
+    lore:
+      - "&7Return to the active realm status"
+      - "&7and running mini-events."
+      - "&f"
+      - "&#ABE284&l▶ &eClick to return to Page 1!"
+    left_click_commands:
+      - "[openguimenu] events_calendar"
+    right_click_commands:
+      - "[openguimenu] events_calendar"
+
+  "btn_warp_spawn":
+    material: COMPASS
+    slot: 40
+    display_name: "&#FFD166&lCurrent Active Realm: &f%dragoncote_event_active_name%"
+    lore:
+      - "&7Time Left: &#FFD166%dragoncote_event_active_time%"
+      - "&f"
+      - "&#ABE284&l▶ &eClick to fast-travel now (/spawn)!"
+    left_click_commands:
+      - "[close]"
+      - "[player] spawn"
+    right_click_commands:
+      - "[close]"
+      - "[player] spawn"
+
+  "btn_close":
+    material: BARRIER
+    slot: 49
+    display_name: "&c&lClose Calendar"
+    lore:
+      - "&7Click to close this menu."
+    left_click_commands:
+      - "[close]"
+    right_click_commands:
+      - "[close]"
+
+  "border_black":
+    material: BLACK_STAINED_GLASS_PANE
+    slots: [0, 1, 2, 3, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 50, 51, 52, 53]
+    display_name: " "

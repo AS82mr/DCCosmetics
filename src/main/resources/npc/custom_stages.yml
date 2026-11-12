@@ -1,0 +1,1137 @@
+characters:
+  corvus:
+    skin: corvus
+    skin_snow: Knight
+    skin_bw: Knight
+    completion_behavior: POOF_DESPAWN
+    engine_type: CITIZENS
+    model_id: scene_blacksmith_1
+    bound_warp: command
+    stages:
+      '1':
+        title: The Rift Oath
+        requires: None
+        objective: Calibrate Keystone matrix with Kristoph at Tech Lab.
+        dialogue: Eyes up, Agent. You survived the spatial jump. Down in the LowerCity,
+          the Emperor cages reality with 'laws'—I break limits. Take your directive
+          and let's calibrate your matrix with Kristoph.
+        completion: Good work. Our foundation is laid. Kristoph has your Keystone
+          ready.
+        next: kristoph
+        cash_reward: 1000.0
+        reward_item: Corvus Directive
+        reward_desc: Operational parchment granting 3-day timeline shielding.
+        icon: PAPER
+        command: ei give %%player%% corvus_directive 1
+        walk: false
+        completion_behavior: WALK
+        loc_world: spawn_main
+        loc_x: 3.7305012670778637
+        loc_y: 51.0
+        loc_z: -1.5055043060390338
+        loc_yaw: -95.91867
+      '2':
+        title: Vanguard Plating
+        requires: lyra:1
+        objective: Reinforce armor with Vanguard titanium alloy.
+        dialogue: Kristoph calibrated your matrix? Excellent. You cannot face Imperial
+          sentries in civilian clothes. Take this reinforced alloy and fit your armor.
+        completion: Armor fitted and secured. Now go investigate the glitched transmission
+          in the side corridor.
+        next: echo
+        cash_reward: 1500.0
+        reward_item: Reinforced Alloy
+        reward_desc: Ten high-tensile alloy plates to reinforce combat armor.
+        icon: IRON_INGOT
+        command: none
+        walk: false
+        completion_behavior: POOF
+        loc_world: spawn_main
+        loc_x: 66.49993138017663
+        loc_y: 48.0
+        loc_z: 16.246211796662482
+        loc_yaw: 178.58104
+      '3':
+        title: Imperial Blueprint Decryption
+        requires: krux:1
+        objective: Deliver Spire schematics to Corvus.
+        dialogue: You brought the schematics! Look at this thermal exhaust... The
+          Citadel reactor bleeds heat straight through the LowerCity. Kristoph needs
+          to forge thermal containment.
+        completion: Thermal containment specs approved. Kristoph is ready at the Forge.
+        next: kristoph
+        cash_reward: 4500.0
+        reward_item: Decrypted Datapad
+        reward_desc: Detailed blueprints of the Spire's inner sanctum.
+        icon: RECOVERY_COMPASS
+        command: none
+        walk: false
+        completion_behavior: STAY
+      '4':
+        title: Spire Assault Infiltration
+        requires: vael:1
+        objective: Plan the breach of the Imperial Throne Room with Corvus.
+        dialogue: Vael showed you the records? Then you know... The Emperor isn't
+          just an enemy. He is what remains of my future if we fail. Kristoph, calibrate
+          the Master Matrix!
+        completion: Master Matrix calibration underway at the Forge.
+        next: kristoph
+        cash_reward: 20000.0
+        reward_item: Vanguard Breach Charge
+        reward_desc: Controlled antimatter charge.
+        icon: TNT
+        command: none
+        walk: false
+        completion_behavior: STAY
+  kristoph:
+    skin: Notch
+    skin_snow: Notch
+    skin_bw: Notch
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_kristoph
+    bound_warp: forge
+    stages:
+      '1':
+        title: Keystone Attunement
+        requires: corvus:1
+        objective: Equip your Keystone and attune spatial matrix.
+        dialogue: Welcome to the Tech Lab. Spacetime friction boils the blood of unprepared
+          travelers. Take these Tesseract cubes to charge your matrix.
+        completion: Matrix synchronized at nominal frequencies. Report to Lyra at
+          the Archives to study cooling.
+        next: lyra
+        cash_reward: 1200.0
+        reward_item: Tesseract Charge
+        reward_desc: Direct injection of +25 Tesseract Energy into your Keystone.
+        icon: AMETHYST_SHARD
+        command: none
+        walk: false
+        completion_behavior: STAY
+      '2':
+        title: Cryo-Immersion Science
+        requires: echo:1
+        objective: Receive Liquid Cryo-Cell for rapid thermal cooling.
+        dialogue: Echo reported timeline turbulence near the archives? You need thermodynamic
+          insulation. Take this cooling cell—deploy it in water to dump heat instantly.
+        completion: Thermal dampeners online. Prisoner 404 in the LowerCity holding
+          cells needs contact.
+        next: prisoner404
+        cash_reward: 1800.0
+        reward_item: Cooling Cell
+        reward_desc: Submersible cryogenic cell that purges 50 Heat Points.
+        icon: WATER_BUCKET
+        command: none
+        walk: false
+        completion_behavior: STAY
+      '3':
+        title: Drone Synthesis
+        requires: shade:1
+        objective: Synthesize Vanguard Recon Drone chassis at the Forge.
+        dialogue: The unmetered cubes are stabilized. I can construct your recon drone.
+          Hand over the components to Vector.
+        completion: Recon drone operational. Vector in the Casino lounge has the encrypted
+          transponder.
+        next: vector
+        cash_reward: 4200.0
+        reward_item: Quantum Drone Chassis
+        reward_desc: Lightweight recon drone housing.
+        icon: ARMOR_STAND
+        command: none
+        walk: false
+        completion_behavior: STAY
+      '4':
+        title: Thermal Containment
+        requires: corvus:3
+        objective: Forge Phase-Cell for extreme temperature resistance.
+        dialogue: The Spire reactor runs at 5000 degrees chrono-friction. Take this
+          insulated phase cell. You must pass Inquisitor Malakor at the High Gate.
+        completion: Phase cell equipped. Malakor controls the gate.
+        next: malakor
+        cash_reward: 5000.0
+        reward_item: Insulated Phase Cell
+        reward_desc: Heavy cryogenic shielding against Spire reactor radiation.
+        icon: LAPIS_BLOCK
+        command: none
+        walk: false
+        completion_behavior: STAY
+      '5':
+        title: Master Spatial Matrix
+        requires: corvus:4
+        objective: Forge the Prime Spatial Matrix for timeline convergence.
+        dialogue: This is the pinnacle of chrono-engineering. The Prime Spatial Matrix
+          will allow you to breach the Emperor's throne chamber. Vector is overclocking
+          the portal.
+        completion: Gateway overclocked. Vector is standing by.
+        next: vector
+        cash_reward: 8000.0
+        reward_item: Prime Spatial Matrix
+        reward_desc: Legendary Keystone matrix vibrating across dimensions.
+        icon: NETHER_STAR
+        command: none
+        walk: false
+        completion_behavior: STAY
+  lyra:
+    skin: Alex
+    skin_snow: Alex
+    skin_bw: Alex
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_lyra
+    stages:
+      '1':
+        title: Spacetime Thermodynamics
+        requires: kristoph:1
+        objective: Learn heat purging protocols in water and powder snow.
+        dialogue: 'Greetings, traveler. In our archives, thousands of operatives dissolved
+          because they ignored timeline heat. Remember: submersion in water or powder
+          snow resets your thermal build-up.'
+        completion: Your understanding of timeline cooling is solid. Return to Corvus
+          for armor plating.
+        next: corvus
+        cash_reward: 1000.0
+        reward_item: Timeline Compass
+        reward_desc: Ancient brass chronometer calibrated to Sanctuary timelines.
+        icon: CLOCK
+        command: none
+        walk: false
+        completion_behavior: STAY
+  echo:
+    skin: MHF_Enderman
+    skin_snow: MHF_Enderman
+    skin_bw: MHF_Enderman
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_echo
+    stages:
+      '1':
+        title: Glitched Transmission
+        requires: corvus:2
+        objective: Decode glitched transmission in the shaded alleyway.
+        dialogue: 01000101... You hear the hum? The Emperor's mask cracked during
+          the last void rift... Underneath, his face is Corvus! An older, scarred
+          Corvus! Go back to Kristoph!
+        completion: Static fades... but the truth remains carved in the copper cables.
+        next: kristoph
+        cash_reward: 2000.0
+        reward_item: Echo Shards
+        reward_desc: Pair of resonant echo shards vibrating at Spire frequencies.
+        icon: ECHO_SHARD
+        command: none
+        walk: false
+        completion_behavior: STAY
+  vane:
+    skin: Steve
+    skin_snow: Steve
+    skin_bw: Steve
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_vane
+    stages:
+      '1':
+        title: Introduction to Vane
+        requires: none
+        objective: Consult with Vane in COMMAND
+        dialogue: Imperial patrols are doubling along the bridge.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  jax:
+    skin: jeb_
+    skin_snow: jeb_
+    skin_bw: jeb_
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_jax
+    stages:
+      '1':
+        title: Introduction to Jax
+        requires: none
+        objective: Consult with Jax in MARKET
+        dialogue: Reinforced alloys to pierce void shielding.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  sylas:
+    skin: Dinnerbone
+    skin_snow: Dinnerbone
+    skin_bw: Dinnerbone
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_sylas
+    stages:
+      '1':
+        title: Introduction to Sylas
+        requires: none
+        objective: Consult with Sylas in FARMS
+        dialogue: Stabilized warp anchors across the stars.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  ronald:
+    skin: Grumm
+    skin_snow: Grumm
+    skin_bw: Grumm
+    completion_behavior: STAY_IN_WORLD
+    engine_type: MODEL_ENGINE
+    model_id: scene_market_5
+    stages:
+      '1':
+        title: Introduction to Ronald
+        requires: none
+        objective: Consult with Ronald in COMMAND
+        dialogue: Sanctuary provisions for long timeline jumps.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  hesper:
+    skin: MHF_Villager
+    skin_snow: MHF_Villager
+    skin_bw: MHF_Villager
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_hesper
+    stages:
+      '1':
+        title: Introduction to Dr. Hesper
+        requires: none
+        objective: Consult with Dr. Hesper in OBSERVATORY
+        dialogue: Cellular drift within safe tolerances.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  balthazar:
+    skin: MHF_Golem
+    skin_snow: MHF_Golem
+    skin_bw: MHF_Golem
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_balthazar
+    stages:
+      '1':
+        title: Introduction to Balthazar
+        requires: none
+        objective: Consult with Balthazar in COMMAND
+        dialogue: Courage alone won't break an imperial loop.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  valen:
+    skin: MHF_Villager
+    skin_snow: MHF_Villager
+    skin_bw: MHF_Villager
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_valen
+    stages:
+      '1':
+        title: Introduction to Valen
+        requires: none
+        objective: Consult with Valen in AUCTION
+        dialogue: Every relic has a buyer, Agent. Even forbidden imperial schematics.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  aurelius:
+    skin: MHF_Golem
+    skin_snow: MHF_Golem
+    skin_bw: MHF_Golem
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_aurelius
+    stages:
+      '1':
+        title: Introduction to Aurelius
+        requires: none
+        objective: Consult with Aurelius in BANK
+        dialogue: Guild treasuries power our war against the Empire. Store your gold
+          safely.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  marion:
+    skin: MHF_Alex
+    skin_snow: MHF_Alex
+    skin_bw: MHF_Alex
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_marion
+    stages:
+      '1':
+        title: Introduction to Marion
+        requires: none
+        objective: Consult with Marion in FORGE
+        dialogue: I keep the fires hot while Kristoph aligns the quantum matrices.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  valerius:
+    skin: MHF_Gladiator
+    skin_snow: MHF_Gladiator
+    skin_bw: MHF_Gladiator
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_valerius
+    stages:
+      '1':
+        title: Introduction to Valerius
+        requires: none
+        objective: Consult with Valerius in COLOSSEUM
+        dialogue: Step onto the frost arena if you dare test your blade against Syndicate
+          champions.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  finn:
+    skin: MHF_Fisherman
+    skin_snow: MHF_Fisherman
+    skin_bw: MHF_Fisherman
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_finn
+    stages:
+      '1':
+        title: Introduction to Finn
+        requires: none
+        objective: Consult with Finn in FISHERMAN
+        dialogue: The marshes whisper of deep currents running under the void bedrock.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  vivienne:
+    skin: MHF_Alex
+    skin_snow: MHF_Alex
+    skin_bw: MHF_Alex
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_vivienne
+    stages:
+      '1':
+        title: Introduction to Vivienne
+        requires: none
+        objective: Consult with Vivienne in MARKET
+        dialogue: War is no excuse for lack of elegance. Discover your signature look.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  orion:
+    skin: MHF_Mage
+    skin_snow: MHF_Mage
+    skin_bw: MHF_Mage
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_orion
+    stages:
+      '1':
+        title: Introduction to Orion
+        requires: none
+        objective: Consult with Orion in OBSERVATORY
+        dialogue: Probability is merely physics waiting to be bent. Master your Adapt
+          skills.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  thrum:
+    skin: MHF_Miner
+    skin_snow: MHF_Miner
+    skin_bw: MHF_Miner
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_thrum
+    stages:
+      '1':
+        title: Introduction to Thrum
+        requires: none
+        objective: Consult with Thrum in MINES
+        dialogue: Dig deep, dig true. The bedrock hides ancient Imperial conduit lines.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  clara:
+    skin: MHF_Farmer
+    skin_snow: MHF_Farmer
+    skin_bw: MHF_Farmer
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_clara
+    stages:
+      '1':
+        title: Introduction to Clara
+        requires: none
+        objective: Consult with Clara in BAKERY
+        dialogue: Warm bread and dense caloric rations keep our fighters standing.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  elden:
+    skin: MHF_Scholar
+    skin_snow: MHF_Scholar
+    skin_bw: MHF_Scholar
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_elden
+    stages:
+      '1':
+        title: Introduction to Elden
+        requires: none
+        objective: Consult with Elden in RUINS
+        dialogue: The dead ruins echo with frequencies from before the Emperor was
+          crowned.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  prisoner404:
+    skin: MHF_Skeleton
+    skin_snow: MHF_Skeleton
+    skin_bw: MHF_Skeleton
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_prisoner404
+    stages:
+      '1':
+        title: Subterranean Breach
+        requires: kristoph:2
+        objective: Locate secret sewer grate into LowerCity Section B.
+        dialogue: Pssst! Down here behind the laser grate! The guards never check
+          the sewage intake. Defector Nadia has high-command clearance codes.
+        completion: Keep low and move fast before the sentinels reset the patrol route.
+        next: nadia
+        cash_reward: 2500.0
+        reward_item: Infiltration Key
+        reward_desc: Corroded bronze key opening LowerCity maintenance vents.
+        icon: TRIPWIRE_HOOK
+        command: none
+        walk: false
+        completion_behavior: STAY
+  nadia:
+    skin: MHF_Alex
+    skin_snow: MHF_Alex
+    skin_bw: MHF_Alex
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_nadia
+    stages:
+      '1':
+        title: Undercover Telemetry
+        requires: prisoner404:1
+        objective: Deliver high-command Imperial telemetry to Valerio.
+        dialogue: Act natural! Sentinel Unit Theta is scanning the corridor. The Emperor
+          is intentionally letting the vanguard advance—he is testing Corvus! Take
+          this telemetry to Valerio at the Casino.
+        completion: Telemetry safely dispatched. The Drift Boss will know what to
+          do.
+        next: valerio
+        cash_reward: 3000.0
+        reward_item: Telemetry Chip
+        reward_desc: Encrypted Imperial high-command data chip.
+        icon: ENDER_EYE
+        command: none
+        walk: false
+        completion_behavior: STAY
+  valerio:
+    skin: MHF_Present1
+    skin_snow: MHF_Present1
+    skin_bw: MHF_Present1
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_valerio
+    stages:
+      '1':
+        title: The Drift Stake
+        requires: nadia:1
+        objective: Acquire black market energy cells from Shade.
+        dialogue: Welcome to the Black Drift, darling! The Empire runs on laws, but
+          reality runs on coin. If you want unmetered power, go speak to Shade in
+          the VIP lounge.
+        completion: The dice are cast. Shade has the raw goods waiting.
+        next: shade
+        cash_reward: 3500.0
+        reward_item: Drift Credit Chip
+        reward_desc: High-roller chip redeemable at the Black Drift tables.
+        icon: GOLD_BLOCK
+        command: none
+        walk: false
+        completion_behavior: STAY
+  shade:
+    skin: MHF_Witch
+    skin_snow: MHF_Witch
+    skin_bw: MHF_Witch
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_shade
+    stages:
+      '1':
+        title: Unmetered Fuel
+        requires: valerio:1
+        objective: Smuggle raw Tesseract cubes to Kristoph for drone assembly.
+        dialogue: Keep your voice down. The Spire monitors every joule of energy.
+          These unmetered cubes bypassed their meters clean. Take them to Kristoph
+          for your drone.
+        completion: Unmetered fuel delivered. Kristoph is waiting at the Tech Lab.
+        next: kristoph
+        cash_reward: 4000.0
+        reward_item: Energy Blueprint
+        reward_desc: Schematic for synthesizing unregistered Tesseract fuel.
+        icon: NETHER_STAR
+        command: none
+        walk: false
+        completion_behavior: STAY
+  vector:
+    skin: MHF_Guardian
+    skin_snow: MHF_Guardian
+    skin_bw: MHF_Guardian
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_vector
+    stages:
+      '1':
+        title: Encrypted Transponder
+        requires: kristoph:3
+        objective: Acquire spoofed transponder chip from Vector.
+        dialogue: Drone looks slick. But without Imperial transponder signatures,
+          the Citadel cannons will vaporize it in 2 seconds. Take this chip to Nyx
+          at the dead-drop.
+        completion: Transponder encrypted and spoofed. Head down into the Black Market
+          to rendezvous with Nyx.
+        next: nyx
+        cash_reward: 3800.0
+        reward_item: Spoofed Transponder
+        reward_desc: Encrypted transponder bypass chip.
+        icon: DAYLIGHT_DETECTOR
+        command: none
+        walk: false
+        completion_behavior: STAY
+      '2':
+        title: Overclocked Gateway
+        requires: kristoph:5
+        objective: Step through the overclocked portal into the Spire Throne Room.
+        dialogue: The portal frequency is pinned! Once you jump, there is no recall
+          beacon. Face the Emperor and break the cycle!
+        completion: Portal jumped. You stand before the Throne Room.
+        next: emperor
+        cash_reward: 8500.0
+        reward_item: Planar Overclock Key
+        reward_desc: Charged gateway key.
+        icon: ENDER_PEARL
+        command: none
+        walk: false
+        completion_behavior: STAY
+  emperor:
+    skin: MHF_Herobrine
+    skin_snow: MHF_Herobrine
+    skin_bw: MHF_Herobrine
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_emperor
+    stages:
+      '1':
+        title: Mask of Eternity
+        requires: vector:2
+        objective: Confront the Masked Sovereign at the Imperial Spire.
+        dialogue: You finally arrived, Agent. Corvus sent you thinking you can save
+          this world. Look beneath this mask... I am the one who survived eternity.
+        completion: The Emperor's mask shattered! The Multiverse convergence begins!
+        next: emperor
+        cash_reward: 10000.0
+        reward_item: Imperial Fragment
+        reward_desc: Shard of the sovereign mask.
+        icon: NETHERITE_HELMET
+        command: none
+        walk: false
+        completion_behavior: STAY
+      '5':
+        title: Convergence of Realities
+        requires: emperor:1
+        objective: Unify the three dimensions and forge eternal peace.
+        dialogue: The timelines merge into one harmony. Sanctuary, the Snow Glaciers,
+          and the Monochromatic Void are balanced forever.
+        completion: THE MULTIVERSE CONVERGENCE IS COMPLETE! YOU ARE ETERNAL CHAMPION
+          OF DRAGONCOTE!
+        next: none
+        cash_reward: 25000.0
+        reward_item: Heart of the Multiverse
+        reward_desc: Supreme artifact containing the balance of reality.
+        icon: HEART_OF_THE_SEA
+        command: ei give %%player%% multiverse_heart 1
+        walk: false
+        completion_behavior: STAY
+  malakor:
+    skin: MHF_WSkeleton
+    skin_snow: MHF_WSkeleton
+    skin_bw: MHF_WSkeleton
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_malakor
+    stages:
+      '1':
+        title: Bastion Gate Clearance
+        requires: kristoph:4
+        objective: Challenge Inquisitor Malakor's security protocol at the Citadel
+          Gate.
+        dialogue: Halt, traveler! The Emperor's domain is closed to timeline wanderers.
+          Your matrix... it resists the void scanner? Pass, before I reconsider.
+        completion: High Gate cleared. Captain Kael patrols the Interrogation Wing.
+        next: kael
+        cash_reward: 5500.0
+        reward_item: High-Gate Authorization
+        reward_desc: Imperial military clearance badge.
+        icon: REDSTONE_BLOCK
+        command: none
+        walk: false
+        completion_behavior: STAY
+  kael:
+    skin: MHF_Blaze
+    skin_snow: MHF_Blaze
+    skin_bw: MHF_Blaze
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_kael
+    stages:
+      '1':
+        title: Thermal Interrogation
+        requires: malakor:1
+        objective: Withstand Purge Commander Kael's thermal scan.
+        dialogue: You reek of Sanctuary ozone! Our thermal hounds smell timeline jumpers
+          a mile away. If you value your skull, bypass Overseer Thorne's reactor quickly.
+        completion: Thermal scan deceived. Overseer Thorne is at the Reactor Manifold.
+        next: thorne
+        cash_reward: 6000.0
+        reward_item: Interrogation Bypass Code
+        reward_desc: Imperial cipher code.
+        icon: TRIPWIRE_HOOK
+        command: none
+        walk: false
+        completion_behavior: STAY
+  thorne:
+    skin: MHF_PigZombie
+    skin_snow: MHF_PigZombie
+    skin_bw: MHF_PigZombie
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_thorne
+    stages:
+      '1':
+        title: Reactor Manifold Bypass
+        requires: kael:1
+        objective: Divert reactor power manifold at the Imperial Bastion.
+        dialogue: 'Warning: Reactor coolant failing! A single slip here detonates
+          three worlds. Re-route the coolant pipes so Archivist Vael''s wing stays
+          powered.'
+        completion: Coolant stabilized. Archivist Vael holds the forbidden archives.
+        next: vael
+        cash_reward: 6500.0
+        reward_item: Chrono-Manifold Key
+        reward_desc: Magnetic valve override key.
+        icon: BLAST_FURNACE
+        command: none
+        walk: false
+        completion_behavior: STAY
+  vael:
+    skin: MHF_Evoker
+    skin_snow: MHF_Evoker
+    skin_bw: MHF_Evoker
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_vael
+    stages:
+      '1':
+        title: Spire Archives Extraction
+        requires: thorne:1
+        objective: Retrieve forbidden timeline codex from Archivist Vael.
+        dialogue: You sought the truth? Look upon these records. In timeline 7, Corvus
+          ruled the Empire. In timeline 9, the Void consumed everything. Take the
+          codex to Corvus.
+        completion: Truth revealed. Return to Corvus for the final breach.
+        next: corvus
+        cash_reward: 7000.0
+        reward_item: Forbidden Timeline Codex
+        reward_desc: Ancient tome detailing the convergence of all timelines.
+        icon: BOOK
+        command: none
+        walk: false
+        completion_behavior: STAY
+  ignis:
+    skin: MHF_LavaSlime
+    skin_snow: MHF_LavaSlime
+    skin_bw: MHF_LavaSlime
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_ignis
+    stages:
+      '1':
+        title: Introduction to Ignis
+        requires: none
+        objective: Consult with Ignis in CITADEL
+        dialogue: Collapsed void matter gives Zero-Heat home transit.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  theta:
+    skin: MHF_IronGolem
+    skin_snow: MHF_IronGolem
+    skin_bw: MHF_IronGolem
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_theta
+    stages:
+      '1':
+        title: Introduction to Theta
+        requires: none
+        objective: Consult with Theta in CITADEL
+        dialogue: SCANNING OPERATIVE... PASS ID VALID.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  gideon:
+    skin: MHF_CaveSpider
+    skin_snow: MHF_CaveSpider
+    skin_bw: MHF_CaveSpider
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_gideon
+    stages:
+      '1':
+        title: Introduction to Gideon
+        requires: none
+        objective: Consult with Gideon in SLUMS
+        dialogue: The chasm below has tears into raw eternity.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  sorsha:
+    skin: MHF_Ocelot
+    skin_snow: MHF_Ocelot
+    skin_bw: MHF_Ocelot
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_sorsha
+    stages:
+      '1':
+        title: Introduction to Sorsha
+        requires: none
+        objective: Consult with Sorsha in SLUMS
+        dialogue: Vanity and cloaks smuggled directly from the Upper Spires.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  garrick:
+    skin: MHF_Illager
+    skin_snow: MHF_Illager
+    skin_bw: MHF_Illager
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_garrick
+    stages:
+      '1':
+        title: Introduction to Garrick
+        requires: none
+        objective: Consult with Garrick in CASINO
+        dialogue: Debts in the Drift are paid in coin... or timeline years.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  twitch:
+    skin: MHF_Creeper
+    skin_snow: MHF_Creeper
+    skin_bw: MHF_Creeper
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_twitch
+    stages:
+      '1':
+        title: Introduction to Twitch
+        requires: none
+        objective: Consult with Twitch in CASINO
+        dialogue: I rolled the dice in 2042... left my arm in another dimension!
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  brutus:
+    skin: MHF_Golem
+    skin_snow: MHF_Golem
+    skin_bw: MHF_Golem
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_brutus
+    stages:
+      '1':
+        title: Introduction to Brutus
+        requires: none
+        objective: Consult with Brutus in CASINO
+        dialogue: You break the tables, I break you.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  finch:
+    skin: MHF_Zombie
+    skin_snow: MHF_Zombie
+    skin_bw: MHF_Zombie
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_finch
+    stages:
+      '1':
+        title: Introduction to Finch
+        requires: none
+        objective: Consult with Finch in SLUMS
+        dialogue: Cards on the table. Red or black? The wheel doesn't lie.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  rats:
+    skin: MHF_Spider
+    skin_snow: MHF_Spider
+    skin_bw: MHF_Spider
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_rats
+    stages:
+      '1':
+        title: Introduction to Rats
+        requires: none
+        objective: Consult with Rats in SLUMS
+        dialogue: The drainage tunnels run under the whole Imperial base.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  roxy:
+    skin: MHF_Ghast
+    skin_snow: MHF_Ghast
+    skin_bw: MHF_Ghast
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_roxy
+    stages:
+      '1':
+        title: Introduction to Roxy
+        requires: none
+        objective: Consult with Roxy in BLACKMARKET
+        dialogue: Singing songs of timelines that never existed.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  slick:
+    skin: MHF_Endermite
+    skin_snow: MHF_Endermite
+    skin_bw: MHF_Endermite
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_slick
+    stages:
+      '1':
+        title: Introduction to Slick
+        requires: none
+        objective: Consult with Slick in CASINO
+        dialogue: Counterfeit clearance badges and spoofed transponders.
+        completion: Thank you for consulting with me. Together we defend the timeline.
+        next: none
+        cash_reward: 500.0
+        reward_item: Sanctuary Token
+        reward_desc: A proof of friendship token.
+        icon: SUNFLOWER
+        command: none
+        walk: false
+        completion_behavior: STAY
+  nyx:
+    skin: MHF_Slime
+    skin_snow: MHF_Slime
+    skin_bw: MHF_Slime
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_nyx
+    stages:
+      '1':
+        title: Dead-Drop Acquisition
+        requires: vector:1
+        objective: Retrieve Spire security blueprints from the Black Market dead-drop.
+        dialogue: Right on time. Sentinels swept the alley two minutes ago. The Spire
+          blueprints are inside this encrypted cadence disc. Krux is waiting to fence
+          the decoy.
+        completion: Decoy handed off. Krux has the route cleared to Corvus.
+        next: krux
+        cash_reward: 4000.0
+        reward_item: Imperial Cadence Disc
+        reward_desc: Encrypted disc containing Spire surveillance routes.
+        icon: MUSIC_DISC_13
+        command: none
+        walk: false
+        completion_behavior: STAY
+  krux:
+    skin: MHF_Wither
+    skin_snow: MHF_Wither
+    skin_bw: MHF_Wither
+    completion_behavior: STAY_IN_WORLD
+    engine_type: CITIZENS
+    model_id: dcnpc_krux
+    stages:
+      '1':
+        title: Contraband Liquidation
+        requires: nyx:1
+        objective: Foil Inquisitor patrols with contraband decoy.
+        dialogue: The Inquisitors bought the bait! The dead zone is clear. Get those
+          blueprints back to Corvus immediately.
+        completion: Corvus is reviewing the schematics at Command.
+        next: corvus
+        cash_reward: 4500.0
+        reward_item: Black Market Clearance
+        reward_desc: Underworld pass granting immune status in the slums.
+        icon: CRYING_OBSIDIAN
+        command: none
+        walk: false
+        completion_behavior: STAY

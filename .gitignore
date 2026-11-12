@@ -1,0 +1,28 @@
+# Gradle
+.gradle/
+build/
+
+# Compiled outputs
+bin/
+out/
+*.class
+
+# Packaged binaries / compiled jars
+*.jar
+*.war
+*.nar
+*.ear
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE & Editor files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS and temporary files
+.DS_Store
+Thumbs.db
+.repomix/
+*.log

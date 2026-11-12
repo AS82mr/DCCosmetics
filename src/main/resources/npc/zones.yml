@@ -1,0 +1,329 @@
+zones:
+  command:
+    display_name: Central Spawn Plaza
+    warp_command: warp spawn
+    warp_location:
+      ==: org.bukkit.Location
+      world_key: minecraft:spawn_main
+      x: -2.5
+      y: 51.0
+      z: 0.5
+      pitch: 0.0
+      yaw: -91.118774
+    bound_npcs:
+    - corvus
+    - echo
+    - ronald
+    - vane
+    - sylas
+    - balthazar
+  forge:
+    display_name: The Tech Forge
+    warp_command: warp forge
+    warp_location:
+      ==: org.bukkit.Location
+      world_key: minecraft:spawn_main
+      x: -50.5
+      y: 48.0
+      z: 61.5
+      pitch: 0.0
+      yaw: 101.17871
+    bound_npcs:
+    - kristoph
+    - marion
+    - jax
+  archives:
+    display_name: Spacetime Archives & Library
+    warp_command: warp library
+    warp_location:
+      ==: org.bukkit.Location
+      world_key: minecraft:spawn_main
+      x: 160.5
+      y: 47.0
+      z: 13.5
+      pitch: 0.0
+      yaw: -89.167076
+    bound_npcs:
+    - lyra
+  market:
+    display_name: Sanctuary Markets
+    warp_command: warp market
+    warp_location:
+      ==: org.bukkit.Location
+      world_key: minecraft:spawn_main
+      x: 71.5
+      y: 48.0
+      z: -22.5
+      pitch: 0.0
+      yaw: -90.666016
+    bound_npcs:
+    - vivienne
+    - jax
+    - ronald
+  auction:
+    display_name: The Grand Auction House
+    warp_command: warp ah
+    warp_location:
+      ==: org.bukkit.Location
+      world_key: minecraft:spawn_main
+      x: 58.5
+      y: 54.0
+      z: -53.5
+      pitch: 0.0
+      yaw: 177.37854
+    bound_npcs:
+    - valen
+  bank:
+    display_name: Guild Central Bank
+    warp_command: warp bank
+    warp_location:
+      ==: org.bukkit.Location
+      world_key: minecraft:spawn_main
+      x: -14.5
+      y: 54.0
+      z: 66.5
+      pitch: 0.0
+      yaw: -1.2697754
+    bound_npcs:
+    - aurelius
+  bakery:
+    display_name: Hearthstone Bakery
+    warp_command: warp bakery
+    warp_location:
+      ==: org.bukkit.Location
+      world_key: minecraft:spawn_main
+      x: -90.5
+      y: 54.0
+      z: -50.5
+      pitch: 0.0
+      yaw: -94.7128
+    bound_npcs:
+    - clara
+    - marion
+    - hesper
+  colosseum:
+    display_name: Snow Colosseum
+    warp_command: warp colosseum
+    warp_location:
+      ==: org.bukkit.Location
+      world_key: minecraft:spawn_main
+      x: 101.5
+      y: 45.0
+      z: -114.5
+      pitch: 0.0
+      yaw: -111.96484
+    bound_npcs:
+    - valerius
+  fisherman:
+    display_name: Sanctuary Docks & Swamp
+    warp_command: warp fish
+    warp_location:
+      ==: org.bukkit.Location
+      world_key: minecraft:spawn_main
+      x: -10.5
+      y: 43.0
+      z: -222.5
+      pitch: 0.0
+      yaw: -153.97192
+    bound_npcs:
+    - finn
+  stylist:
+    display_name: Haute Couture Salon
+    warp_command: warp stylist
+    bound_npcs:
+    - vivienne
+    - valen
+  observatory:
+    display_name: Celestial Observatory
+    warp_command: warp observatory
+    warp_location:
+      ==: org.bukkit.Location
+      world_key: minecraft:spawn_main
+      x: -50.5
+      y: 48.0
+      z: 61.5
+      pitch: 0.0
+      yaw: 93.08472
+    bound_npcs:
+    - hesper
+    - orion
+  mines:
+    display_name: Spruce Foothills Mines
+    warp_command: warp mines
+    warp_location:
+      ==: org.bukkit.Location
+      world_key: minecraft:spawn_main
+      x: -137.5
+      y: 47.0
+      z: 59.5
+      pitch: 0.0
+      yaw: -88.56362
+    bound_npcs:
+    - thrum
+  farms:
+    display_name: Golden Terraced Farms
+    warp_command: warp farm
+    warp_location:
+      ==: org.bukkit.Location
+      world_key: minecraft:spawn_main
+      x: 182.5
+      y: 42.0
+      z: 138.5
+      pitch: 0.0
+      yaw: 59.186768
+    bound_npcs:
+    - sylas
+    - clara
+  ruins:
+    display_name: Ancient Dead Ruins
+    warp_command: warp ruins
+    warp_location:
+      ==: org.bukkit.Location
+      world_key: minecraft:spawn_main
+      x: -106.5
+      y: 39.0
+      z: -175.5
+      pitch: 0.0
+      yaw: 149.93794
+    bound_npcs:
+    - elden
+  north_gate:
+    display_name: North Gate Bastion
+    warp_command: warp ng
+    bound_npcs: []
+  slums:
+    display_name: LowerCity Slums
+    warp_command: warp slums
+    warp_location:
+      ==: org.bukkit.Location
+      world_key: minecraft:lowercity
+      x: -24.5
+      y: 131.0
+      z: 280.5
+      pitch: 0.0
+      yaw: 170.25067
+    bound_npcs:
+    - prisoner404
+    - nadia
+    - gideon
+    - sorsha
+    - rats
+    - twitch
+    - finch
+  casino:
+    display_name: The Black Drift Casino
+    warp_command: warp casino
+    warp_location:
+      ==: org.bukkit.Location
+      world_key: minecraft:lowercity
+      x: 144.5
+      y: 131.0
+      z: 253.5
+      pitch: 0.0
+      yaw: -92.199875
+    bound_npcs:
+    - valerio
+    - slick
+    - brutus
+    - garrick
+  blackmarket:
+    display_name: Black Market & Chop Shop
+    warp_command: warp blackmarket
+    warp_location:
+      ==: org.bukkit.Location
+      world_key: minecraft:lowercity
+      x: -3.5
+      y: 131.0
+      z: 181.5
+      pitch: 0.0
+      yaw: 25.251495
+    bound_npcs:
+    - shade
+    - krux
+    - nyx
+    - vector
+    - roxy
+  citadel:
+    display_name: Imperial Citadel
+    warp_command: warp citadel
+    warp_location:
+      ==: org.bukkit.Location
+      world_key: minecraft:spawn_snow
+      x: 105.93437604668517
+      y: 71.47156836956997
+      z: 347.30444390601673
+      pitch: 23.875683
+      yaw: -175.72643
+    bound_npcs:
+    - malakor
+    - kael
+    - thorne
+    - vael
+    - ignis
+    - theta
+  spire:
+    display_name: Imperial Spire Throne Room
+    warp_command: warp spire
+    warp_location:
+      ==: org.bukkit.Location
+      world_key: minecraft:lowercity
+      x: 101.5
+      y: 131.0
+      z: 201.5
+      pitch: 0.0
+      yaw: -149.05048
+    bound_npcs:
+    - emperor
+  academy:
+    display_name: High Observatory & Academy
+    warp_command: warp academy
+    warp_location:
+      ==: org.bukkit.Location
+      world_key: minecraft:spawn_main
+      x: -68.5
+      y: 59.0
+      z: 57.5
+      pitch: 0.0
+      yaw: 87.6615
+    bound_npcs:
+    - lyra
+    - orion
+  lowercity_gate:
+    display_name: LowerCity Gateway Checkpoint
+    warp_command: mw tp lowercity
+    bound_npcs:
+    - emperor
+    - prisoner404
+    - nadia
+    - malakor
+    - kael
+    - theta
+    - gideon
+  lowercity_reactor:
+    display_name: Chrono-Reactor Manifold
+    warp_command: mw tp lowercity
+    bound_npcs:
+    - thorne
+  lowercity_library:
+    display_name: Spire Central Library
+    warp_command: mw tp lowercity
+    bound_npcs:
+    - vael
+  lowercity_forge:
+    display_name: The Void Forge
+    warp_command: mw tp lowercity
+    bound_npcs:
+    - ignis
+  underworld:
+    display_name: Underworld Casino Floor
+    warp_command: mw tp lowercity
+    bound_npcs:
+    - valerio
+    - shade
+  breach:
+    display_name: Sector IV The Breach
+    warp_command: mw tp lowercity
+    bound_npcs:
+    - vector
+    - nyx
+    - krux

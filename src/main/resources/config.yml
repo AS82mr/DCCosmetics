@@ -1,0 +1,129 @@
+# ==============================================================================
+# Dragoncote Core Essentials (v2.0) — Unified System Configuration
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. GENERAL & COSMETICS SCROLLS FORMATTING
+# ------------------------------------------------------------------------------
+applied_item_format: "{emoji} &r{item_name} {color}[{cosmetic_name}]"
+
+scrolls:
+  uncommon:
+    emoji: "&#03E700⬤"
+    name: "&#03E700&l{cosmetic} Scroll"
+    lore:
+      - "&#03E700&l&n&m_&#03E10B&l&n&m_&#03DC16&l&n&m_&#03D621&l&n&m_&#02D02C&l&n&m_&#02CB37&l&n&m_&#02C543&l&n&m_&#02BF4E&l&n&m_&#02B959&l&n&m_&#02B464&l&n&m_&#02AE6F&l&n&m_&#02A87A&l&n&m_&#01A385&l&n&m_&#019D90&l&n&m_&#01979B&l&n&m_&#0192A6&l&n&m_&#018CB1&l&n&m_&#0186BC&l&n&m_&#0180C8&l&n&m_&#017BD3&l&n&m_&#0075DE&l&n&m_&#006FE9&l&n&m_&#006AF4&l&n&m_&#0064FF&l&n&m_"
+      - "&f"
+      - "{itemlore}"
+      - "&f"
+      - "&8&m=&r &8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "&8&m=&r &8ᴏɴᴛᴏ ᴀ {slot} ᴛᴏ ᴀᴘᴘʟʏ!"
+      - "&#03E700&l&n&m_&#03E10B&l&n&m_&#03DC16&l&n&m_&#03D621&l&n&m_&#02D02C&l&n&m_&#02CB37&l&n&m_&#02C543&l&n&m_&#02BF4E&l&n&m_&#02B959&l&n&m_&#02B464&l&n&m_&#02AE6F&l&n&m_&#02A87A&l&n&m_&#01A385&l&n&m_&#019D90&l&n&m_&#01979B&l&n&m_&#0192A6&l&n&m_&#018CB1&l&n&m_&#0186BC&l&n&m_&#0180C8&l&n&m_&#017BD3&l&n&m_&#0075DE&l&n&m_&#006FE9&l&n&m_&#006AF4&l&n&m_&#0064FF&l&n&m_"
+      - "&#03E700&m=&r &#03E700&lUncommon"
+      - "&#03E700&l&n&m_&#03E10B&l&n&m_&#03DC16&l&n&m_&#03D621&l&n&m_&#02D02C&l&n&m_&#02CB37&l&n&m_&#02C543&l&n&m_&#02BF4E&l&n&m_&#02B959&l&n&m_&#02B464&l&n&m_&#02AE6F&l&n&m_&#02A87A&l&n&m_&#01A385&l&n&m_&#019D90&l&n&m_&#01979B&l&n&m_&#0192A6&l&n&m_&#018CB1&l&n&m_&#0186BC&l&n&m_&#0180C8&l&n&m_&#017BD3&l&n&m_&#0075DE&l&n&m_&#006FE9&l&n&m_&#006AF4&l&n&m_&#0064FF&l&n&m_"
+  rare:
+    emoji: "&#0098FF&l✦"
+    name: "&#0098FF&l{cosmetic} Scroll"
+    lore:
+      - "&#0098FF&l&n&m_&#098FFF&l&n&m_&#1185FF&l&n&m_&#1A7CFF&l&n&m_&#2372FF&l&n&m_&#2B69FF&l&n&m_&#345FFF&l&n&m_&#3C56FF&l&n&m_&#454CFF&l&n&m_&#4E43FF&l&n&m_&#5639FF&l&n&m_&#5F30FF&l&n&m_&#6826FF&l&n&m_&#701DFF&l&n&m_&#7913FF&l&n&m_&#810AFF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_"
+      - "&f"
+      - "{itemlore}"
+      - "&f"
+      - "&8&m=&r &8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "&8&m=&r &8ᴏɴᴛᴏ ᴀ &a{slot} &8ᴛᴏ ᴀᴘᴘʟʏ!"
+      - "&#0098FF&l&n&m_&#098FFF&l&n&m_&#1185FF&l&n&m_&#1A7CFF&l&n&m_&#2372FF&l&n&m_&#2B69FF&l&n&m_&#345FFF&l&n&m_&#3C56FF&l&n&m_&#454CFF&l&n&m_&#4E43FF&l&n&m_&#5639FF&l&n&m_&#5F30FF&l&n&m_&#6826FF&l&n&m_&#701DFF&l&n&m_&#7913FF&l&n&m_&#810AFF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_"
+      - "&#0098FF&m=&r &#0098FF&lRare"
+      - "&#0098FF&l&n&m_&#098FFF&l&n&m_&#1185FF&l&n&m_&#1A7CFF&l&n&m_&#2372FF&l&n&m_&#2B69FF&l&n&m_&#345FFF&l&n&m_&#3C56FF&l&n&m_&#454CFF&l&n&m_&#4E43FF&l&n&m_&#5639FF&l&n&m_&#5F30FF&l&n&m_&#6826FF&l&n&m_&#701DFF&l&n&m_&#7913FF&l&n&m_&#810AFF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_&#8A00FF&l&n&m_"
+  epic:
+    emoji: "&#8A00FF⭐"
+    name: "&#8A00FF&l{cosmetic} Scroll"
+    lore:
+      - "&#8A00FF&l&n&m_&#8F09F5&l&n&m_&#9311EB&l&n&m_&#981AE0&l&n&m_&#9D22D6&l&n&m_&#A12BCC&l&n&m_&#A634C2&l&n&m_&#AB3CB8&l&n&m_&#AF45AD&l&n&m_&#B44DA3&l&n&m_&#B95699&l&n&m_&#BD5F8F&l&n&m_&#C26785&l&n&m_&#C7707A&l&n&m_&#CC7870&l&n&m_&#D08166&l&n&m_&#D58A5C&l&n&m_&#DA9252&l&n&m_&#DE9B47&l&n&m_&#E3A33D&l&n&m_&#E8AC33&l&n&m_&#ECB529&l&n&m_&#F1BD1F&l&n&m_&#F6C614&l&n&m_&#FACE0A&l&n&m_&#FFD700&l&n&m_"
+      - "&f"
+      - "{itemlore}"
+      - "&f"
+      - "&8&m=&r &8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "&8&m=&r &8ᴏɴᴛᴏ ᴀ &a{slot} &8ᴛᴏ ᴀᴘᴘʟʏ!"
+      - "&#8A00FF&l&n&m_&#8F09F5&l&n&m_&#9311EB&l&n&m_&#981AE0&l&n&m_&#9D22D6&l&n&m_&#A12BCC&l&n&m_&#A634C2&l&n&m_&#AB3CB8&l&n&m_&#AF45AD&l&n&m_&#B44DA3&l&n&m_&#B95699&l&n&m_&#BD5F8F&l&n&m_&#C26785&l&n&m_&#C7707A&l&n&m_&#CC7870&l&n&m_&#D08166&l&n&m_&#D58A5C&l&n&m_&#DA9252&l&n&m_&#DE9B47&l&n&m_&#E3A33D&l&n&m_&#E8AC33&l&n&m_&#ECB529&l&n&m_&#F1BD1F&l&n&m_&#F6C614&l&n&m_&#FACE0A&l&n&m_&#FFD700&l&n&m_"
+      - "&#8A00FF&m=&r &#8A00FF&lEpic"
+      - "&#8A00FF&l&n&m_&#8F09F5&l&n&m_&#9311EB&l&n&m_&#981AE0&l&n&m_&#9D22D6&l&n&m_&#A12BCC&l&n&m_&#A634C2&l&n&m_&#AB3CB8&l&n&m_&#AF45AD&l&n&m_&#B44DA3&l&n&m_&#B95699&l&n&m_&#BD5F8F&l&n&m_&#C26785&l&n&m_&#C7707A&l&n&m_&#CC7870&l&n&m_&#D08166&l&n&m_&#D58A5C&l&n&m_&#DA9252&l&n&m_&#DE9B47&l&n&m_&#E3A33D&l&n&m_&#E8AC33&l&n&m_&#ECB529&l&n&m_&#F1BD1F&l&n&m_&#F6C614&l&n&m_&#FACE0A&l&n&m_&#FFD700&l&n&m_"
+  legendary:
+    emoji: "&#FFD700🔥"
+    name: "&#FFD700&l{cosmetic} Scroll"
+    lore:
+      - "&#FFD700&l&n&m_&#FDCE00&l&n&m_&#FAC600&l&n&m_&#F8BD00&l&n&m_&#F5B500&l&n&m_&#F3AC00&l&n&m_&#F0A300&l&n&m_&#EE9B00&l&n&m_&#EB9200&l&n&m_&#E98A00&l&n&m_&#E78100&l&n&m_&#E47800&l&n&m_&#E27000&l&n&m_&#DF6700&l&n&m_&#DD5F00&l&n&m_&#DA5600&l&n&m_&#D84D00&l&n&m_&#D64500&l&n&m_&#D33C00&l&n&m_&#D13400&l&n&m_&#CE2B00&l&n&m_&#CC2200&l&n&m_&#C91A00&l&n&m_&#C71100&l&n&m_&#C40900&l&n&m_&#C20000&l&n&m_"
+      - "&f"
+      - "{itemlore}"
+      - "&f"
+      - "&8&m=&r &8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "&8&m=&r &8ᴏɴᴛᴏ ᴀ &a{slot} &8ᴛᴏ ᴀᴘᴘʟʏ!"
+      - "&#FFD700&l&n&m_&#FDCE00&l&n&m_&#FAC600&l&n&m_&#F8BD00&l&n&m_&#F5B500&l&n&m_&#F3AC00&l&n&m_&#F0A300&l&n&m_&#EE9B00&l&n&m_&#EB9200&l&n&m_&#E98A00&l&n&m_&#E78100&l&n&m_&#E47800&l&n&m_&#E27000&l&n&m_&#DF6700&l&n&m_&#DD5F00&l&n&m_&#DA5600&l&n&m_&#D84D00&l&n&m_&#D64500&l&n&m_&#D33C00&l&n&m_&#D13400&l&n&m_&#CE2B00&l&n&m_&#CC2200&l&n&m_&#C91A00&l&n&m_&#C71100&l&n&m_&#C40900&l&n&m_&#C20000&l&n&m_"
+      - "&#FFD700&m=&r &#FFD700&lLegendary"
+      - "&#FFD700&l&n&m_&#FDCE00&l&n&m_&#FAC600&l&n&m_&#F8BD00&l&n&m_&#F5B500&l&n&m_&#F3AC00&l&n&m_&#F0A300&l&n&m_&#EE9B00&l&n&m_&#EB9200&l&n&m_&#E98A00&l&n&m_&#E78100&l&n&m_&#E47800&l&n&m_&#E27000&l&n&m_&#DF6700&l&n&m_&#DD5F00&l&n&m_&#DA5600&l&n&m_&#D84D00&l&n&m_&#D64500&l&n&m_&#D33C00&l&n&m_&#D13400&l&n&m_&#CE2B00&l&n&m_&#CC2200&l&n&m_&#C91A00&l&n&m_&#C71100&l&n&m_&#C40900&l&n&m_&#C20000&l&n&m_"
+
+# ------------------------------------------------------------------------------
+# 2. DATABASE CONFIGURATION (SQLITE / MYSQL)
+# ------------------------------------------------------------------------------
+database:
+  type: "sqlite" # 'sqlite' (stored in data/database.db) or 'mysql'
+  sqlite:
+    file: "data/database.db"
+  mysql:
+    enabled: false
+    host: "127.0.0.1"
+    port: 3306
+    database: "dragoncote"
+    username: "root"
+    password: ""
+    pool_size: 10
+
+# ------------------------------------------------------------------------------
+# 3. TEMPORAL KEYSTONE & THERMODYNAMICS CONFIGURATION
+# ------------------------------------------------------------------------------
+teleportation:
+  keystone:
+    newbie-shield-days: 3
+    nether-heat-multiplier: 2.0
+    nexus-incursion-cooldown-seconds: 300
+    cryo-purge-amount: 20
+    cryo-cooldown-seconds: 5
+    tpa-synergy-cooldown-heat: 15
+
+# ------------------------------------------------------------------------------
+# 4. 3D NAVIGATIONAL WAYPOINT ARROW CONFIGURATION
+# ------------------------------------------------------------------------------
+waypoints:
+  forward-distance: 1.5
+  height-offset: -0.95
+  scale: 0.3
+  hover-speed: 0.15
+  hover-amplitude: 0.04
+  max-pitch: 60.0
+  arrival-distance: 3.0
+
+# ------------------------------------------------------------------------------
+# 5. CINEMATIC DESOLATION BIOME DATAPACK SETTINGS
+# ------------------------------------------------------------------------------
+cinematic_biomes:
+  desolation:
+    sky_color: "#101214"
+    fog_color: "#1A2626"
+    water_color: "#0A1718"
+    water_fog_color: "#051010"
+    grass_color: "#353A3A"
+    foliage_color: "#1B4D4D"
+
+  crimson_rot:
+    sky_color: "#1A0505"
+    fog_color: "#2B0A0A"
+    water_color: "#250000"
+    water_fog_color: "#150000"
+    grass_color: "#2A2020"
+    foliage_color: "#551111"
+
+# ------------------------------------------------------------------------------
+# 6. SYSTEM DEBUG LOGGING
+# ------------------------------------------------------------------------------
+debug-mode:
+  - dcnpc
+

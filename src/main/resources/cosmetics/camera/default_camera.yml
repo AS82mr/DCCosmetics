@@ -1,0 +1,23 @@
+id: camera/default_camera
+equipment-slot: head
+nodes:
+  lens:
+    type: ITEM_DISPLAY
+    item: "minecraft:player_head{SkullOwner:{Id:[I;-1,-1,-1,-1],Properties:{textures:[{Value:\"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDlkZGFjNDA5Zjk2NTc1ZjliMjc2ZjIxNzE3ZGZhZDZiZWU4N2FiNTgyZjdlOTQ0MjlmOTg5NDlmYTMyMTRlMyJ9fX0=\"}]}}}"
+    scale: 1.4, 1.4, 1.4
+    translation: 0.0, 1.62, 0.0
+  body:
+    type: BLOCK_DISPLAY
+    material: COAL_BLOCK
+    scale: 0.45, 0.45, 0.45
+    translation: 0.0, 1.62, -0.35
+  antenna:
+    type: BLOCK_DISPLAY
+    material: LIGHTNING_ROD
+    scale: 0.4, 0.4, 0.4
+    translation: 0.0, 1.97, -0.35
+  mic:
+    type: BLOCK_DISPLAY
+    material: END_ROD
+    scale: 0.3, 0.3, 0.3
+    translation: 0.25, 1.72, -0.35

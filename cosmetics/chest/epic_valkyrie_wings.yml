@@ -1,0 +1,23 @@
+id: "epic_valkyrie_wings"
+type: "chest"
+rarity: "epic"
+animated: false
+global-offset: [0.0, 1.3, -0.15] # Anchors it perfectly to the upper spine!
+display-item: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvM2FkNmYyZDY5NmEyNDg0ZWMwMWI4ZmE5OTBlNWRiYzExMmU1MjNmNWM1YTE5ZDZlZDFmMjhlMDY3NWEzZThjMSJ9fX0="
+components:
+  wing_left_main:
+    type: "solid"
+    sides: 1
+    length: 1.0
+    width: 0.6
+    pitch: 0.0
+    local-offset: [-0.4, 0.0, 0.0]
+    color: "#FFFFFF"
+  wing_right_main:
+    type: "solid"
+    sides: 1
+    length: 1.0
+    width: 0.6
+    pitch: 0.0
+    local-offset: [0.4, 0.0, 0.0]
+    color: "#FFFFFF"

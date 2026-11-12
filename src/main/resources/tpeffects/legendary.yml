@@ -1,0 +1,51 @@
+# ====================================================================
+# LEGENDARY TELEPORTATION EFFECTS (Shader-Replica 3D Camera Series)
+# ====================================================================
+rarity: legendary
+
+effects:
+  obsidian_dissolution:
+    enabled: true
+    hidden: false
+    duration: 10.5s
+    display-name: "&#94A3B8&lObsidian Dissolution"
+    permission: "dc.tpeffect.obsidian_dissolution"
+    type: CINEMATIC
+    cinematic-style: "OBSIDIAN_DISSOLUTION"
+    material: CRYING_OBSIDIAN
+    custom-model-data: 0
+    lore:
+      - "&7Transform every warp & travel,"
+      - "&7with &#38BDF8t&#44B1F7e&#50A5F6l&#5C99F5e&#688DF4p&#7481F3o&#8075F2r&#8C69F1t &#985DF0e&#A451EFf&#B045EEf&#BC39EDe&#C82DECc&#D421EBt&#E015EAs!"
+      - "&f"
+      - "&7You can access all your effects,"
+      - "&7sorted by their &#00D725r&#2C04E2a&#5D06BAr&#8E0792i&#FFC800t&#A50404y&7 into different"
+      - "&bcategories&7, in the &c/wardrobe &7menu."
+      - "&f"
+      - "&7&l⥽ &7Preview: &#334155O&#475569b&#64748Bs&#94A3B8i&#CBD5E1d&#E2E8F0i&#CBD5E1a&#94A3B8n &#64748BD&#475569i&#334155s&#475569s&#64748Bo&#94A3B8l&#CBD5E1u&#F8FAFCt&#CBD5E1i&#94A3B8o&#475569n!"
+      - "&7"
+      - "§8§m=§r &8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "§8§m=§r &8ᴛᴏ ᴄʟᴀɪᴍ ᴛʜɪꜱ ᴠᴏᴜᴄʜᴇʀ!"
+
+  umbral_dissolution:
+    enabled: true
+    hidden: false
+    duration: 4s
+    display-name: "&#64748B&lUmbral Dissolution"
+    permission: "dc.tpeffect.umbral_dissolution"
+    type: CINEMATIC
+    cinematic-style: "UMBRAL_DISSOLUTION"
+    material: OBSIDIAN
+    custom-model-data: 0
+    lore:
+      - "&7Transform every warp & travel,"
+      - "&7with &#38BDF8t&#44B1F7e&#50A5F6l&#5C99F5e&#688DF4p&#7481F3o&#8075F2r&#8C69F1t &#985DF0e&#A451EFf&#B045EEf&#BC39EDe&#C82DECc&#D421EBt&#E015EAs!"
+      - "&f"
+      - "&7You can access all your effects,"
+      - "&7sorted by their &#00D725r&#2C04E2a&#5D06BAr&#8E0792i&#FFC800t&#A50404y&7 into different"
+      - "&bcategories&7, in the &c/wardrobe &7menu."
+      - "&f"
+      - "&7&l⥽ &7Preview: &#1E293BU&#334155m&#475569b&#64748Br&#94A3B8a&#CBD5E1l &#94A3B8D&#64748Bi&#475569s&#334155s&#1E293Bo&#334155l&#475569u&#64748Bt&#94A3B8i&#CBD5E1o&#94A3B8n!"
+      - "&7"
+      - "§8§m=§r &8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "§8§m=§r &8ᴛᴏ ᴄʟᴀɪᴍ ᴛʜɪꜱ ᴠᴏᴜᴄʜᴇʀ!"

@@ -1,0 +1,109 @@
+# ====================================================================
+# DCEssentials - Cosmetic Teleportation Effects Master Configuration
+# Folder: plugins/DCEssentials/tpeffects/
+# Individual effects are organized by rarity into uncommon.yml,
+# rare.yml, epic.yml, legendary.yml, mastery.yml (or any custom *.yml).
+# ====================================================================
+
+enabled: true
+
+# Minimum time (seconds) between teleportation effect activations per player
+cooldown-seconds: 1.5
+
+# Delay (ticks) before spawning arrival effect for MYTHIC_MOB effects
+arrival-delay-ticks: 2
+
+# Minimum distance required to trigger effects (ignores short combat knockbacks/steps)
+min-distance:
+  non-command: 15.0
+  command: 3.0
+
+# Teleport causes that never trigger cosmetic teleport effects
+ignored-causes:
+  - SPECTATE
+  - DISMOUNT
+  - EXIT_BED
+  - UNKNOWN
+
+# Worlds where teleport effects are completely suppressed
+disabled-worlds: []
+
+# Fallback suppression for item movement abilities, dashes, and boss skills
+# Prevents combat/skill teleports from playing travel teleport effects/cinematics
+ability-fallback:
+  enabled: true
+  # Set to true temporarily to log caller classes for PLUGIN/UNKNOWN teleports
+  debug: false
+  # Bukkit metadata keys on the player that suppress teleport effects
+  ignored-metadata:
+    - no_tpeffect
+    - in_wardrobe
+    - dc_ability_tp
+  # Scoreboard tags on the player that suppress teleport effects (usable in MythicMobs skills/datapacks)
+  ignored-scoreboard-tags:
+    - no_tpeffect
+    - ability_teleport
+    - boss_skill
+  # Substrings matched against live call-stack frames for non-command teleports
+  ignored-caller-patterns:
+    - "dc.dcessentials.modules.items."
+    - "dc.dcessentials.modules.pets."
+    - "dc.dcessentials.modules.boss."
+    - "io.lumine.mythic."
+    - "io.lumine.mythiccrucible."
+    - "net.indyuce.mmoitems."
+    - "net.indyuce.mmocore."
+    - "com.ssomar.score."
+    - "dev.aurelium.auraskills."
+    - "su.nightexpress.excellentenchants."
+    - "me.frep.vulcan."
+  # Suppress same-world PLUGIN/UNKNOWN teleports shortly after entity/boss combat
+  suppress-during-combat:
+    enabled: true
+    window-seconds: 4.0
+    max-distance: 64.0
+
+# Storage & LuckPerms compatibility
+storage:
+  # Keeps dc.seltpeffect.<id> permission synced in LuckPerms alongside player PDC data
+  sync-luckperms-selected-permission: true
+  # If a player has no PDC entry yet, migrate from any legacy dc.seltpeffect.<id> perm on join
+  migrate-legacy-luckperms-on-join: true
+
+# Wardrobe UltimateUI interaction settings
+wardrobe:
+  # Require clicking once to preview, then clicking again (when owned) to equip
+  click-to-preview-then-equip: true
+
+# Rarity display ordering in Wardrobe UI, listings, and tab-completion
+rarity-order:
+  - uncommon
+  - rare
+  - epic
+  - legendary
+  - mastery
+
+# ====================================================================
+# 3D Voxel Camera Cinematic Engine (Legendary & Mastery Effects)
+# ====================================================================
+cinematic:
+  # Pixel sampling step on 64x64 player skin texture (2 = 2x2 skin blocks, sharp & fast)
+  skin-sample-step: 2
+
+  # Camera distance behind the player during departure & arrival third-person beats
+  camera-distance: 3.45
+  camera-height-offset: 1.65
+
+  # Fullscreen Blackout / Transition Hook
+  blackout:
+    # Supported modes:
+    #   AUTO              - Uses UltimateUI HUD if defined in UUI, else smooth Darkness+Blindness cut
+    #   ULTIMATEUI_HUD    - Opens configured UltimateUI HUD during transition
+    #   ULTIMATEUI_PANEL  - Generates a programmatic 1920x1080 black panel via UltimateUI UiBuilder
+    #   TITLE_GLYPH       - Uses custom resource-pack full-screen Unicode title glyph below
+    #   POTION_DARKNESS   - Vanilla Darkness + Blindness cut
+    mode: "AUTO"
+    ultimateui-hud: "tpeffect_blackout"
+    ultimateui-element: "blackout_rect"
+    title-glyph: ""
+    use-potion-darkness: true

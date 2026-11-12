@@ -1,0 +1,225 @@
+# ====================================================================
+# EPIC TELEPORTATION EFFECTS (Volume 5 16x Collection)
+# ====================================================================
+rarity: epic
+
+effects:
+  sweet_honey:
+    enabled: true
+    hidden: false
+    display-name: "&6&lSweet Honey"
+    permission: "dc.tpeffect.sweet_honey"
+    type: MYTHIC_MOB
+    mythic-mob: "KFX_v5_16x-SweetHoney"
+    material: HONEYCOMB
+    custom-model-data: 0
+    lore:
+      - "&7Transform every warp & travel,"
+      - "&7with &#38BDF8t&#44B1F7e&#50A5F6l&#5C99F5e&#688DF4p&#7481F3o&#8075F2r&#8C69F1t &#985DF0e&#A451EFf&#B045EEf&#BC39EDe&#C82DECc&#D421EBt&#E015EAs!"
+      - "&f"
+      - "&7You can access all your effects,"
+      - "&7sorted by their &#00D725r&#2C04E2a&#5D06BAr&#8E0792i&#FFC800t&#A50404y&7 into different"
+      - "&bcategories&7, in the &c/wardrobe &7menu."
+      - "&f"
+      - "&7&l⥽ &7Preview: &#D97706S&#F59E0Bw&#FBBF24e&#FCD34De&#FDE047t &#FEF08AH&#FCD34Do&#F59E0Bn&#D97706e&#FBBF24y!"
+      - "&7"
+      - "§8§m=§r &8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "§8§m=§r &8ᴛᴏ ᴄʟᴀɪᴍ ᴛʜɪꜱ ᴠᴏᴜᴄʜᴇʀ!"
+
+  outline_retrace:
+    enabled: true
+    hidden: false
+    display-name: "&b&lOutline Retrace"
+    permission: "dc.tpeffect.outline_retrace"
+    type: MYTHIC_MOB
+    mythic-mob: "KFX_v5_16x-OutlineRetrace"
+    material: SPECTRAL_ARROW
+    custom-model-data: 0
+    lore:
+      - "&7Transform every warp & travel,"
+      - "&7with &#38BDF8t&#44B1F7e&#50A5F6l&#5C99F5e&#688DF4p&#7481F3o&#8075F2r&#8C69F1t &#985DF0e&#A451EFf&#B045EEf&#BC39EDe&#C82DECc&#D421EBt&#E015EAs!"
+      - "&f"
+      - "&7You can access all your effects,"
+      - "&7sorted by their &#00D725r&#2C04E2a&#5D06BAr&#8E0792i&#FFC800t&#A50404y&7 into different"
+      - "&bcategories&7, in the &c/wardrobe &7menu."
+      - "&f"
+      - "&7&l⥽ &7Preview: &#06B6D4O&#22D3EEu&#67E8F9t&#A5F3FCl&#FFFFFFi&#A5F3FCn&#67E8F9e &#22D3EER&#06B6D4e&#0891B2t&#22D3EEr&#67E8F9a&#A5F3FCc&#FFFFFFe!"
+      - "&7"
+      - "§8§m=§r &8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "§8§m=§r &8ᴛᴏ ᴄʟᴀɪᴍ ᴛʜɪꜱ ᴠᴏᴜᴄʜᴇʀ!"
+
+  quill_ink:
+    enabled: true
+    hidden: false
+    display-name: "&8&lQuill Ink"
+    permission: "dc.tpeffect.quill_ink"
+    type: MYTHIC_MOB
+    mythic-mob: "KFX_v5_16x-QuillInk"
+    material: INK_SAC
+    custom-model-data: 0
+    lore:
+      - "&7Transform every warp & travel,"
+      - "&7with &#38BDF8t&#44B1F7e&#50A5F6l&#5C99F5e&#688DF4p&#7481F3o&#8075F2r&#8C69F1t &#985DF0e&#A451EFf&#B045EEf&#BC39EDe&#C82DECc&#D421EBt&#E015EAs!"
+      - "&f"
+      - "&7You can access all your effects,"
+      - "&7sorted by their &#00D725r&#2C04E2a&#5D06BAr&#8E0792i&#FFC800t&#A50404y&7 into different"
+      - "&bcategories&7, in the &c/wardrobe &7menu."
+      - "&f"
+      - "&7&l⥽ &7Preview: &#1E293BQ&#334155u&#475569i&#64748Bl&#94A3B8l &#CBD5E1I&#94A3B8n&#475569k!"
+      - "&7"
+      - "§8§m=§r &8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "§8§m=§r &8ᴛᴏ ᴄʟᴀɪᴍ ᴛʜɪꜱ ᴠᴏᴜᴄʜᴇʀ!"
+
+  constellation:
+    enabled: true
+    hidden: false
+    display-name: "&9&lConstellation"
+    permission: "dc.tpeffect.constellation"
+    type: MYTHIC_MOB
+    mythic-mob: "KFX_v5_16x-Constellation"
+    material: NETHER_STAR
+    custom-model-data: 0
+    lore:
+      - "&7Transform every warp & travel,"
+      - "&7with &#38BDF8t&#44B1F7e&#50A5F6l&#5C99F5e&#688DF4p&#7481F3o&#8075F2r&#8C69F1t &#985DF0e&#A451EFf&#B045EEf&#BC39EDe&#C82DECc&#D421EBt&#E015EAs!"
+      - "&f"
+      - "&7You can access all your effects,"
+      - "&7sorted by their &#00D725r&#2C04E2a&#5D06BAr&#8E0792i&#FFC800t&#A50404y&7 into different"
+      - "&bcategories&7, in the &c/wardrobe &7menu."
+      - "&f"
+      - "&7&l⥽ &7Preview: &#1D4ED8C&#2563EBo&#3B82F6n&#60A5FAs&#93C5FDt&#E0F2FEe&#FFFFFFl&#E0F2FEl&#93C5FDa&#60A5FAt&#3B82F6i&#2563EBo&#1D4ED8n!"
+      - "&7"
+      - "§8§m=§r &8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "§8§m=§r &8ᴛᴏ ᴄʟᴀɪᴍ ᴛʜɪꜱ ᴠᴏᴜᴄʜᴇʀ!"
+
+  aurora_sky:
+    enabled: true
+    hidden: false
+    display-name: "&a&lAurora Sky"
+    permission: "dc.tpeffect.aurora_sky"
+    type: MYTHIC_MOB
+    mythic-mob: "KFX_v5_16x-AuroraSky"
+    material: EMERALD
+    custom-model-data: 0
+    lore:
+      - "&7Transform every warp & travel,"
+      - "&7with &#38BDF8t&#44B1F7e&#50A5F6l&#5C99F5e&#688DF4p&#7481F3o&#8075F2r&#8C69F1t &#985DF0e&#A451EFf&#B045EEf&#BC39EDe&#C82DECc&#D421EBt&#E015EAs!"
+      - "&f"
+      - "&7You can access all your effects,"
+      - "&7sorted by their &#00D725r&#2C04E2a&#5D06BAr&#8E0792i&#FFC800t&#A50404y&7 into different"
+      - "&bcategories&7, in the &c/wardrobe &7menu."
+      - "&f"
+      - "&7&l⥽ &7Preview: &#10B981A&#34D399u&#6EE7B7r&#84E2CDo&#38BDF8r&#818CF8a &#A855F7S&#C084FCk&#38BDF8y!"
+      - "&7"
+      - "§8§m=§r &8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "§8§m=§r &8ᴛᴏ ᴄʟᴀɪᴍ ᴛʜɪꜱ ᴠᴏᴜᴄʜᴇʀ!"
+
+  fog_envelop:
+    enabled: true
+    hidden: false
+    display-name: "&7&lFog Envelop"
+    permission: "dc.tpeffect.fog_envelop"
+    type: MYTHIC_MOB
+    mythic-mob: "KFX_v5_16x-FogEnvelop"
+    material: WHITE_DYE
+    custom-model-data: 0
+    lore:
+      - "&7Transform every warp & travel,"
+      - "&7with &#38BDF8t&#44B1F7e&#50A5F6l&#5C99F5e&#688DF4p&#7481F3o&#8075F2r&#8C69F1t &#985DF0e&#A451EFf&#B045EEf&#BC39EDe&#C82DECc&#D421EBt&#E015EAs!"
+      - "&f"
+      - "&7You can access all your effects,"
+      - "&7sorted by their &#00D725r&#2C04E2a&#5D06BAr&#8E0792i&#FFC800t&#A50404y&7 into different"
+      - "&bcategories&7, in the &c/wardrobe &7menu."
+      - "&f"
+      - "&7&l⥽ &7Preview: &#94A3B8F&#CBD5E1o&#E2E8F0g &#F1F5F9E&#FFFFFFn&#F1F5F9v&#E2E8F0e&#CBD5E1l&#94A3B8o&#64748Bp!"
+      - "&7"
+      - "§8§m=§r &8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "§8§m=§r &8ᴛᴏ ᴄʟᴀɪᴍ ᴛʜɪꜱ ᴠᴏᴜᴄʜᴇʀ!"
+
+  jade_crystallize:
+    enabled: true
+    hidden: false
+    display-name: "&2&lJade Crystallize"
+    permission: "dc.tpeffect.jade_crystallize"
+    type: MYTHIC_MOB
+    mythic-mob: "KFX_v5_16x-JadeCrystallize"
+    material: PRISMARINE_SHARD
+    custom-model-data: 0
+    lore:
+      - "&7Transform every warp & travel,"
+      - "&7with &#38BDF8t&#44B1F7e&#50A5F6l&#5C99F5e&#688DF4p&#7481F3o&#8075F2r&#8C69F1t &#985DF0e&#A451EFf&#B045EEf&#BC39EDe&#C82DECc&#D421EBt&#E015EAs!"
+      - "&f"
+      - "&7You can access all your effects,"
+      - "&7sorted by their &#00D725r&#2C04E2a&#5D06BAr&#8E0792i&#FFC800t&#A50404y&7 into different"
+      - "&bcategories&7, in the &c/wardrobe &7menu."
+      - "&f"
+      - "&7&l⥽ &7Preview: &#047857J&#059669a&#10B981d&#34D399e &#6EE7B7C&#A7F3D0r&#6EE7B7y&#34D399s&#10B981t&#059669a&#047857l!"
+      - "&7"
+      - "§8§m=§r &8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "§8§m=§r &8ᴛᴏ ᴄʟᴀɪᴍ ᴛʜɪꜱ ᴠᴏᴜᴄʜᴇʀ!"
+
+  kinetic_energy:
+    enabled: true
+    hidden: false
+    display-name: "&c&lKinetic Energy"
+    permission: "dc.tpeffect.kinetic_energy"
+    type: MYTHIC_MOB
+    mythic-mob: "KFX_v5_16x-KineticEnergy"
+    material: REDSTONE
+    custom-model-data: 0
+    lore:
+      - "&7Transform every warp & travel,"
+      - "&7with &#38BDF8t&#44B1F7e&#50A5F6l&#5C99F5e&#688DF4p&#7481F3o&#8075F2r&#8C69F1t &#985DF0e&#A451EFf&#B045EEf&#BC39EDe&#C82DECc&#D421EBt&#E015EAs!"
+      - "&f"
+      - "&7You can access all your effects,"
+      - "&7sorted by their &#00D725r&#2C04E2a&#5D06BAr&#8E0792i&#FFC800t&#A50404y&7 into different"
+      - "&bcategories&7, in the &c/wardrobe &7menu."
+      - "&f"
+      - "&7&l⥽ &7Preview: &#DC2626K&#EF4444i&#F97316n&#FB923Ce&#FACC15t&#FDE047i&#FFFBEB c &#F97316E&#EF4444n&#DC2626e&#B91C1Cr&#EF4444g&#F97316y!"
+      - "&7"
+      - "§8§m=§r &8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "§8§m=§r &8ᴛᴏ ᴄʟᴀɪᴍ ᴛʜɪꜱ ᴠᴏᴜᴄʜᴇʀ!"
+
+  northstar:
+    enabled: true
+    hidden: false
+    display-name: "&b&lNorthstar Recalls"
+    permission: "dc.tpeffect.northstar"
+    type: MYTHIC_MOB
+    mythic-mob: "KFX_v5_16x-NorthstarRecalls"
+    material: COMPASS
+    custom-model-data: 0
+    lore:
+      - "&7Transform every warp & travel,"
+      - "&7with &#38BDF8t&#44B1F7e&#50A5F6l&#5C99F5e&#688DF4p&#7481F3o&#8075F2r&#8C69F1t &#985DF0e&#A451EFf&#B045EEf&#BC39EDe&#C82DECc&#D421EBt&#E015EAs!"
+      - "&f"
+      - "&7You can access all your effects,"
+      - "&7sorted by their &#00D725r&#2C04E2a&#5D06BAr&#8E0792i&#FFC800t&#A50404y&7 into different"
+      - "&bcategories&7, in the &c/wardrobe &7menu."
+      - "&f"
+      - "&7&l⥽ &7Preview: &#38BDF8N&#60A5FAo&#93C5FDr&#BAE6FDt&#E0F2FEh&#FFFFFFs&#E0F2FEt&#BAE6FDa&#60A5FAr &#38BDF8R&#0EA5E9e&#38BDF8c&#93C5FDa&#E0F2FEl&#FFFFFFl&#BAE6FDs!"
+      - "&7"
+      - "§8§m=§r &8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "§8§m=§r &8ᴛᴏ ᴄʟᴀɪᴍ ᴛʜɪꜱ ᴠᴏᴜᴄʜᴇʀ!"
+
+  prismatic_light:
+    enabled: true
+    hidden: false
+    display-name: "&e&lPrismatic Light"
+    permission: "dc.tpeffect.prismatic_light"
+    type: MYTHIC_MOB
+    mythic-mob: "KFX_v5_16x-PrismaticLight"
+    material: PRISMARINE_CRYSTALS
+    custom-model-data: 0
+    lore:
+      - "&7Transform every warp & travel,"
+      - "&7with &#38BDF8t&#44B1F7e&#50A5F6l&#5C99F5e&#688DF4p&#7481F3o&#8075F2r&#8C69F1t &#985DF0e&#A451EFf&#B045EEf&#BC39EDe&#C82DECc&#D421EBt&#E015EAs!"
+      - "&f"
+      - "&7You can access all your effects,"
+      - "&7sorted by their &#00D725r&#2C04E2a&#5D06BAr&#8E0792i&#FFC800t&#A50404y&7 into different"
+      - "&bcategories&7, in the &c/wardrobe &7menu."
+      - "&f"
+      - "&7&l⥽ &7Preview: &#F43F5EP&#FB923Cr&#FACC15i&#4ADE80s&#22D3EEm&#818CF8a&#C084FCt&#F472B6i&#FFFFFFc &#FDE047L&#67E8F9i&#C084FCg&#F472B6h&#FFFFFFt!"
+      - "&7"
+      - "§8§m=§r &8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "§8§m=§r &8ᴛᴏ ᴄʟᴀɪᴍ ᴛʜɪꜱ ᴠᴏᴜᴄʜᴇʀ!"

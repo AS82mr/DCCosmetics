@@ -1,0 +1,2260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DCEssentials Wiki</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --bg-alt: #161922;
+      --bg-code: #1c212e;
+      --bg-hover: #212736;
+      --border: #283042;
+      --border-soft: #202736;
+      --text: #c9d1d9;
+      --text-strong: #f0f6fc;
+      --text-muted: #8b949e;
+      --accent: #38bdf8;
+      --accent-bg: rgba(56, 189, 248, 0.12);
+      --green: #3fb950;
+      --green-bg: rgba(63, 185, 80, 0.12);
+      --amber: #d29922;
+      --amber-bg: rgba(210, 153, 34, 0.12);
+      --red: #f85149;
+      --red-bg: rgba(248, 81, 73, 0.12);
+      --purple: #bc8cff;
+      --purple-bg: rgba(188, 140, 255, 0.12);
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --header-h: 56px;
+      --sidebar-w: 236px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: calc(var(--header-h) + 18px);
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.65;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-weight: 400;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    a:hover { text-decoration: underline; }
+
+    /* Top Sticky Navigation & Global Search */
+    header.topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      min-height: var(--header-h);
+      background: var(--bg-alt);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topbar-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .brand-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-strong);
+      font-size: 1rem;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
+      cursor: pointer;
+      background: none;
+      border: 0;
+      padding: 4px 0;
+      font-family: inherit;
+    }
+
+    .brand-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .menu-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.85rem;
+      font-family: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .menu-btn:hover { background: var(--bg-hover); }
+
+    /* Search Widget */
+    .search-wrap {
+      position: relative;
+      flex: 1 1 260px;
+      max-width: 500px;
+      min-width: 160px;
+    }
+
+    .search-input-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text-strong);
+      padding: 7px 54px 7px 32px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .search-wrap input:focus {
+      border-color: var(--accent);
+    }
+
+    .search-wrap input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .search-actions {
+      position: absolute;
+      right: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .search-clear {
+      display: none;
+      border: 0;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1;
+      padding: 2px 5px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .search-clear.visible { display: inline-flex; }
+    .search-clear:hover { color: var(--text-strong); background: var(--bg-hover); }
+
+    .search-kbd {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      background: var(--bg-alt);
+      border-radius: 4px;
+      padding: 1px 6px;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .search-popover {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+      max-height: min(440px, 68vh);
+      overflow-y: auto;
+      z-index: 80;
+    }
+    .search-popover.open { display: block; }
+
+    .search-pop-head {
+      padding: 7px 12px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-soft);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .search-hit {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border-soft);
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .search-hit:last-child { border-bottom: 0; }
+    .search-hit:hover, .search-hit.selected { background: var(--bg-hover); }
+
+    .search-hit-body { min-width: 0; }
+    .search-hit-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .search-hit-title {
+      color: var(--text-strong);
+      font-size: 0.88rem;
+      font-weight: 500;
+      word-break: break-word;
+    }
+    .search-hit-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      line-height: 1.4;
+    }
+
+    .topbar-links {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .top-link {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-family: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .top-link:hover { background: var(--bg-hover); color: var(--text-strong); }
+
+    /* Wiki Layout (Responsive Flow, Zoom-Safe) */
+    .wiki-shell {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: flex-start;
+    }
+
+    aside.sidebar {
+      width: var(--sidebar-w);
+      flex: 0 0 var(--sidebar-w);
+      position: sticky;
+      top: var(--header-h);
+      max-height: calc(100vh - var(--header-h));
+      overflow-y: auto;
+      padding: 18px 12px 28px 18px;
+      border-right: 1px solid var(--border-soft);
+    }
+
+    .nav-group { margin-bottom: 18px; }
+    .nav-group-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      padding: 0 10px 6px;
+      font-weight: 600;
+    }
+
+    .nav-link {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: 0;
+      border-left: 2px solid transparent;
+      padding: 6px 10px;
+      margin-bottom: 2px;
+      border-radius: 0 6px 6px 0;
+      color: var(--text);
+      font-size: 0.88rem;
+      font-weight: 400;
+      font-family: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .nav-link:hover {
+      background: var(--bg-alt);
+      color: var(--text-strong);
+    }
+    .nav-link.active {
+      background: var(--accent-bg);
+      border-left-color: var(--accent);
+      color: var(--text-strong);
+      font-weight: 500;
+    }
+
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: var(--header-h) 0 0 0;
+      background: rgba(0, 0, 0, 0.55);
+      z-index: 35;
+    }
+    .sidebar-backdrop.open { display: block; }
+
+    /* Article Content */
+    main.wiki-main {
+      flex: 1 1 auto;
+      min-width: 0;
+      padding: 26px clamp(16px, 3vw, 44px) 64px;
+    }
+
+    .article {
+      max-width: 900px;
+      min-width: 0;
+    }
+    .article.wide {
+      max-width: 1120px;
+    }
+
+    .page-header {
+      padding-bottom: 14px;
+      margin-bottom: 22px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .page-breadcrumb {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .page-header h1 {
+      margin: 0 0 6px;
+      font-size: 1.75rem;
+      font-weight: 600;
+      line-height: 1.25;
+      color: var(--text-strong);
+      letter-spacing: -0.01em;
+    }
+
+    .page-lead {
+      margin: 0;
+      font-size: 0.96rem;
+      color: var(--text-muted);
+      font-weight: 400;
+      line-height: 1.55;
+    }
+
+    /* Section Jump Strip (Mini TOC) */
+    .page-toc {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 22px;
+      font-size: 0.82rem;
+    }
+    .page-toc-label {
+      color: var(--text-muted);
+      margin-right: 4px;
+    }
+    .toc-chip {
+      padding: 3px 9px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: var(--bg-alt);
+      color: var(--text);
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .toc-chip:hover {
+      border-color: var(--accent);
+      color: var(--text-strong);
+      text-decoration: none;
+    }
+
+    /* Wiki Headings & Prose */
+    section.wiki-sec {
+      margin-bottom: 30px;
+      scroll-margin-top: calc(var(--header-h) + 18px);
+    }
+
+    section.wiki-sec h2 {
+      margin: 0 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border-soft);
+      font-size: 1.22rem;
+      font-weight: 600;
+      color: var(--text-strong);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .sec-flash {
+      animation: secPulse 1.4s ease;
+    }
+    @keyframes secPulse {
+      0% { background: rgba(56, 189, 248, 0.16); border-radius: 6px; }
+      100% { background: transparent; }
+    }
+
+    .wiki-sec p {
+      margin: 0 0 10px;
+      font-weight: 400;
+      color: var(--text);
+    }
+
+    .wiki-sec ul {
+      margin: 0 0 12px;
+      padding-left: 20px;
+    }
+    .wiki-sec li {
+      margin-bottom: 6px;
+      font-weight: 400;
+    }
+
+    strong { font-weight: 600; color: var(--text-strong); }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.86em;
+      background: var(--bg-code);
+      color: #dce6f2;
+      padding: 1px 5px;
+      border-radius: 4px;
+      border: 1px solid var(--border-soft);
+      word-break: break-word;
+    }
+
+    /* Clean Wiki Boxes & Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(290px, 100%), 1fr));
+      gap: 14px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+      gap: 14px;
+    }
+
+    .box {
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      min-width: 0;
+    }
+
+    .box h3 {
+      margin: 0 0 8px;
+      font-size: 0.98rem;
+      font-weight: 600;
+      color: var(--text-strong);
+    }
+
+    .box p:last-child, .box ul:last-child { margin-bottom: 0; }
+
+    /* Callouts */
+    .callout {
+      border-left: 3px solid var(--accent);
+      background: var(--bg-alt);
+      border-top: 1px solid var(--border-soft);
+      border-right: 1px solid var(--border-soft);
+      border-bottom: 1px solid var(--border-soft);
+      border-radius: 0 6px 6px 0;
+      padding: 12px 15px;
+      margin: 14px 0;
+    }
+    .callout.warn { border-left-color: var(--amber); }
+    .callout.note { border-left-color: var(--green); }
+    .callout-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-strong);
+      margin-bottom: 4px;
+    }
+    .callout p { margin: 0; font-size: 0.92rem; }
+
+    /* Tags / Badges — single-line, compact, never wrapped */
+    .tag {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.74rem;
+      font-weight: 500;
+      line-height: 1.3;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: var(--bg-code);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      white-space: nowrap;
+      flex-shrink: 0;
+      vertical-align: middle;
+    }
+    .tag.blue { color: #7dd3fc; background: var(--accent-bg); border-color: rgba(56, 189, 248, 0.3); }
+    .tag.green { color: #6ee7b7; background: var(--green-bg); border-color: rgba(63, 185, 80, 0.3); }
+    .tag.amber { color: #fcd34d; background: var(--amber-bg); border-color: rgba(210, 153, 34, 0.3); }
+    .tag.red { color: #fca5a5; background: var(--red-bg); border-color: rgba(248, 81, 73, 0.3); }
+    .tag.purple { color: #d8b4fe; background: var(--purple-bg); border-color: rgba(188, 140, 255, 0.3); }
+
+    /* Clean Wiki Tables */
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-alt);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.89rem;
+    }
+
+    th {
+      text-align: left;
+      padding: 9px 12px;
+      background: var(--bg-code);
+      color: var(--text-strong);
+      font-weight: 600;
+      font-size: 0.8rem;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border-soft);
+      vertical-align: top;
+      font-weight: 400;
+      line-height: 1.5;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: rgba(255, 255, 255, 0.02); }
+
+    .nowrap-col { white-space: nowrap; }
+
+    /* Filter Toolbar & Inputs */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .filter-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .pill-btn {
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-family: inherit;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .pill-btn:hover { color: var(--text-strong); border-color: #3a465f; }
+    .pill-btn.active {
+      background: var(--accent-bg);
+      border-color: var(--accent);
+      color: var(--text-strong);
+    }
+
+    .inline-filter {
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      color: var(--text-strong);
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 0.84rem;
+      font-family: inherit;
+      min-width: 190px;
+      outline: none;
+    }
+    .inline-filter:focus { border-color: var(--accent); }
+
+    /* Code Blocks */
+    pre {
+      position: relative;
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 0.84rem;
+      line-height: 1.5;
+      color: #d6e0ec;
+      margin: 10px 0;
+    }
+    pre code {
+      background: none;
+      border: 0;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+      word-break: normal;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 3px 8px;
+      border-radius: 5px;
+      font-size: 0.74rem;
+      font-family: var(--mono);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .copy-btn:hover { border-color: var(--accent); color: var(--text-strong); }
+
+    .copyable {
+      cursor: pointer;
+    }
+    .copyable:hover {
+      border-color: var(--accent);
+      color: var(--text-strong);
+    }
+
+    /* Simple Interactive Calculators */
+    .calc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(130px, 100%), 1fr));
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .calc-field label {
+      display: block;
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+    .calc-field input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text-strong);
+      border-radius: 5px;
+      padding: 5px 8px;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+    }
+    .calc-out {
+      margin-top: 8px;
+      padding: 8px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.86rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      background: var(--bg-code);
+      border: 1px solid var(--accent);
+      color: var(--text-strong);
+      padding: 7px 12px;
+      border-radius: 6px;
+      font-size: 0.84rem;
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events: none;
+      transition: opacity 0.16s ease, transform 0.16s ease;
+      z-index: 99;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* Zoom / Tablet / Narrow Screen Adaptations */
+    @media (max-width: 860px) {
+      .menu-btn { display: inline-flex; }
+      .topbar-links { display: none; }
+      aside.sidebar {
+        position: fixed;
+        top: var(--header-h);
+        left: 0;
+        bottom: 0;
+        max-height: none;
+        background: var(--bg-alt);
+        border-right: 1px solid var(--border);
+        transform: translateX(-100%);
+        transition: transform 0.18s ease;
+        z-index: 45;
+      }
+      aside.sidebar.open { transform: translateX(0); }
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <button type="button" class="menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation">Menu</button>
+    <button type="button" class="brand-link" id="brandHomeBtn">
+      <span class="brand-dot"></span>
+      <span>DCEssentials Wiki</span>
+    </button>
+
+    <div class="search-wrap" id="searchWrap">
+      <div class="search-input-box">
+        <span class="search-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </span>
+        <input
+          type="text"
+          id="globalSearch"
+          placeholder="Search commands, placeholders, pets, emperor, npc..."
+          autocomplete="off"
+          aria-label="Search documentation"
+        />
+        <span class="search-actions">
+          <button type="button" class="search-clear" id="searchClearBtn" aria-label="Clear search">&times;</button>
+          <span class="search-kbd" id="searchKbd">/</span>
+        </span>
+      </div>
+      <div class="search-popover" id="searchPopover" role="listbox"></div>
+    </div>
+
+    <div class="topbar-links">
+      <button type="button" class="top-link" id="jumpCommandsBtn">Commands</button>
+      <button type="button" class="top-link" id="jumpPlaceholdersBtn">Placeholders</button>
+    </div>
+  </div>
+</header>
+
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+<div class="wiki-shell">
+  <aside class="sidebar" id="sidebar" aria-label="Documentation sections">
+    <nav id="navList"></nav>
+  </aside>
+
+  <main class="wiki-main">
+    <article class="article" id="articleRoot"></article>
+  </main>
+</div>
+
+<div class="toast" id="toast">Copied</div>
+
+<script>
+/* ============================================================================
+ * SECTION 1: DATA REGISTRIES
+ * Add new commands, placeholders, pets, or scrolls directly below.
+ * Everything in these arrays is automatically indexed by the search bar.
+ * ============================================================================ */
+
+const COMMANDS_REGISTRY = [
+  // Core
+  { cmd: "/dce status", aliases: ["/dcessentials", "/dcess"], perm: "dcessentials.admin", module: "Core", desc: "Prints loaded DCEssentials modules and registered item, scroll, and pet counts." },
+  { cmd: "/dce reload", aliases: ["/dcessentials reload"], perm: "dcessentials.admin", module: "Core", desc: "Hot-reloads main configs, ItemModule, TeleportationManager, RngManager, EventManager, and PetManager." },
+
+  // Items & Stats
+  { cmd: "/dce give <player> <itemOrScrollId> [amount]", aliases: ["/dcessentials give"], perm: "dcessentials.admin", module: "Items & Stats", desc: "Gives a registered DCEItem, Scroll, or Pet Token with full PDC identity. Tab-completes players, IDs, and stack sizes." },
+  { cmd: "/dce update [itemId]", aliases: ["/dcessentials update"], perm: "dcessentials.admin", module: "Items & Stats", desc: "Syncs existing items with updated stats/lore while keeping skins, dyes, sockets, and enchantments." },
+  { cmd: "/dce items [scroll give <player> <scrollId> [amount]]", aliases: ["/dce item", "/dce itemstat"], perm: "dcessentials.admin", module: "Items & Stats", desc: "Opens the DCEItems 54-slot browser GUI, or issues a physical scroll directly." },
+  { cmd: "/dce editor [itemId]", aliases: ["/dcessentials editor"], perm: "dcessentials.admin", module: "Items & Stats", desc: "Opens the visual in-game Item Editor GUI for stats, rarity, sockets, and tooltips." },
+  { cmd: "/dce import", aliases: ["/dcessentials import"], perm: "dcessentials.admin", module: "Items & Stats", desc: "Opens the Mass Item Importer GUI to import vanilla or custom gear into DCEItems YAML configs." },
+  { cmd: "/dce gui", aliases: ["/dcessentials gui"], perm: "dcessentials.admin", module: "Items & Stats", desc: "Opens the ItemModule browser GUI." },
+  { cmd: "/dce unbind", aliases: ["/dce strip"], perm: "dcessentials.admin", module: "Items & Stats", desc: "Removes attached DCE sockets/scroll tags from the held item cleanly." },
+  { cmd: "/dce tester <spawn|clear|remove>", aliases: ["/dce dummy"], perm: "dcessentials.admin", module: "Items & Stats", desc: "Spawns an indestructible Netherite Stat Tester ArmorStand + TextDisplay hologram to test all 8 stackable stats live." },
+
+  // Pets
+  { cmd: "/pet", aliases: ["/pets", "/dcepet", "/dcepets"], perm: "Default", module: "Pets", desc: "Opens your Companions Wardrobe GUI (owned pets only for regular players, category filter, Auto-Cast, Target Ring, and Visibility)." },
+  { cmd: "/pet menu", aliases: ["/pet gui", "/pet wardrobe"], perm: "Default", module: "Pets", desc: "Explicitly opens the Companions Wardrobe GUI." },
+  { cmd: "/pet summon <petId>", aliases: ["/pet equip <petId>"], perm: "Default", module: "Pets", desc: "Summons an unlocked companion (regular players tab-complete owned companions only)." },
+  { cmd: "/pet dismiss", aliases: ["/pet hide"], perm: "Default", module: "Pets", desc: "Dismisses your active companion and invalidates StatAggregator cache." },
+  { cmd: "/pet visibility [all|own_only|hidden]", aliases: ["/pet vis"], perm: "Default", module: "Pets", desc: "Cycles or sets ProtocolLib companion visibility while keeping stats active." },
+  { cmd: "/pet autocast [on|off]", aliases: ["/pet skill [on|off]"], perm: "Default", module: "Pets", desc: "Toggles automatic casting of your active companion's combat ability." },
+  { cmd: "/pet tracker [on|off]", aliases: ["/pet ring [on|off]"], perm: "Default", module: "Pets", desc: "Toggles the glowing mob-look target tracker ring under looked-at enemies/allies." },
+  { cmd: "/pet ally <player>", aliases: ["/pets ally"], perm: "Default", module: "Pets", desc: "Toggles a player on your Companion Ally Whitelist (immune to AoE skills, receives healing)." },
+  { cmd: "/pet give <player> <petId> [level] [rarity]", aliases: ["/pets give"], perm: "dce.pet.admin", module: "Pets", desc: "Grants a physical right-click claimable Companion Token with custom level and rarity." },
+  { cmd: "/pet unlockall <player> [level]", aliases: ["/pets unlockall"], perm: "dce.pet.admin", module: "Pets", desc: "Unlocks all 15 registered companions directly in the player's database profile." },
+  { cmd: "/pet addxp <player> <amount>", aliases: ["/pets addxp"], perm: "dce.pet.admin", module: "Pets", desc: "Grants XP to the player's summoned companion, scaling levels up to 100." },
+  { cmd: "/pet reload", aliases: ["/pets reload"], perm: "dce.pet.admin", module: "Pets", desc: "Reloads plugins/DCEssentials/pets_config.yml and pets/*.yml, refreshing active companions." },
+
+  // Emperor Boss
+  { cmd: "/dce emperor <scale|reset|testheal|heal|clean|info>", aliases: ["/dce emp", "/dce boss", "/emperortest"], perm: "dcessentials.admin", module: "Emperor", desc: "Controls Emperor scaling override, BossBar simulation, and floating TextDisplay heal popups." },
+  { cmd: "/emperoritems [give <player> <itemOrScrollId> [amount]]", aliases: ["/emperoritem", "/dceitems"], perm: "dcessentials.admin", module: "Emperor", desc: "Opens Emperor items helper menu or gives Emperor combat scrolls/items (chrono_slip, slayer_*, stasis_core)." },
+  { cmd: "/emperortest scale <players> [hp%]", aliases: ["/emperorscale", "/dce emperor scale"], perm: "dcessentials.admin", module: "Emperor", desc: "Forces multiplayer difficulty scaling override and displays the custom Adventure BossBar." },
+  { cmd: "/emperortest <reset|off|clear>", aliases: ["/dce emperor reset"], perm: "dcessentials.admin", module: "Emperor", desc: "Clears manual Emperor scaling override and reverts to live 80m radius detection in lowercity." },
+  { cmd: "/emperortest testheal", aliases: ["/emperorheal", "/dce emperor testheal"], perm: "dcessentials.admin", module: "Emperor", desc: "Spawns a test floating TextDisplay heal popup near your position." },
+  { cmd: "/emperortest heal <x> <y> <z> [amount]", aliases: ["/dce emperor heal"], perm: "dcessentials.admin", module: "Emperor", desc: "Triggers a floating TextDisplay heal popup at exact or ~ relative coordinates (used by Void Holders)." },
+  { cmd: "/emperortest clean", aliases: ["/dce emperor cleanup"], perm: "dcessentials.admin", module: "Emperor", desc: "Removes leftover emp_heal_txt TextDisplay entities in the current world." },
+  { cmd: "/emperortest info", aliases: ["/emperoractive", "/dce emperor status"], perm: "dcessentials.admin", module: "Emperor", desc: "Shows live tracked Emperor UUID, fighting state, nearby player count, and angerScale." },
+
+  // Cosmetics & Wardrobe
+  { cmd: "/cosmetics [help|sound]", aliases: ["/dcc", "/dccosmetics"], perm: "Default", module: "Cosmetics & Wardrobe", desc: "Opens the Cosmetics menu, prints help, or toggles local footstep sound effects." },
+  { cmd: "/cosmetics reload", aliases: ["/dcc reload"], perm: "dccosmetics.admin", module: "Cosmetics & Wardrobe", desc: "Hot-reloads templates, cosmetic YAMLs, profile config, and plugin resources." },
+  { cmd: "/cosmetics import <file> [head|chest|waist|boots|sword]", aliases: ["/dcc import"], perm: "dccosmetics.admin", module: "Cosmetics & Wardrobe", desc: "Converts .bbmodel or .json files from plugins/DCEssentials/imports/ into TextDisplay YAML geometry." },
+  { cmd: "/cosmetics scroll [give] <player> <cosmeticId> [hexColor]", aliases: ["/dcc scroll"], perm: "dccosmetics.admin", module: "Cosmetics & Wardrobe", desc: "Issues a drag-and-drop Cosmetic Scroll item to apply 3D models onto armor or swords." },
+  { cmd: "/cosmetics sculpt <cosmeticId|editor|toggle|clear>", aliases: ["/dcc sculpt"], perm: "dccosmetics.admin", module: "Cosmetics & Wardrobe", desc: "Spawns a live dummy mannequin, opens the GUI editor, or removes the dummy." },
+  { cmd: "/cosmetics debughit <cosmeticId> [regular|crit] [color]", aliases: ["/dcc debughit"], perm: "dccosmetics.admin", module: "Cosmetics & Wardrobe", desc: "Simulates sword slash or crit shrapnel packet effects in front of your crosshair." },
+  { cmd: "/cosmetics debugnode <nodeId|clear>", aliases: ["/dcc debugnode"], perm: "dccosmetics.admin", module: "Cosmetics & Wardrobe", desc: "Isolates a single geometry node for debugging." },
+  { cmd: "/cosmetics debugbb <corners|ratio> [x y z gap slide]", aliases: ["/dcc debugbb"], perm: "dccosmetics.admin", module: "Cosmetics & Wardrobe", desc: "Plots bounding corners or tunes Blockbench aspect ratio constants." },
+  { cmd: "/cosmetics waypoint <player> <clear|world x y z>", aliases: ["/dcc waypoint"], perm: "dccosmetics.admin", module: "Cosmetics & Wardrobe", desc: "Internal bridge to set or clear a player's 3D HUD directional waypoint." },
+  { cmd: "/customise", aliases: ["/customize"], perm: "Default", module: "Cosmetics & Wardrobe", desc: "Opens the Customise GUI for the held cosmetic item to dye #FFFFFF channels or detach a scroll." },
+  { cmd: "/profile [player]", aliases: ["/prof"], perm: "Default", module: "Cosmetics & Wardrobe", desc: "Opens the 54-slot Profile GUI with sliding cosmetic drawers and keystone/accessory slots." },
+  { cmd: "/wardrobe", aliases: [], perm: "Default", module: "Cosmetics & Wardrobe", desc: "Enters the packet-based 3D camera Wardrobe room." },
+  { cmd: "/wardrobe <wand|setup|setspawn|setnpc|setexit|setsaferoom|settppreview|admin|reload|refresh>", aliases: [], perm: "dccosmetics.admin", module: "Cosmetics & Wardrobe", desc: "Configures Wardrobe bounds, anchors, mannequin NPC, camera safe-room, open-sky teleport preview location, and admin GUI." },
+  { cmd: "/wardrobe studio <cam|setcam|preview|exitpreview|set|angle|panel|save|reload|apply>", aliases: [], perm: "dccosmetics.admin", module: "Cosmetics & Wardrobe", desc: "V2 Camera Studio (XYZ/Yaw/Pitch per category) or V1 3D HUD panel offset tuning." },
+  { cmd: "/tpeffect <list|set|clear|preview|info|mute|unmute>", aliases: ["/tpeffects", "/tpe"], perm: "Default (dc.tpeffect.<id>)", module: "Cosmetics & Wardrobe", desc: "Lists rarities, previews effects in-world, equips unlocked teleport effects, or mutes personal playback." },
+  { cmd: "/tpeffect <test|give|enable|disable|hide|show|reload> ...", aliases: ["/tpeffects", "/tpe"], perm: "dccosmetics.admin", module: "Cosmetics & Wardrobe", desc: "Admin full-warp cinematic tester, permission/voucher granter, YAML enabled/hidden toggles, and config hot-reload." },
+  { cmd: "/cinetp <test|start> ...", aliases: ["/cinematicteleport", "/voxelwarp"], perm: "dccosmetics.admin", module: "Cosmetics & Wardrobe", desc: "Legacy bridge routing to the 1:1 Pixel-Replica 3D Camera cinematics (obsidian_dissolution, umbral_dissolution, chrono_singularity, shadow_drift, skyline_switch)." },
+  { cmd: "/glow [color|off] [player]", aliases: [], perm: "glow.<color> / dragoncote.admin", module: "Cosmetics & Wardrobe", desc: "Opens the Glow menu or applies/clears a team-based outline glow effect." },
+
+  // Keystones & World Events
+  { cmd: "/keystone [gui|open|matrix|status]", aliases: ["/ks", "/tesseract"], perm: "Default", module: "Keystones & Events", desc: "Opens the Keystone Matrix menu or prints Tier, Energy, Heat (0-100), and Stability." },
+  { cmd: "/keystone clearheat [player]", aliases: ["/ks resetheat"], perm: "Default (self) / dragoncote.admin", module: "Keystones & Events", desc: "Purges Timeline Heat back to 0/100." },
+  { cmd: "/keystone charge <player> <amount>", aliases: ["/ks addenergy"], perm: "dragoncote.admin", module: "Keystones & Events", desc: "Adds Tesseract Energy to a player's Keystone profile." },
+  { cmd: "/keystone tier <player> <NONE|RARE|EPIC|LEGENDARY>", aliases: ["/ks settier", "/ks sync_tier"], perm: "dragoncote.admin", module: "Keystones & Events", desc: "Sets a player's Keystone Tier directly in memory and database." },
+  { cmd: "/events [page|schedule|spawn]", aliases: ["/calendar", "/event", "/dcevent", "/schedule", "/dce event"], perm: "Default", module: "Keystones & Events", desc: "Opens the Events Calendar GUI or teleports to the active world cycle hub spawn." },
+  { cmd: "/events <list|swap|time|start|stop|reload>", aliases: ["/event ...", "/dce event ..."], perm: "dcessentials.admin", module: "Keystones & Events", desc: "Forces dimensional hub swaps (sanctuary_dawn, void_convergence, glacial_grand_prix) or toggles mini-events." },
+
+  // DCNPC, Warps & RNG
+  { cmd: "/dcnpc [gui|admin|zones|help|talk|claim|track|waypoint|warp|timeline]", aliases: ["/lorenpc", "/dce_npc"], perm: "Default / dccosmetics.admin", module: "DCNPC & Warps", desc: "Quest interaction, 3D HUD tracking, district warps, /timeline, and admin canon pipeline (canon live|test, wand, scene, skin)." },
+  { cmd: "/warp [zone|alias]", aliases: ["/warps"], perm: "Default", module: "DCNPC & Warps", desc: "Opens the 54-slot Fast Travel District Warp Menu or warps directly to calibrated district anchors." },
+  { cmd: "/setwarp <zone|alias>", aliases: [], perm: "dccosmetics.admin", module: "DCNPC & Warps", desc: "Calibrates a district warp anchor at your current location." },
+  { cmd: "/waypoint [toggle|clear|next|npcId|player]", aliases: ["/wp", "/dce waypoint"], perm: "Default / dragoncote.admin", module: "DCNPC & Warps", desc: "Locks, cycles, toggles, or clears the 3D HUD directional waypoint arrow." },
+  { cmd: "/lore [sector]", aliases: ["/dossier", "/personnel"], perm: "Default", module: "DCNPC & Warps", desc: "Opens visual personnel dossiers across Sectors 1-4." },
+  { cmd: "/timeline", aliases: ["/storyline", "/questline"], perm: "Default", module: "DCNPC & Warps", desc: "Opens the 25-node storyline quest progression track." },
+  { cmd: "/rng [category]", aliases: [], perm: "Default", module: "DCNPC & Warps", desc: "Opens the RNG Meter hub or category RNG meter menu." },
+  { cmd: "/pity [category]", aliases: [], perm: "Default", module: "DCNPC & Warps", desc: "Opens the Pity Tracker GUI." },
+  { cmd: "/dce givexp <player> <amount> [skill]", aliases: ["/dce addxp", "/dce xp"], perm: "dcessentials.admin", module: "DCNPC & Warps", desc: "Grants Adapt skill XP to a player." },
+  { cmd: "/dce selectdrop <player> <category> <dropId>", aliases: ["/dcessentials selectdrop"], perm: "dcessentials.admin", module: "DCNPC & Warps", desc: "Sets a player's active RNG Meter target drop." },
+  { cmd: "/rnghook <player> <category> <boostPct> <xpAmount> [combat|casino]", aliases: [], perm: "dcessentials.admin", module: "DCNPC & Warps", desc: "Script/MythicMobs bridge for triggering RNG/Pity rolls and Adapt XP rewards." },
+
+  // World Tools
+  { cmd: "/setupcinematicworld <datapack|create|fix|setbiome> [world] [arg]", aliases: [], perm: "dccosmetics.admin", module: "World Tools", desc: "Generates monochrome/cinematic datapacks and void-biome worlds for spawn_bw and studio rooms." },
+  { cmd: "/draincolors", aliases: [], perm: "dccosmetics.admin", module: "World Tools", desc: "Converts a WorldEdit selection into monochrome grayscale blocks." },
+  { cmd: "/spawnsync [wand|tools|push|commit|status|discard|stagewe|snow]", aliases: ["/sync", "/gitsync"], perm: "dccosmetics.admin", module: "World Tools", desc: "Synchronizes schematic edits across the tri-world spawn dimensions." }
+];
+
+const PLACEHOLDERS_REGISTRY = [
+  // Emperor & Events
+  { ph: "%dragoncote_active_events_has%", scope: "PAPI + TAB", returns: "1 / 0", desc: "1 when a mini-event or live Emperor encounter is active (hides empty TAB blocks cleanly)." },
+  { ph: "%dragoncote_active_events_header%", scope: "PAPI + TAB", returns: "Header text", desc: "Dynamic section header displayed above active events in TAB." },
+  { ph: "%dragoncote_active_events_line%", scope: "PAPI + TAB", returns: "1-2 compact lines", desc: "Summary of running mini-events and Emperor encounter status." },
+  { ph: "%dragoncote_emperor_fighting%", scope: "PAPI + TAB", returns: "true / false", desc: "Whether helly (The Emperor) is alive inside lowercity or simulated via /emperortest scale." },
+  { ph: "%dragoncote_emperor_scale%", scope: "PAPI + TAB", returns: "e.g. 1.00x / 1.66x", desc: "Live multiplayer difficulty multiplier: 1.0 for 1 player, +0.33 per extra player in 80m radius." },
+  { ph: "%dragoncote_emperor_hp%", scope: "PAPI + TAB", returns: "e.g. 84% / 999", desc: "Tracked Emperor HP percentage or simulated HP." },
+  { ph: "%dragoncote_emperor_players%", scope: "PAPI + TAB", returns: "Integer", desc: "Count of Survival/Adventure players within 80 blocks of the Emperor." },
+
+  // Stackable Stats
+  { ph: "%dragoncote_stats_summary%", scope: "PAPI", returns: "Icon strip", desc: "Compact summary of all non-zero combat stats across all 7 StatSources (cached 250ms)." },
+  { ph: "%dragoncote_stat_<STAT>%", scope: "PAPI", returns: "Formatted value", desc: "Stacked total for RESONANCE, SURGE, STASIS, CATALYST, EXECUTE, CLEAVE, SIPHON, or WARD." },
+  { ph: "%dragoncote_stat_raw_<STAT>%", scope: "PAPI", returns: "Double", desc: "Raw unformatted numeric stat total for math/scoreboards." },
+  { ph: "%dragoncote_stat_icon_<STAT>%", scope: "PAPI", returns: "Glyph + color", desc: "Configured Unicode icon and hex color for <STAT>." },
+  { ph: "%dragoncote_stat_line_<STAT>%", scope: "PAPI", returns: "Formatted line", desc: "Icon, display name, and current stacked value." },
+  { ph: "%dragoncote_stat_source_<SOURCE>_<STAT>%", scope: "PAPI", returns: "Numeric string", desc: "Contribution from one StatSource: MAIN_HAND, OFF_HAND, ARMOR, ACCESSORIES, KEYSTONE, ACTIVE_PET, or SCROLLS." },
+
+  // DCEPets
+  { ph: "%dragoncote_pet_active%", scope: "PAPI", returns: "true / false", desc: "Whether the player currently has a summoned companion." },
+  { ph: "%dragoncote_pet_id%", scope: "PAPI", returns: "Pet ID / none", desc: "Active companion internal ID (for example spark, astral, or crimson)." },
+  { ph: "%dragoncote_pet_name%", scope: "PAPI", returns: "Colored name", desc: "Rarity-colored display name of the active companion." },
+  { ph: "%dragoncote_pet_name_raw%", scope: "PAPI", returns: "Plain string", desc: "Stripped plain display name of the active companion." },
+  { ph: "%dragoncote_pet_category%", scope: "PAPI", returns: "Category label", desc: "Skill category of the active companion (Combat, Mining, Farming, Foraging, Fishing, Alchemy, Enchanting, Omni-Skill)." },
+  { ph: "%dragoncote_pet_rarity%", scope: "PAPI", returns: "Rarity label", desc: "Formatted rarity tier of the active companion." },
+  { ph: "%dragoncote_pet_level%", scope: "PAPI", returns: "Integer", desc: "Current level of the summoned companion (1-100)." },
+  { ph: "%dragoncote_pet_max_level%", scope: "PAPI", returns: "Integer", desc: "Maximum level from pets_config / pet YAML (default 100)." },
+  { ph: "%dragoncote_pet_xp%", scope: "PAPI", returns: "Numeric", desc: "Skill XP accumulated toward the next companion level." },
+  { ph: "%dragoncote_pet_xp_req%", scope: "PAPI", returns: "Numeric", desc: "XP required for the next level using configured polynomial/exponential curve." },
+  { ph: "%dragoncote_pet_xp_pct%", scope: "PAPI", returns: "0-100%", desc: "Formatted percentage progress toward next companion level." },
+  { ph: "%dragoncote_pet_xp_bar%", scope: "PAPI", returns: "Progress bar", desc: "Formatted progress bar for current companion level." },
+  { ph: "%dragoncote_pet_visibility%", scope: "PAPI", returns: "ALL / OWN_ONLY / HIDDEN", desc: "Player's ProtocolLib companion visibility mode." },
+  { ph: "%dragoncote_pet_autocast%", scope: "PAPI", returns: "ON / OFF", desc: "Whether automatic ability casting is enabled." },
+  { ph: "%dragoncote_pet_tracker%", scope: "PAPI", returns: "ON / OFF", desc: "Whether the mob-look target tracker ring is enabled." },
+  { ph: "%dragoncote_pet_skill_name%", scope: "PAPI", returns: "Ability name", desc: "Display name of the active companion's signature ability." },
+  { ph: "%dragoncote_pet_skill_trigger%", scope: "PAPI", returns: "Trigger label", desc: "Activation condition label (e.g. Combat Strike, Focused Target, Defensive Counter)." },
+  { ph: "%dragoncote_pet_skill_cooldown%", scope: "PAPI", returns: "Seconds / Ready", desc: "Remaining cooldown on the active companion's combat ability." },
+  { ph: "%dragoncote_pet_perks_unlocked%", scope: "PAPI", returns: "N/M", desc: "Count of unlocked passive perks out of rarity cap (1/2/3/4/5)." },
+  { ph: "%dragoncote_pet_unlocked_count%", scope: "PAPI", returns: "Integer", desc: "Number of unlocked companions for this player." },
+  { ph: "%dragoncote_pet_total_count%", scope: "PAPI", returns: "Integer (15)", desc: "Total registered companions in PetRegistry." },
+
+  // Keystones & Shield
+  { ph: "%dragoncote_keystone_tier%", scope: "PAPI", returns: "Colored Tier", desc: "Formatted Keystone tier (NONE, RARE, EPIC, LEGENDARY)." },
+  { ph: "%dragoncote_keystone_tier_raw%", scope: "PAPI", returns: "Enum name", desc: "Raw Keystone tier enum name." },
+  { ph: "%dragoncote_keystone_energy%", scope: "PAPI", returns: "Integer", desc: "Stored Tesseract Energy." },
+  { ph: "%dragoncote_keystone_max%", scope: "PAPI", returns: "Integer", desc: "Maximum Tesseract Energy capacity for the player's tier." },
+  { ph: "%dragoncote_keystone_heat%", scope: "PAPI", returns: "0-100", desc: "Current Timeline Heat (>80 emits soul-fire; >=85 warns nearby players)." },
+  { ph: "%dragoncote_stability%", scope: "PAPI", returns: "Status label", desc: "Thermodynamic stability status displayed on the scoreboard." },
+  { ph: "%dragoncote_keystone_insulation%", scope: "PAPI", returns: "Label", desc: "Insulated Keystone protection status." },
+  { ph: "%dragoncote_shield_active%", scope: "PAPI", returns: "true / false", desc: "Whether Newbie Shield protection (default 3 days) is active." },
+  { ph: "%dragoncote_shield_status%", scope: "PAPI", returns: "Formatted status", desc: "Remaining Newbie Shield time or status label." },
+
+  // Events, Waypoints, Timeline, Glow, RNG
+  { ph: "%dragoncote_event_active_name%", scope: "PAPI", returns: "Cycle title", desc: "Alias %dragoncote_event_worldcycle_name% - current world cycle title." },
+  { ph: "%dragoncote_event_active_world%", scope: "PAPI", returns: "World name", desc: "Alias %dragoncote_event_worldcycle_world% - spawn_main, spawn_bw, or spawn_snow." },
+  { ph: "%dragoncote_event_active_time%", scope: "PAPI", returns: "MM:SS", desc: "Time remaining in the active world cycle (_raw for seconds)." },
+  { ph: "%dragoncote_event_next_name%", scope: "PAPI", returns: "Cycle title", desc: "Upcoming world cycle title (also _next_world, _next_time)." },
+  { ph: "%dragoncote_event_koth_status%", scope: "PAPI", returns: "Status", desc: "Status for colosseum_koth (also adapt_status, iceboat_status, mini_<id>)." },
+  { ph: "%dragoncote_waypoint_visible%", scope: "PAPI", returns: "true / false", desc: "Whether a 3D HUD waypoint is active (also waypoint_name, waypoint_coords)." },
+  { ph: "%dragoncote_timeline_index%", scope: "PAPI", returns: "Integer", desc: "Current questline step (also timeline_total, timeline_percent, timeline_target*)." },
+  { ph: "%dragoncote_glow%", scope: "PAPI", returns: "Glow label", desc: "Equipped glow color (also glow_id, glow_color, has_glow_<id>, is_glow_<id>)." },
+  { ph: "%dragoncote_tpeffect%", scope: "PAPI", returns: "Effect ID / None", desc: "Equipped teleportation effect ID from player PDC (for example obsidian_dissolution)." },
+  { ph: "%dragoncote_tpeffect_display%", scope: "PAPI", returns: "Colored Name", desc: "Formatted hex display name of the equipped teleportation effect (&7None when empty)." },
+  { ph: "%dragoncote_tpeffect_rarity%", scope: "PAPI", returns: "Rarity / none", desc: "Rarity tier of the equipped teleportation effect (uncommon, rare, epic, legendary, mastery)." },
+  { ph: "%dragoncote_rng_<metric>%", scope: "PAPI", returns: "RNG metric", desc: "RNG meter fields: rng_cat_<cat>_* and rng_drop_<cat>_<id>_* (name, chance, xp, goal, pct, progress, mult)." },
+  { ph: "%dragoncote_pity_<metric>%", scope: "PAPI", returns: "Pity metric", desc: "Pity meter fields (selected, xp, goal, pct, progress, mult)." }
+];
+
+const PETS_REGISTRY = [
+  { id: "spark", name: "Spark", category: "Combat", rarity: "COMMON", stats: "Surge 1.5→12%, Cleave 0.5→6%", skill: "Cinder Snap · ON_ATTACK (12s→6s, pwr 16→44, 14m)", perks: "1 Perk: Kindling Instinct (Lv 1)", effect: "Starter companion granted automatically to new players. Fires blazing cinder orbs." },
+  { id: "striker", name: "Striker", category: "Combat", rarity: "UNCOMMON", stats: "Surge 2→16%, Execute 1.5→15%", skill: "Tactical Salvo · ON_ATTACK (10.5s→4.8s, pwr 20→56, 18m)", perks: "2 Perks: Target Lock (Lv 1), Rapid Cycle (Lv 25)", effect: "Fires a 4-shot pulse barrage into locked enemies." },
+  { id: "ember", name: "Ember", category: "Mining", rarity: "UNCOMMON", stats: "Surge 1.8→15%, Cleave 1.5→12%", skill: "Magma Sweep · ON_ATTACK (11s→5s, pwr 21→58, 16m)", perks: "2 Perks: Molten Vein Ore Fortune (Lv 1), Forge Temper (Lv 25)", effect: "Sweeps molten fire in a cone and duplicates mined ores." },
+  { id: "mend", name: "Mend", category: "Farming", rarity: "RARE", stats: "Siphon 2→18%, Ward 2→16%", skill: "Vital Resonance · ON_LOW_HP <85% (14s→6.5s, pwr 24→64, 12m)", perks: "3 Perks: Verdant Extract (Lv 1), Bountiful Crop (Lv 25), Renewal Aura (Lv 60)", effect: "Restores owner/ally HP when injured, knocks attackers back & boosts crop drops." },
+  { id: "salvo", name: "Salvo", category: "Foraging", rarity: "RARE", stats: "Execute 2.5→20%, Cleave 2→16%, Resonance 8→4", skill: "Cluster Barrage · ON_TARGET_LOCK (12.5s→5.5s, pwr 26→72, 24m)", perks: "3 Perks: Canopy Glide Speed (Lv 1), Timber Bounty (Lv 25), Heavy Warheads (Lv 60)", effect: "Launches 3 arcing seeker missiles with AoE blast splash." },
+  { id: "bastion", name: "Bastion", category: "Mining", rarity: "RARE", stats: "Ward 3→24%, Stasis 2→18%", skill: "Aegis Shockwave · ON_DAMAGED (13.5s→6s, pwr 24→66, 14m · drone_shieldvfx)", perks: "3 Perks: Plated Core (Lv 1), Deep Quarry (Lv 25), Citadel Ward (Lv 60)", effect: "Projects a ModelEngine absorption shield dome & repels attackers." },
+  { id: "zephyr", name: "Zephyr", category: "Foraging", rarity: "EPIC", stats: "Surge 3→26%, Resonance 8→3", skill: "Cyclone Vortex · ON_TARGET_LOCK (11.5s→5s, pwr 28→84, 24m · dce_vfx_zephyr)", perks: "4 Perks: Tailwind (Lv 1), Storm Capacitor (Lv 20), Sylvan Gust (Lv 50), Eye of the Gale (Lv 80)", effect: "Multi-tick tornado vortex pulls foes inward & launches them airborne." },
+  { id: "terra", name: "Terra", category: "Mining", rarity: "EPIC", stats: "Ward 3.5→26%, Stasis 3→24%", skill: "Tectonic Fissure · ON_ATTACK (13s→6s, pwr 32→92, 22m · dce_vfx_terra)", perks: "4 Perks: Basalt Armor (Lv 1), Mantle Vein (Lv 20), Seismic Anchor (Lv 50), Titan Breaker (Lv 80)", effect: "Rips seismic earth forward, slamming foes with Slowness IV." },
+  { id: "verdant", name: "Verdant", category: "Farming", rarity: "EPIC", stats: "Siphon 3.5→26%, Stasis 2.5→20%", skill: "Solar Verdure Beam · ON_COMBAT_ANY (12.5s→5.8s, pwr 30→86, 24m · dce_vfx_verdant)", perks: "4 Perks: Lush Harvest (Lv 1), Sap Leech (Lv 20), Grove Sanctuary (Lv 50), Ancient Growth (Lv 80)", effect: "Channels piercing solar-flora beams & sustains owner HP." },
+  { id: "glacies", name: "Glacies", category: "Fishing", rarity: "EPIC", stats: "Stasis 4→30%, Ward 2.5→20%", skill: "Permafrost Nova · ON_ATTACK (13.5s→6s, pwr 28→84, 22m · dce_vfx_glacies)", perks: "4 Perks: Rime Shackles (Lv 1), Tidal Fortune (Lv 20), Cryo Carapace (Lv 50), Shatter Spire (Lv 80)", effect: "Encases foes in ice with FreezeTicks & Slowness V." },
+  { id: "pyre", name: "Pyre", category: "Combat", rarity: "LEGENDARY", stats: "Cleave 4→32%, Execute 3→26%", skill: "Solar Inferno Volley · ON_TARGET_LOCK (11.5s→4.8s, pwr 36→108, 26m · dce_vfx_pyre)", perks: "5 Perks: Lv 1, 20, 45, 70, 90 (Mob Dmg, Cleave, Execute, Skill Pwr, Boss Slayer)", effect: "Hurls 3 explosive solar fireballs igniting enemy packs." },
+  { id: "umbra", name: "Umbra", category: "Alchemy", rarity: "LEGENDARY", stats: "Catalyst 4.5→36%, Execute 3→24%", skill: "Abyssal Eclipse · ON_TARGET_LOCK (13s→5.5s, pwr 34→104, 24m · dce_vfx_umbra)", perks: "5 Perks: Lv 1, 20, 45, 70, 90 (Catalyst, Vampiric Heal, Dmg Reduction, Pet XP, Boss Slayer)", effect: "Drags enemies into a weakening eclipse applying Wither II & Slow." },
+  { id: "solis", name: "Solis", category: "Omni-Skill", rarity: "LEGENDARY", stats: "Ward 3.5→28%, Surge 3→26%, Siphon 2.5→20%", skill: "Radiant Zenith · ON_COMBAT_ANY (12.5s→5.2s, pwr 35→106, 26m · dce_vfx_solis)", perks: "5 Perks: Lv 1, 20, 45, 70, 90 (Pet XP Boost, Ally Regen, Ward, CD Haste, Mob Dmg)", effect: "Gains 100% XP from all Skills. Rains 8 solar spears + zenith heal burst." },
+  { id: "astral", name: "Astral", category: "Enchanting", rarity: "LEGENDARY", stats: "Surge 4→32%, Catalyst 3.5→28%, Resonance 7→3", skill: "Cosmic Supernova · ON_TARGET_LOCK (13.5s→5.5s, pwr 38→114, 28m · dce_vfx_astral)", perks: "5 Perks: Lv 1, 20, 45, 70, 90 (Surge, Catalyst, CD Haste, Pet XP, Skill Pwr)", effect: "4-hop warp strikes culminating in a supernova detonation." },
+  { id: "crimson", name: "Crimson", category: "Combat", rarity: "MASTERY", stats: "Surge 5→38%, Execute 5→36%, Cleave 4→32%, Siphon 3→22%", skill: "Crimson Sovereign Nova · ON_ATTACK (11s→4.2s, pwr 44→136, 26m · dce_vfx_pyre)", perks: "5 Perks: Lv 1, 15, 35, 65, 90 (Mob Dmg, Vampiric, CD Haste, Execute, Boss Slayer)", effect: "Endgame sovereign lightning & missing-HP execution nova." }
+];
+
+const SCROLLS_REGISTRY = [
+  { id: "chrono_slip", rarity: "MYTHIC", target: "Mace", effect: "Builds charge (0/5); 5th smash bypasses The Emperor's Telekinetic Barrier (mace_bypassed)." },
+  { id: "slayer_rare", rarity: "RARE", target: "Weapon", effect: "Sovereign Bane I: +15% exclusive damage vs The Emperor (1.15x)." },
+  { id: "slayer_epic", rarity: "EPIC", target: "Weapon", effect: "Sovereign Bane II: +20% exclusive damage vs The Emperor (1.20x)." },
+  { id: "slayer_mythic", rarity: "MYTHIC", target: "Weapon", effect: "Sovereign Bane III: +35% exclusive damage vs The Emperor (1.35x)." },
+  { id: "stasis_core", rarity: "TRANSCENDENT", target: "Utility (Right-Click)", effect: "Freezes The Emperor (frozen_stasis) for 15s (AI and shields disabled). 60s cooldown." },
+  { id: "keystone_heatsink", rarity: "EPIC", target: "Keystone", effect: "Reduces warp heat gain by 35% and increases heat cooling rate by 50%." },
+  { id: "keystone_tesseract_flux", rarity: "LEGENDARY", target: "Keystone", effect: "Reduces cross-world warp energy cost by 25% and teleport warmup by 1.5s." },
+  { id: "mastery_boon_swords", rarity: "RARE", target: "Sword", effect: "Grants +20% Mastery XP from sword combat (1.20x)." },
+  { id: "mastery_boon_mining", rarity: "RARE", target: "Tool", effect: "Grants +20% Mastery XP when mining ores (1.20x)." },
+  { id: "adapt_*_mastery", rarity: "MASTERY", target: "Tool / Weapon", effect: "Adapt mastery scrolls (swords, axes, blocking, ranged, unarmed, agility, pickaxe, excavation, herbalism, chronos, rift, tragoul)." }
+];
+
+/* ============================================================================
+ * SECTION 2: WIKI PAGES
+ * Short sidebar titles grouped logically. Add new pages here to extend the wiki.
+ * ============================================================================ */
+
+const DOC_MODULES = [
+  {
+    id: "overview",
+    navLabel: "Overview",
+    group: "Core",
+    title: "DCEssentials Overview",
+    subtitle: "Architecture, file paths, and core module layout for DCEssentials & DCCosmetics on Paper 26.2.",
+    toc: [
+      { id: "sec-arch", label: "System Layers" },
+      { id: "sec-paths", label: "File & Config Paths" }
+    ],
+    render: () => `
+      <section class="wiki-sec" id="sec-arch">
+        <h2>System Layers</h2>
+        <p><code>DCEssentials-1.0-SNAPSHOT.jar</code> runs inside the <code>DCCosmetics</code> host plugin and coordinates four main layers:</p>
+        <div class="grid-2">
+          <div class="box">
+            <h3>1. Core &amp; Cosmetics Host</h3>
+            <p>Plugin lifecycle in <code>DCCosmetics.java</code>, SQLite/MySQL persistence via <code>DatabaseManager</code>, ProtocolLib display entity ID tracking, Profile GUI slots, and the 3D Wardrobe Camera Studio.</p>
+          </div>
+          <div class="box">
+            <h3>2. DCEItems &amp; StatAggregator</h3>
+            <p>Reads PDC stats from 7 equipment sources, caches snapshots for <code>250ms</code> per player, and resolves 8 stackable combat attributes in <code>StatCombatListener</code>.</p>
+          </div>
+          <div class="box">
+            <h3>3. DCEPets &amp; Keystones</h3>
+            <p>Hypixel-style packet skull companions (<code>ITEM_DISPLAY</code> + <code>TEXT_DISPLAY</code>) that feed active stats into <code>StatAggregator</code>, plus Keystone warp thermodynamics.</p>
+          </div>
+          <div class="box">
+            <h3>4. Emperor, Events &amp; DCNPCs</h3>
+            <p>MythicMobs <code>helly</code> 5-phase boss + Java <code>EmperorBossManager</code> + TAB v6.x integration, rotating hub world cycles (<code>events.yml</code>), and the 43-step Citizens NPC pipeline.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-paths">
+        <h2>File &amp; Config Paths</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3>Source Code</h3>
+            <ul>
+              <li><strong>Project Root:</strong> <code>C:\\Users\\aryan\\Documents\\Dragoncote\\2. Dragoncote Plugins\\DCCosmetics</code></li>
+              <li><strong>Items &amp; Stats:</strong> <code>dc.dcessentials.modules.items.*</code></li>
+              <li><strong>Pets Engine:</strong> <code>dc.dcessentials.modules.pets.*</code></li>
+              <li><strong>Emperor Boss:</strong> <code>dc.dcessentials.modules.boss.*</code></li>
+              <li><strong>Cosmetics &amp; Wardrobe:</strong> <code>dc.dccosmetics.*</code></li>
+              <li><strong>Teleport Effects Engine:</strong> <code>dc.dccosmetics.tpeffects.*</code></li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Server Data</h3>
+            <ul>
+              <li><strong>DCEssentials Configs:</strong> <code>Survival\\DCEssentials\\scrolls.yml</code>, <code>events.yml</code>, <code>profile.yml</code>, <code>pets_config.yml</code>, <code>items\\</code>, <code>pets\\</code></li>
+              <li><strong>Pet VFX Blueprints:</strong> <code>Survival\\ModelEngine\\blueprints\\DCE_Pets_VFX\\dce_vfx_*.bbmodel</code></li>
+              <li><strong>Teleport Effects Folder:</strong> <code>Survival\\DCEssentials\\tpeffects\\config.yml</code> &amp; <code>&lt;rarity&gt;.yml</code></li>
+              <li><strong>Cosmetics &amp; Imports:</strong> <code>Survival\\DCEssentials\\cosmetics\\</code> and <code>imports\\</code></li>
+              <li><strong>MythicMobs Enderking:</strong> <code>Survival\\MythicMobs\\packs\\Enderking\\</code></li>
+              <li><strong>Pet Database Table:</strong> <code>dce_pets_player</code></li>
+            </ul>
+          </div>
+        </div>
+        <div class="callout note">
+          <div class="callout-title">Offline &amp; Keyboard Shortcuts</div>
+          <p>Press <code>/</code> or <code>Ctrl+K</code> anywhere to search across all wiki sections, commands, placeholders, scrolls, and pets. Press <code>Up/Down</code> and <code>Enter</code> to jump straight to a result.</p>
+        </div>
+      </section>
+    `
+  },
+
+  {
+    id: "dceitems",
+    navLabel: "DCEItems & Stats",
+    group: "Core",
+    title: "DCEItems & Stackable Stats",
+    subtitle: "8 stackable combat attributes merged from 7 StatSources, Scrolls, Void Warper mechanics, and the Stat Tester dummy.",
+    toc: [
+      { id: "sec-stats", label: "8 Combat Stats" },
+      { id: "sec-sources", label: "7 StatSources & Calculator" },
+      { id: "sec-warper", label: "Void Warper & Tester" },
+      { id: "sec-scrolls", label: "Scrolls Registry" }
+    ],
+    render: () => `
+      <section class="wiki-sec" id="sec-stats">
+        <h2>The 8 Combat Stats (<code>ItemStat</code>)</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Stat</th><th>Color</th><th>Mechanics &amp; Stacking</th><th>Cap</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="nowrap-col">🎶 <strong>RESONANCE</strong></td><td class="nowrap-col"><code>#84E2CD</code></td><td>Every <code>N</code> rhythmic hits (400ms–1400ms gap) triggers <strong>Harmonic Shatter</strong>: <code>1.25x</code> damage, sonic boom VFX, and 3s (60 ticks) shield disable. Uses lowest base cadence minus 1 per extra source.</td><td class="nowrap-col">Min <code>2-Hit</code></td></tr>
+              <tr><td class="nowrap-col">⚡ <strong>SURGE</strong></td><td class="nowrap-col"><code>#FCD34D</code></td><td>Each hit within 3.5s builds Surge stacks (<code>+4%</code> per stack) up to your additive cap across all sources. Taking a hit resets stacks.</td><td class="nowrap-col">Additive sum</td></tr>
+              <tr><td class="nowrap-col">⏱ <strong>STASIS</strong></td><td class="nowrap-col"><code>#06B6D4</code></td><td>Converts a percentage of post-mitigation damage into <strong>Chronon Debt</strong> held for 2.5s (50 ticks) before detonating (<code>1.25x</code> bonus if target moves &gt; 2 blocks).</td><td class="nowrap-col">Max <code>75%</code></td></tr>
+              <tr><td class="nowrap-col">🌀 <strong>CATALYST</strong></td><td class="nowrap-col"><code>#A855F7</code></td><td>Converts active debuffs on the attacker (Weakness, Fire, Poison, Wither, Slowness, Blindness, Mining Fatigue, Hunger, Nausea, Levitation) into bonus damage + Poison/Wither heal.</td><td class="nowrap-col">Additive %</td></tr>
+              <tr><td class="nowrap-col">💀 <strong>EXECUTE</strong></td><td class="nowrap-col"><code>#EF4444</code></td><td>Grants <code>+35%</code> damage when attacker HP &le; 30%; culls non-boss mobs if remaining HP drops below <code>X%</code> post-mitigation.</td><td class="nowrap-col">Cull max <code>50%</code></td></tr>
+              <tr><td class="nowrap-col">⚔ <strong>CLEAVE</strong></td><td class="nowrap-col"><code>#F97316</code></td><td>Sweeps nearby hostiles within <code>3.5x2x3.5</code> for <code>X%</code> damage (skips ModelEngine hitboxes &amp; prevents loops) and stuns blocking shields for 50 ticks.</td><td class="nowrap-col">Max <code>100%</code></td></tr>
+              <tr><td class="nowrap-col">🩸 <strong>SIPHON</strong></td><td class="nowrap-col"><code>#E11D48</code></td><td>Heals attacker for <code>X%</code> of post-mitigation damage; excess over max HP converts at 50% rate into Absorption hearts.</td><td class="nowrap-col"><code>50%</code> | <code>12 Abs HP</code></td></tr>
+              <tr><td class="nowrap-col">🛡 <strong>WARD</strong></td><td class="nowrap-col"><code>#3B82F6</code></td><td>Pre-mitigation incoming damage reduction applied before Stasis, Execute, Cleave, and Siphon.</td><td class="nowrap-col">Max <code>60%</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-sources">
+        <h2>7 Stackable Sources (<code>StatAggregator</code>)</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3>Equipment &amp; Profile Slots</h3>
+            <ul>
+              <li><code>MAIN_HAND</code> — Held weapon/tool (scrolls, vouchers, unequipped keystones, armor, and pet tokens are ignored in main hand).</li>
+              <li><code>OFF_HAND</code> — Shields, totems, accessories, or items tagged <code>OFF_HAND</code> / <code>ACCESSORY</code>.</li>
+              <li><code>ARMOR</code> — Helmet, Chestplate, Leggings, Boots.</li>
+              <li><code>ACCESSORIES</code> — Profile Column 2 slots: <code>amulet</code> (20), <code>cloak</code> (29), <code>gloves</code> (38).</li>
+              <li><code>KEYSTONE</code> — Profile Keystone slot (11).</li>
+              <li><code>ACTIVE_PET</code> — Level-scaled passive stats from the summoned DCEPet.</li>
+              <li><code>SCROLLS</code> — Socketed augment bonuses merged into item/profile totals.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Stack Calculator</h3>
+            <p>Check combined Surge cap and effective Resonance cadence across sources:</p>
+            <div class="calc-grid">
+              <div class="calc-field"><label>Weapon Surge %</label><input type="number" id="cWepSurge" value="25" min="0" /></div>
+              <div class="calc-field"><label>Pet Surge %</label><input type="number" id="cPetSurge" value="25" min="0" /></div>
+              <div class="calc-field"><label>Accessory Surge %</label><input type="number" id="cAccSurge" value="10" min="0" /></div>
+              <div class="calc-field"><label>Base Resonance</label><input type="number" id="cResBase" value="5" min="2" max="10" /></div>
+              <div class="calc-field"><label>Resonance Sources</label><input type="number" id="cResCount" value="2" min="0" max="7" /></div>
+            </div>
+            <div class="calc-out" id="statCalcOut"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-warper">
+        <h2>Void Warper &amp; Stat Tester Dummy</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3>Void Warper (<code>void_warper.yml</code>)</h3>
+            <ul>
+              <li><strong>Type:</strong> <code>AMETHYST_SHARD</code> · <code>MYTHIC</code> · <code>WEAPON</code> (<code>MASTERY</code> socket).</li>
+              <li><strong>Right-Click (Void Bounce):</strong> No cooldown. Sweeps body raycasts (switching to upper eye/head checks when pitch &ge; 75&deg; upward), warps up to <code>8.0</code> blocks with <code>0.45m</code> wall clearance, runs <code>ensureNotSinking</code> floor protection, and applies bouncy velocity.</li>
+              <li><strong>Shift + Right-Click (Sonic Boom):</strong> <code>3.0s</code> cooldown, <code>1.2s</code> charge (Slowness V), spawns private-to-user MythicMob <code>VFX_VoidWarper_Hyperspace</code>, then dashes up to <code>38.0</code> blocks dealing <code>14.0</code> damage + impact blast.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Stat Tester (<code>/dce tester spawn</code>)</h3>
+            <ul>
+              <li>Spawns a Netherite <code>ArmorStand</code> paired with a floating <code>TextDisplay</code> hologram (PDC <code>dce_stat_dummy</code>).</li>
+              <li>Simulates mitigation against a 100.0 virtual HP bar and prints live Resonance cadence, Surge stacks, Stasis debt, Execute culling, Cleave splash, and Siphon healing.</li>
+              <li>Use <code>/dce tester clear</code> to remove all test dummies in the current world.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-scrolls">
+        <h2>Scrolls &amp; Augments (<code>scrolls.yml</code>)</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Scroll ID</th><th>Rarity</th><th>Target</th><th>Effect</th></tr></thead>
+            <tbody>
+              ${SCROLLS_REGISTRY.map(s => `<tr><td class="nowrap-col"><code>${escapeHtml(s.id)}</code></td><td class="nowrap-col"><span class="tag amber">${escapeHtml(s.rarity)}</span></td><td class="nowrap-col">${escapeHtml(s.target)}</td><td>${escapeHtml(s.effect)}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    `
+  },
+
+  {
+    id: "pets",
+    navLabel: "DCEPets",
+    group: "Core",
+    title: "DCEPets Engine",
+    subtitle: "Floating packet-skull companions with Lv 1–100 progression, 1–5 rarity-tiered perks, Skills XP categories, ModelEngine VFX, and target tracking.",
+    toc: [
+      { id: "sec-pet-arch", label: "Architecture" },
+      { id: "sec-pet-catalog", label: "Registered Pets (15)" },
+      { id: "sec-pet-yaml", label: "YAML Config" }
+    ],
+    render: () => `
+      <section class="wiki-sec" id="sec-pet-arch">
+        <h2>Core Companion Architecture</h2>
+        <div class="grid-3">
+          <div class="box">
+            <h3>Lv 1–100 &amp; Perks (1/2/3/4/5)</h3>
+            <p>All stats interpolate smoothly from modest Lv 1 starters to Lv 100 peaks. Perks unlock progressively by rarity: Common (1), Uncommon (2), Rare (3), Epic (4), Legendary &amp; Mastery (5).</p>
+          </div>
+          <div class="box">
+            <h3>Skills XP &amp; Starter Flow</h3>
+            <p>Companions gain 100% XP from matching category Skills (25% off-category; 100% all for Omni-Skill). Regular players see only unlocked pets in <code>/pet</code>; newcomers receive Common <code>Spark</code> automatically.</p>
+          </div>
+          <div class="box">
+            <h3>VFX, Auto-Cast &amp; Target Ring</h3>
+            <p>Each pet displays a glowing particle circle under looked-at mobs (<code>/pet tracker</code>), auto-casts combat skills when trigger conditions fire (<code>/pet autocast</code>), and spawns clean <code>dce_vfx_*</code> animations.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-pet-catalog">
+        <h2>Registered Companions (15)</h2>
+        <div class="toolbar">
+          <div class="filter-pills" id="petFilters">
+            <button type="button" class="pill-btn active" data-pet-filter="ALL">All (15)</button>
+            <button type="button" class="pill-btn" data-pet-filter="Combat">Combat</button>
+            <button type="button" class="pill-btn" data-pet-filter="Mining">Mining</button>
+            <button type="button" class="pill-btn" data-pet-filter="Farming">Farming</button>
+            <button type="button" class="pill-btn" data-pet-filter="Foraging">Foraging</button>
+            <button type="button" class="pill-btn" data-pet-filter="Fishing">Fishing</button>
+            <button type="button" class="pill-btn" data-pet-filter="Alchemy">Alchemy</button>
+            <button type="button" class="pill-btn" data-pet-filter="Enchanting">Enchanting</button>
+            <button type="button" class="pill-btn" data-pet-filter="Omni-Skill">Omni-Skill</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="petsTable">
+            <thead>
+              <tr><th>Companion</th><th>Category</th><th>Rarity</th><th>Lv 1→100 Stats</th><th>Auto Ability &amp; Perks</th></tr>
+            </thead>
+            <tbody>
+              ${PETS_REGISTRY.map(p => {
+                const tagCls = p.rarity === 'MASTERY' ? 'red' : p.rarity === 'LEGENDARY' ? 'amber' : p.rarity === 'EPIC' ? 'purple' : 'blue';
+                return `
+                  <tr data-pet-id="${escapeHtml(p.id)}" data-pet-cat="${escapeHtml(p.category)}">
+                    <td><code>${escapeHtml(p.id)}</code><br><strong>${escapeHtml(p.name)}</strong></td>
+                    <td class="nowrap-col">${escapeHtml(p.category)}</td>
+                    <td class="nowrap-col"><span class="tag ${tagCls}">${escapeHtml(p.rarity)}</span></td>
+                    <td>${escapeHtml(p.stats)}</td>
+                    <td><strong>${escapeHtml(p.skill)}</strong><br>${escapeHtml(p.effect)} <span style="color:var(--text-muted)">(${escapeHtml(p.perks)})</span></td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-pet-yaml">
+        <h2>Custom Config (<code>pets_config.yml</code> &amp; <code>pets/&lt;id&gt;.yml</code>)</h2>
+        <pre><button type="button" class="copy-btn" data-copy-target="petYamlCode">Copy</button><code id="petYamlCode">config-version: 2
+id: astral
+display-name: "Astral"
+category: ENCHANTING
+rarity: LEGENDARY
+max-level: 100
+stats:
+  SURGE: { min: 4.0, max: 32.0 }
+  CATALYST: { min: 3.5, max: 28.0 }
+  RESONANCE: { min: 7.0, max: 3.0 }
+active-skill:
+  type: astral_supernova
+  trigger: ON_TARGET_LOCK
+  trigger-condition: "Warps through enemies 4 times on targeted hit within 28m"
+  max-cooldown-ms: 13500
+  min-cooldown-ms: 5500
+  min-power: 38.0
+  max-power: 114.0
+  range: 28.0
+  vfx-model: "dce_vfx_astral"</code></pre>
+      </section>
+    `
+  },
+
+  {
+    id: "cosmetics",
+    navLabel: "Cosmetics & Wardrobe",
+    group: "Core",
+    title: "Cosmetics, Profile & Wardrobe",
+    subtitle: "Quaternion TextDisplay 3D cosmetics, Blockbench imports, Profile equipment slots, Wardrobe Camera Studio, and /glow.",
+    toc: [
+      { id: "sec-profile", label: "Profile GUI Slots" },
+      { id: "sec-engines", label: "Cosmetics, Wardrobe & Glow" }
+    ],
+    render: () => `
+      <section class="wiki-sec" id="sec-profile">
+        <h2>Profile GUI Layout (<code>/profile [player]</code>)</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3>Armor &amp; Cosmetic Drawers</h3>
+            <ul>
+              <li><strong>Column 1 (Slots 10, 19, 28, 37):</strong> Helmet, Chestplate, Leggings, Boots (Main Hand <code>12</code>, Offhand <code>21</code>).</li>
+              <li><strong>Column 0 Drawers (Slots 9, 18, 27, 36):</strong> Sliding panels for <code>head</code>, <code>chest</code>, <code>waist</code>, and <code>boots</code> showing attached cosmetic scrolls.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Column 2 Equipment Storage</h3>
+            <ul>
+              <li><strong>Slot 11 (<code>keystone</code>):</strong> Temporal Keystone slot (feeds <code>StatSource.KEYSTONE</code> &amp; <code>KeystoneDetector</code>).</li>
+              <li><strong>Slot 20 (<code>amulet</code>):</strong> Amulet accessory slot.</li>
+              <li><strong>Slot 29 (<code>cloak</code>):</strong> Cloak accessory slot.</li>
+              <li><strong>Slot 38 (<code>gloves</code>):</strong> Gloves accessory slot.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-engines">
+        <h2>Cosmetic Engine, Wardrobe &amp; Glow</h2>
+        <div class="grid-3">
+          <div class="box">
+            <h3>Blockbench &amp; Kinematics</h3>
+            <ul>
+              <li>Put <code>.bbmodel</code> / <code>.json</code> in <code>imports/</code> and run <code>/cosmetics import &lt;file&gt; [slot]</code>.</li>
+              <li><code>left_</code> / <code>right_</code> (Boots): inverse kinematic walking stride.</li>
+              <li><code>wing_left_</code> / <code>wing_right_</code> (Chest): reactive glide/flap/sprint wings.</li>
+              <li><code>animated: true</code>: supports <code>spin</code>, <code>float</code>, and <code>glitch</code>.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Combat VFX &amp; Footsteps</h3>
+            <ul>
+              <li>Sword templates define <code>attack_types: crit | sweep | regular</code> rendered via ProtocolLib.</li>
+              <li>Boots <code>footstep:</code> configures custom particle, hex color, and sound (<code>/cosmetics sound</code> toggles).</li>
+              <li>Procedural shapes: <code>cube</code>, <code>solid</code>, <code>flat_ring</code>, <code>cylinder</code>, <code>star</code>, <code>burst</code>, <code>hourglass</code>.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Wardrobe, TpEffects &amp; /glow</h3>
+            <ul>
+              <li><code>/wardrobe studio</code> configures V2 camera angles (<code>overview</code>, <code>head</code>, <code>chest</code>, <code>waist</code>, <code>boots</code>, <code>teleport</code>).</li>
+              <li>Teleport cards in Wardrobe follow a safe two-step UX: <strong>Hover/Scroll</strong> highlights only &rarr; <strong>1st Left-Click</strong> previews &rarr; <strong>2nd Left-Click</strong> equips/unequips (strictly permission-checked).</li>
+              <li><code>/tpeffect test &lt;id&gt;</code> &amp; <code>/cinetp test</code> launch 1:1 Pixel-Replica 3D Camera effects (<code>obsidian_dissolution</code>, <code>chrono_singularity</code>); <code>/glow &lt;color|off&gt;</code> toggles outlines.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    `
+  },
+
+  {
+    id: "tpeffects",
+    navLabel: "Teleport Effects",
+    group: "Core",
+    title: "Teleportation Effects & 1:1 Pixel-Replica Camera",
+    subtitle: "Rarity-organized YAML configuration (DCEssentials/tpeffects/), MythicMobs portal packs, pre-baked dragoncote_tp ItemDisplay pixel-band rigs (skin, 2nd-layer, trimmed armor, elytra, held items), TextDisplay float camera sync, and Wardrobe UX.",
+    toc: [
+      { id: "sec-tp-arch", label: "Folder Layout & Config" },
+      { id: "sec-tp-tiers", label: "35 Effects & Cinematics" },
+      { id: "sec-tp-ux", label: "Wardrobe UX & Blackout" },
+      { id: "sec-tp-yaml", label: "Rarity YAML & Voucher Lore" }
+    ],
+    render: () => `
+      <section class="wiki-sec" id="sec-tp-arch">
+        <h2>Standalone Folder &amp; Storage (<code>plugins/DCEssentials/tpeffects/</code>)</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3>YAML Organization</h3>
+            <ul>
+              <li><code>config.yml</code> — Global toggle, cooldown (<code>1.5s</code>), minimum command (<code>3.0</code>) / non-command (<code>15.0</code>) warp distances, ignored causes, disabled worlds, LP sync, Wardrobe click mode, and cinematic camera/blackout settings.</li>
+              <li><strong>One File Per Rarity:</strong> <code>uncommon.yml</code>, <code>rare.yml</code>, <code>epic.yml</code>, <code>legendary.yml</code>, <code>mastery.yml</code> (plus any custom <code>*.yml</code>).</li>
+              <li><strong>Per-Effect Timing:</strong> Optional <code>duration:</code> key per cinematic entry (e.g., <code>4s</code>, <code>3.2s</code>, <code>80t</code>, <code>4000ms</code>, or numeric seconds) scales phase and camera timings proportionally.</li>
+              <li><strong>Live Admin Toggles:</strong> Toggle visibility or state in YAML cleanly via <code>/tpeffect enable|disable [id]</code> and <code>/tpeffect hide|show &lt;id&gt;</code>.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Persistence &amp; Triggers</h3>
+            <ul>
+              <li>Equipped effect and personal mute flag store directly in Player PDC (<code>selected_tpeffect</code>, <code>muted_tpeffect</code>).</li>
+              <li>Optional LuckPerms sync mirrors active choice to <code>dc.seltpeffect.&lt;id&gt;</code> and migrates legacy Skript perms automatically on join.</li>
+              <li><code>TpEffectListener</code> handles <code>PlayerTeleportEvent</code> cleanly (skipping Wardrobe sessions, <code>no_tpeffect</code>, muted players, and short teleports) and runs pure arrival plunge for Nether/End portals.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-tp-tiers">
+        <h2>Effects Lineup &amp; 3D Camera Engine</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Rarity File</th><th>Engine</th><th>Count</th><th>Included Effects</th></tr></thead>
+            <tbody>
+              <tr><td class="nowrap-col"><span class="tag green">uncommon.yml</span></td><td><code>MYTHIC_MOB</code></td><td class="nowrap-col">10</td><td><code>hologram</code>, <code>holy_absorption</code>, <code>aqua_splash</code>, <code>photosynthesis</code>, <code>rusty_decay</code>, <code>stone_crumble</code>, <code>void_collapse</code>, <code>spectral_fade</code>, <code>sound_wave</code>, <code>water_evaporation</code> (<code>KFX_v2-*</code>).</td></tr>
+              <tr><td class="nowrap-col"><span class="tag blue">rare.yml</span></td><td><code>MYTHIC_MOB</code></td><td class="nowrap-col">10</td><td><code>nebula</code>, <code>smoky</code>, <code>paper_burn</code>, <code>shadow_merge</code>, <code>mosaic</code>, <code>electric_zap</code>, <code>dimensional_pulls</code>, <code>floral_bloom</code>, <code>mirror</code>, <code>time_retrace</code> (<code>KFX_v3-*</code>).</td></tr>
+              <tr><td class="nowrap-col"><span class="tag">epic.yml</span></td><td><code>MYTHIC_MOB</code></td><td class="nowrap-col">10</td><td><code>sweet_honey</code>, <code>outline_retrace</code>, <code>quill_ink</code>, <code>constellation</code>, <code>aurora_sky</code>, <code>fog_envelop</code>, <code>jade_crystallize</code>, <code>kinetic_energy</code>, <code>northstar</code>, <code>prismatic_light</code> (<code>KFX_v5_16x-*</code>).</td></tr>
+              <tr><td class="nowrap-col"><span class="tag yellow">legendary.yml</span></td><td><code>CINEMATIC</code></td><td class="nowrap-col">2</td><td><code>obsidian_dissolution</code> (<code>10.5s</code> legacy) &amp; <code>umbral_dissolution</code> (<code>4s</code>, <code>UMBRAL_DISSOLUTION</code>) — 1:1 Pixel Replica (<code>1/16</code> skin slim/classic + 2nd layer, dyed/trimmed armor, elytra &amp; held items). <code>umbral_dissolution</code> refines the camera with a subtle move-back-left, low-pitch framing, gradual close-in arrival, and pure-black/charcoal slivers with subtle glow (<code>Brightness(9, 9)</code>) for dark areas.</td></tr>
+              <tr><td class="nowrap-col"><span class="tag red">mastery.yml</span></td><td><code>CINEMATIC</code></td><td class="nowrap-col">3</td><td><code>chrono_singularity</code> (<code>10.5s</code> legacy helical sky orbit), <code>shadow_drift</code> (<code>3.2s</code>, <code>SHADOW_DRIFT</code> — fast low-angle drift/close-in with semi-transparent ARGB <code>TextDisplay</code> void-black ink wisps at <code>Brightness(13, 13)</code>), and <code>skyline_switch</code> (<code>4.8s</code>, <code>SKYLINE_SWITCH</code> — GTA V-style 3-beat exponential sky-zoom out with thuds, zenith warp cut, and 3-beat plunge down into destination reconstruction).</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-tp-ux">
+        <h2>Wardrobe Interaction &amp; Blackout Hooks</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3>Hover &rarr; Preview &rarr; Equip Flow</h3>
+            <ul>
+              <li><strong>Hover / Hotbar Scroll:</strong> Highlights card and stops any previous mannequin showcase without auto-spawning effects.</li>
+              <li><strong>1st Left-Click:</strong> For <code>MYTHIC_MOB</code> effects, plays the particle mob at the Citizens/mannequin NPC. For the 5 <code>CINEMATIC</code> effects, when <code>room.tp_preview</code> is set via <code>/wardrobe settppreview</code>, transitions smoothly out to the open-sky preview spot, runs the full 3D camera arrival plunge (downward flakes) &rarr; brief hero hold &rarr; departure dissolve (upward flakes), then returns directly to the Wardrobe menu with <code>[ CLICK AGAIN TO EQUIP ]</code> staged (falls back in-room if unset).</li>
+              <li><strong>2nd Left-Click:</strong> Strictly checks ownership (<code>dc.tpeffect.&lt;id&gt;</code> or <code>dc.tpeffect.*</code>). Equips or unequips only if owned; denies locked store items with feedback.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Fullscreen Blackout &amp; Camera Pipeline</h3>
+            <ul>
+              <li><code>cinematic.blackout.mode</code> supports <code>AUTO</code>, <code>ULTIMATEUI_HUD</code>, <code>ULTIMATEUI_PANEL</code>, <code>TITLE_GLYPH</code>, and <code>POTION_DARKNESS</code>.</li>
+              <li>Requires ItemsAdder pack <code>contents/dragoncote_tp/resourcepack/assets/dragoncote/</code> (1x1 <code>tp_white.png</code> + 21 <code>items/tp_rig/*.json</code> + 1,353 <code>models/item/tp_px/*.json</code>) packed via <code>/iareload</code> + <code>/iazip</code>; plugin bundles vanilla armor, trim palette &amp; elytra PNGs in <code>tp_textures/</code>.</li>
+              <li>Uses an interpolated <code>TextDisplay</code> camera entity driven by full 32-bit float <code>ClientboundEntityPositionSyncPacket</code> updates (eliminating byte-quantized head-rotation jitter), parks the real player behind the camera frustum + hides from onlookers to avoid client-side double capes, and renders 3D voxel wings only when wearing <code>ELYTRA</code>.</li>
+              <li>Camera tracks raycast against solid blocks (<code>rayTraceBlocks</code>) to prevent clipping inside walls or low roofs, and restores HUD/camera cleanly on quit or cancel.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-tp-yaml">
+        <h2>Rarity Entry &amp; Voucher Lore Schema</h2>
+        <pre><button type="button" class="copy-btn" data-copy-target="tpYamlCode">Copy</button><code id="tpYamlCode">rarity: legendary
+
+effects:
+  umbral_dissolution:
+    enabled: true
+    hidden: false
+    duration: 4s
+    display-name: "&#64748B&amp;lUmbral Dissolution"
+    permission: "dc.tpeffect.umbral_dissolution"
+    type: CINEMATIC
+    cinematic-style: "UMBRAL_DISSOLUTION"
+    material: OBSIDIAN
+    custom-model-data: 0
+    lore:
+      - "&amp;7Transform every warp &amp; travel,"
+      - "&amp;7with &#38BDF8t&#44B1F7e...!"
+      - "§8§m=§r &amp;8ꜱʜɪꜰᴛ-ʀɪɢʜᴛ ᴄʟɪᴄᴋ "
+      - "§8§m=§r &amp;8ᴛᴏ ᴄʟᴀɪᴍ ᴛʜɪꜱ ᴠᴏᴜᴄʜᴇʀ!"</code></pre>
+      </section>
+    `
+  },
+
+  {
+    id: "emperor",
+    navLabel: "Emperor",
+    group: "World & Boss",
+    title: "The Emperor",
+    subtitle: "5-phase Temporal Sovereign (helly) boss rework, Void Holder tether mechanics, anti-Mace/Spear barriers, BossBar/TAB scaling, and Heal popups.",
+    toc: [
+      { id: "sec-emp-java", label: "Java Boss Engine & Scaling" },
+      { id: "sec-emp-phases", label: "5 Boss Phases" },
+      { id: "sec-emp-voidholders", label: "Void Holders & Counters" }
+    ],
+    render: () => `
+      <section class="wiki-sec" id="sec-emp-java">
+        <h2>Java Engine &amp; Multiplayer Scaling</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3><code>EmperorBossManager</code></h3>
+            <ul>
+              <li><strong>BossBar:</strong> Tracks <code>helly</code> in world <code>lowercity</code> every 10 ticks and shows a crimson <code>NOTCHED_20</code> Adventure BossBar to players within <code>80.0m</code>.</li>
+              <li><strong>Difficulty Scaling:</strong> Solo = <code>1.0x</code>; each extra Survival/Adventure player in 80m adds <code>+0.33x</code> outgoing boss damage and incoming player damage dampening in <code>EmperorListener</code>.</li>
+              <li><strong>Heal Displays:</strong> Renders rising emissive <code>TextDisplay</code> popups (<code>+X ❤</code>, tagged <code>emp_heal_txt</code>) with heartbeat audio on Void Holder pulses and <code>/emperortest heal</code>.</li>
+              <li><strong>TAB v6.x Hook:</strong> <code>EmperorTabHook</code> feeds <code>%dragoncote_emperor_*%</code> and <code>%dragoncote_active_events_*%</code> directly into TAB.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Scaling Simulator</h3>
+            <p>Preview <code>EmperorBossManager.getAngerScale()</code> for a party size:</p>
+            <div class="calc-grid">
+              <div class="calc-field"><label>Players in 80m</label><input type="number" id="cEmpPlayers" value="3" min="1" max="20" /></div>
+              <div class="calc-field"><label>Base Hit Damage</label><input type="number" id="cEmpBaseDmg" value="20" min="1" /></div>
+            </div>
+            <div class="calc-out" id="empCalcOut"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-emp-phases">
+        <h2>The 5 Phases (<code>emperor_phase1-5.yml</code>)</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Phase &amp; HP</th><th>Title &amp; Tags</th><th>Mechanics &amp; Locks</th></tr></thead>
+            <tbody>
+              <tr><td class="nowrap-col"><strong>Phase I</strong><br>100%–80%</td><td>The Hegemon's Stride<br><code>phase1</code></td><td>Picks Decree (<code>chronos</code>/<code>legion</code>), wakes <code>CRIMSON_MINION</code> Void Holders, uses <code>ShockwaveArc</code> &amp; <code>PrecisionCleave</code>. Minions heal up to cap <code>&lt;999</code>.</td></tr>
+              <tr><td class="nowrap-col"><strong>Phase II</strong><br>80%–60%</td><td>The Sentinel Bastion<br><code>reached_p2</code>, <code>sentinel_barrier</code></td><td>Summons Fallen Defender &amp; Defendress at <code>365.5, 136.0, 254.5</code> and rises 6 blocks (<code>y=142.0</code>) inside a soulfire knockback sphere until both Sentinels fall.</td></tr>
+              <tr><td class="nowrap-col"><strong>Phase III</strong><br>60%–40%</td><td>Temporal Tempest<br><code>reached_p3</code>, <code>mask_broken</code></td><td>Shatters helmet with 3D explosion and unlocks <strong>Turbo Sprint Shockwave Rush</strong> + <strong>360 Sweeping Blade Tempest</strong>.</td></tr>
+              <tr><td class="nowrap-col"><strong>Phase IV</strong><br>40%–15%</td><td>The Sovereign's Vanguard<br><code>reached_p4</code>, <code>phase4_ascended</code></td><td>Summons <code>The Fallen Mauler</code> and ascends inside an invulnerable barrier (DR 255) until the Mauler is defeated (<code>MAULER_DESTROYED</code>).</td></tr>
+              <tr><td class="nowrap-col"><strong>Phase V</strong><br>&lt;15% Rebirth</td><td>Sovereign's Wrath<br><code>phase5_rebirthing</code> → <code>phase5_enraged</code></td><td><code>Emperor_OnDeathRouter</code> intercepts lethal hit, plays blackout/lightning rebirth, restores <code>999 HP</code>, grants Speed II + Strength II, and cycles <strong>Ravage Rush</strong>, <strong>Void Cataclysm</strong>, and <strong>Blade Frenzy</strong> until <code>Emperor_OnTrueDeath</code>.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-emp-voidholders">
+        <h2>Void Holders &amp; Barrier Counters</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3>Void Holder Tether (<code>CRIMSON_MINION</code>)</h3>
+            <ul>
+              <li>When <code>helly</code> is within 80 blocks, Void Holders land on shroomlight pads and fire green heal pulses (<code>voidholder_heal_projectile</code>).</li>
+              <li><strong>5-Hit Sever:</strong> <code>VoidHolder_OnHit</code> counts hits in Survival, Creative, OP, and left/right interact. Hit 5 triggers <code>VoidHolder_Sever</code>, lifting the minion into <code>STASIS</code> (12–13 blocks up) and running <code>voidholders deactivate</code>.</li>
+              <li>Phase heal caps pause heals at thresholds (<code>&lt;999</code> P1, <code>&lt;800</code> P2, <code>&lt;600</code> P3) and during barriers/stasis.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Mace/Spear Barrier &amp; Counter Scrolls</h3>
+            <ul>
+              <li>Un-breached flying Mace smashes and Trident throws/melee are canceled unless Emperor has tag <code>frozen_stasis</code> or attacker holds <code>mace_bypassed</code>.</li>
+              <li>Use a Mace infused with <strong>Chrono-Slip Scroll</strong> (5th hit breaches), trigger <strong>Temporal Stasis Core</strong> (15s freeze), and stack <strong>Emperor Slayer Scrolls</strong> (+15% / +20% / +35%).</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    `
+  },
+
+  {
+    id: "keystones",
+    navLabel: "Keystones & Events",
+    group: "World & Boss",
+    title: "Keystones & World Events",
+    subtitle: "Temporal teleportation heat/cooling loops, Keystone tier detection, Newbie Shield, and rotating multi-world hub events.",
+    toc: [
+      { id: "sec-ks", label: "Keystones & Thermodynamics" },
+      { id: "sec-events", label: "World Cycles & Mini-Events" }
+    ],
+    render: () => `
+      <section class="wiki-sec" id="sec-ks">
+        <h2>Keystone Detection &amp; Heat Loops (<code>/keystone</code>)</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3>Detection Order &amp; Auto-Equip</h3>
+            <ol style="margin:0;padding-left:20px;">
+              <li>Checks <code>/profile</code> slot <code>11</code> (<code>keystone</code>) via PDC / ExecutableItems.</li>
+              <li>Falls back to <code>%cmi_user_meta_keystone_tier%</code>.</li>
+              <li>Scans player inventory and auto-equips the first valid Keystone into Profile slot <code>11</code>.</li>
+            </ol>
+          </div>
+          <div class="box">
+            <h3>Thermodynamics, Cryo &amp; Shields</h3>
+            <ul>
+              <li><strong>Cryo Cooling:</strong> Checks Water / Powder Snow immersion every 3s and cools <code>20</code> Heat every 5s.</li>
+              <li><strong>Nether / Anomaly:</strong> Nether adds <code>2.0x</code> heat gain. Above <code>80</code> Heat emits soul-fire; at <code>85+</code> warns nearby players within 10 blocks.</li>
+              <li><strong>Scrolls:</strong> <code>keystone_heatsink</code> (<code>-35%</code> heat, <code>+50%</code> cooling) and <code>keystone_tesseract_flux</code> (<code>-25%</code> cost, <code>-1.5s</code> warmup).</li>
+              <li><strong>Protections:</strong> 3-day Newbie Shield and <code>300s</code> Nexus Incursion cooldown.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-events">
+        <h2>Rotating World Cycles &amp; Mini-Events (<code>events.yml</code>)</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3>3-Realm Hub Cycle</h3>
+            <ul>
+              <li><strong>Sanctuary Dawn</strong> (<code>spawn_main</code> · <code>180m</code>): Prime sunlit hub world.</li>
+              <li><strong>The Void Convergence</strong> (<code>spawn_bw</code> · <code>60m</code>): Monochrome realm with crow flocks, dimensional rifts, and +25% shadow drops.</li>
+              <li><strong>Glacial Frost Grand Prix</strong> (<code>spawn_snow</code> · <code>60m</code>): Polar hub for IceBoat heats, Colosseum duels, and 1.5x snow agility.</li>
+              <li><strong>Evacuation Safety:</strong> 60s countdown teleports hub players safely to <code>lowercity</code> before swap.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Scheduled Mini-Events</h3>
+            <ul>
+              <li><strong>Colosseum King of the Hill</strong> (<code>colosseum_koth</code>): 20m every 120m · double PvP honor (<code>/warp colosseum</code>).</li>
+              <li><strong>Adapt EXP Surge</strong> (<code>adapt_exp_surge</code>): 30m every 180m · global 2x Adapt skill XP.</li>
+              <li><strong>Supersonic IceBoat Rally</strong> (<code>iceboat_rally</code>): 15m every 90m · drift circuit (<code>/warp iceboat</code>).</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    `
+  },
+
+  {
+    id: "npcs",
+    navLabel: "DCNPC",
+    group: "World & Boss",
+    title: "DCNPC, Warps & RNG",
+    subtitle: "43-step Citizens NPC pipeline across 3 spawn worlds, skin filters, Setup/Editor wands, district warps, waypoints, and RNG/Pity meters.",
+    toc: [
+      { id: "sec-dcnpc-core", label: "Canon Pipeline & Wands" },
+      { id: "sec-dcnpc-tools", label: "Warps, Timeline & RNG" }
+    ],
+    render: () => `
+      <section class="wiki-sec" id="sec-dcnpc-core">
+        <h2>Canon NPC Pipeline &amp; Dual Wands</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3>Tri-World Mirroring &amp; Skins</h3>
+            <p><code>/dcnpc canon live</code> replicates Sector 1 NPCs across <code>spawn_main</code>, <code>spawn_bw</code> (auto-generating BT.601 grayscale skin textures), and <code>spawn_snow</code> (frost textures), while keeping Sectors 2–4 anchored in <code>lowercity</code>. Use <code>/dcnpc canon test</code> to line all NPCs on the test platform.</p>
+          </div>
+          <div class="box">
+            <h3>Setup Wand &amp; Editor Wand</h3>
+            <ul>
+              <li><strong>Setup Wand</strong> (<code>/dcnpc wand</code>): Places each of the 43 characters + workstation scenes on right-click and binds district warps on left-click.</li>
+              <li><strong>Editor Wand</strong> (<code>/dcnpc editor</code>): Inspects stages, dialogue lines, yaw facing, and patrol waypoints.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-dcnpc-tools">
+        <h2>Warps, Waypoints, Timeline &amp; RNG</h2>
+        <div class="grid-3">
+          <div class="box">
+            <h3>Fast Travel &amp; Compass</h3>
+            <p><code>/warp [name]</code> opens the 54-slot Fast Travel District Menu; <code>/setwarp &lt;name&gt;</code> calibrates an anchor. <code>/waypoint [next|npcId|clear]</code> locks the 3D HUD compass arrow.</p>
+          </div>
+          <div class="box">
+            <h3>Lore &amp; Timeline</h3>
+            <p><code>/lore [1-4]</code> opens character dossiers across Sectors 1–4. <code>/timeline</code> displays the 25-node storyline quest track.</p>
+          </div>
+          <div class="box">
+            <h3>RNG &amp; Pity Meters</h3>
+            <p><code>/rng</code> and <code>/pity</code> track drop luck progression, fed by scripts and MythicMobs via <code>/rnghook</code>.</p>
+          </div>
+        </div>
+      </section>
+    `
+  },
+
+  {
+    id: "commands",
+    navLabel: "Commands & Permissions",
+    group: "Reference",
+    title: "Commands & Permissions",
+    subtitle: "Complete list of commands, aliases, permission nodes, and TabCompleter behavior. Click any command syntax to copy.",
+    wide: true,
+    render: () => `
+      <div class="toolbar">
+        <div class="filter-pills" id="cmdFilters">
+          <button type="button" class="pill-btn active" data-cmd-filter="ALL">All (${COMMANDS_REGISTRY.length})</button>
+          <button type="button" class="pill-btn" data-cmd-filter="Core">Core</button>
+          <button type="button" class="pill-btn" data-cmd-filter="Items & Stats">Items &amp; Stats</button>
+          <button type="button" class="pill-btn" data-cmd-filter="Pets">Pets</button>
+          <button type="button" class="pill-btn" data-cmd-filter="Emperor">Emperor</button>
+          <button type="button" class="pill-btn" data-cmd-filter="Cosmetics & Wardrobe">Cosmetics &amp; Wardrobe</button>
+          <button type="button" class="pill-btn" data-cmd-filter="Keystones & Events">Keystones &amp; Events</button>
+          <button type="button" class="pill-btn" data-cmd-filter="DCNPC & Warps">DCNPC &amp; Warps</button>
+          <button type="button" class="pill-btn" data-cmd-filter="World Tools">World Tools</button>
+        </div>
+        <input type="text" class="inline-filter" id="cmdTableFilter" placeholder="Filter commands table..." />
+      </div>
+
+      <div class="table-wrap">
+        <table id="commandsTable">
+          <thead>
+            <tr><th>Command</th><th>Aliases</th><th>Permission</th><th>Module</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            ${COMMANDS_REGISTRY.map(c => {
+              const permCls = c.perm.includes('admin') ? 'red' : 'green';
+              const aliasesHtml = (c.aliases || []).length
+                ? c.aliases.map(a => `<code>${escapeHtml(a)}</code>`).join(' ')
+                : '<span style="color:var(--text-muted)">&mdash;</span>';
+              return `
+                <tr data-cmd-mod="${escapeHtml(c.module)}" data-cmd-text="${escapeHtml((c.cmd + ' ' + (c.aliases || []).join(' ') + ' ' + c.perm + ' ' + c.module + ' ' + c.desc).toLowerCase())}">
+                  <td><code class="copyable" title="Click to copy" data-copy-literal="${escapeHtml(c.cmd)}">${escapeHtml(c.cmd)}</code></td>
+                  <td>${aliasesHtml}</td>
+                  <td class="nowrap-col"><span class="tag ${permCls}">${escapeHtml(c.perm)}</span></td>
+                  <td class="nowrap-col"><span class="tag">${escapeHtml(c.module)}</span></td>
+                  <td>${escapeHtml(c.desc)}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    `
+  },
+
+  {
+    id: "placeholders",
+    navLabel: "Placeholders",
+    group: "Reference",
+    title: "Placeholders",
+    subtitle: "All %dragoncote_*% PlaceholderAPI & TAB v6.x identifiers implemented in DCEssentialsExpansion and EmperorTabHook. Click any placeholder to copy.",
+    wide: true,
+    render: () => `
+      <div class="toolbar">
+        <span style="color:var(--text-muted);font-size:0.86rem;">Showing ${PLACEHOLDERS_REGISTRY.length} indexed placeholders</span>
+        <input type="text" class="inline-filter" id="phTableFilter" placeholder="Filter placeholders..." />
+      </div>
+
+      <div class="table-wrap">
+        <table id="placeholdersTable">
+          <thead>
+            <tr><th>Placeholder</th><th>Scope</th><th>Return Value</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            ${PLACEHOLDERS_REGISTRY.map(p => `
+              <tr data-ph-text="${escapeHtml((p.ph + ' ' + p.scope + ' ' + p.returns + ' ' + p.desc).toLowerCase())}">
+                <td><code class="copyable" title="Click to copy" data-copy-literal="${escapeHtml(p.ph)}">${escapeHtml(p.ph)}</code></td>
+                <td class="nowrap-col"><span class="tag blue">${escapeHtml(p.scope)}</span></td>
+                <td><code>${escapeHtml(p.returns)}</code></td>
+                <td>${escapeHtml(p.desc)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `
+  },
+
+  {
+    id: "extending",
+    navLabel: "Extending Docs",
+    group: "Reference",
+    title: "Updating & Extending This Wiki",
+    subtitle: "How to add new pages, commands, placeholders, or split modules cleanly as the plugin grows.",
+    render: () => `
+      <section class="wiki-sec" id="sec-ext-how">
+        <h2>One HTML File vs. Modular Folder</h2>
+        <div class="box">
+          <p>Right now this wiki stays inside a single <code>DCEssentials_Documentation.html</code> file so it opens instantaneously via <code>file://</code> in Chrome with zero CORS errors or broken asset links. Every table (<code>COMMANDS_REGISTRY</code>, <code>PLACEHOLDERS_REGISTRY</code>, <code>PETS_REGISTRY</code>, <code>SCROLLS_REGISTRY</code>) and page (<code>DOC_MODULES</code>) lives in clean JS data blocks that are indexed by search automatically.</p>
+          <p>If it grows past ~3,000 lines, you can split <code>DOC_MODULES</code> and registries into a <code>docs/modules/*.js</code> folder loaded via plain <code>&lt;script src="..."&gt;</code> tags (note: plain script tags work over <code>file://</code>, whereas <code>fetch()</code> / ES modules get blocked by Chrome without a local server).</p>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-ext-addpage">
+        <h2>Adding a New Wiki Page</h2>
+        <pre><button type="button" class="copy-btn" data-copy-target="addPageCode">Copy</button><code id="addPageCode">// Push a new object inside DOC_MODULES:
+{
+  id: "guilds",
+  navLabel: "Guilds",
+  group: "World &amp; Boss",
+  title: "Guilds &amp; Territory",
+  subtitle: "Short description of the module.",
+  toc: [{ id: "sec-guild-basics", label: "Basics" }],
+  render: () => \`
+    &lt;section class="wiki-sec" id="sec-guild-basics"&gt;
+      &lt;h2&gt;Basics&lt;/h2&gt;
+      &lt;div class="box"&gt;&lt;p&gt;Explain mechanics clearly here.&lt;/p&gt;&lt;/div&gt;
+    &lt;/section&gt;
+  \`
+}</code></pre>
+      </section>
+
+      <section class="wiki-sec" id="sec-ext-addcmd">
+        <h2>Adding Commands or Placeholders</h2>
+        <pre><button type="button" class="copy-btn" data-copy-target="addCmdCode">Copy</button><code id="addCmdCode">// 1. Add to COMMANDS_REGISTRY:
+{
+  cmd: "/guild create &lt;name&gt;",
+  aliases: ["/g create"],
+  perm: "Default",
+  module: "Core",
+  desc: "Creates a new guild."
+}
+
+// 2. Add to PLACEHOLDERS_REGISTRY:
+{
+  ph: "%dragoncote_guild_rank%",
+  scope: "PAPI",
+  returns: "Leader / Member",
+  desc: "Player's active guild rank."
+}</code></pre>
+      </section>
+    `
+  }
+];
+
+/* ============================================================================
+ * SECTION 3: FULL-TEXT OFFLINE SEARCH INDEX
+ * Indexes pages, section headings, commands, placeholders, pets, and scrolls.
+ * ============================================================================ */
+
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function stripTags(html) {
+  return String(html)
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+const SEARCH_INDEX = [];
+
+function buildSearchIndex() {
+  SEARCH_INDEX.length = 0;
+
+  // 1. Page summaries + sections
+  DOC_MODULES.forEach(mod => {
+    const html = mod.render();
+    SEARCH_INDEX.push({
+      kind: 'Page',
+      tagCls: 'blue',
+      title: mod.navLabel,
+      sub: mod.subtitle,
+      modId: mod.id,
+      secId: null,
+      copy: null,
+      haystack: `${mod.navLabel} ${mod.title} ${mod.subtitle}`.toLowerCase()
+    });
+
+    const secRegex = /<section[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/section>/gi;
+    let m;
+    while ((m = secRegex.exec(html)) !== null) {
+      const secId = m[1];
+      const bodyHtml = m[2];
+      const h2Match = bodyHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
+      const heading = h2Match ? stripTags(h2Match[1]) : mod.navLabel;
+      const bodyText = stripTags(bodyHtml);
+      SEARCH_INDEX.push({
+        kind: mod.navLabel,
+        tagCls: 'blue',
+        title: heading,
+        sub: bodyText.slice(0, 115) + (bodyText.length > 115 ? '...' : ''),
+        modId: mod.id,
+        secId,
+        copy: null,
+        haystack: `${mod.navLabel} ${heading} ${bodyText}`.toLowerCase()
+      });
+    }
+  });
+
+  // 2. Commands
+  COMMANDS_REGISTRY.forEach(c => {
+    SEARCH_INDEX.push({
+      kind: 'Command',
+      tagCls: c.perm.includes('admin') ? 'red' : 'green',
+      title: c.cmd,
+      sub: `${c.perm} · ${c.desc}`,
+      modId: 'commands',
+      secId: null,
+      copy: c.cmd,
+      haystack: `${c.cmd} ${(c.aliases || []).join(' ')} ${c.perm} ${c.module} ${c.desc}`.toLowerCase()
+    });
+  });
+
+  // 3. Placeholders
+  PLACEHOLDERS_REGISTRY.forEach(p => {
+    SEARCH_INDEX.push({
+      kind: 'Placeholder',
+      tagCls: 'blue',
+      title: p.ph,
+      sub: `${p.scope} · ${p.desc}`,
+      modId: 'placeholders',
+      secId: null,
+      copy: p.ph,
+      haystack: `${p.ph} ${p.scope} ${p.returns} ${p.desc}`.toLowerCase()
+    });
+  });
+
+  // 4. Pets
+  PETS_REGISTRY.forEach(p => {
+    SEARCH_INDEX.push({
+      kind: 'Pet',
+      tagCls: 'purple',
+      title: `${p.name} (${p.id})`,
+      sub: `${p.rarity} · ${p.category} · ${p.stats} · ${p.skill}`,
+      modId: 'pets',
+      secId: 'sec-pet-catalog',
+      copy: `/pet summon ${p.id}`,
+      haystack: `${p.id} ${p.name} ${p.category} ${p.rarity} ${p.stats} ${p.skill} ${p.perks} ${p.effect}`.toLowerCase()
+    });
+  });
+
+  // 5. Scrolls
+  SCROLLS_REGISTRY.forEach(s => {
+    SEARCH_INDEX.push({
+      kind: 'Scroll',
+      tagCls: 'amber',
+      title: s.id,
+      sub: `${s.rarity} (${s.target}) · ${s.effect}`,
+      modId: 'dceitems',
+      secId: 'sec-scrolls',
+      copy: s.id,
+      haystack: `${s.id} ${s.rarity} ${s.target} ${s.effect}`.toLowerCase()
+    });
+  });
+}
+
+/* ============================================================================
+ * SECTION 4: UI & WIKI CONTROLLER
+ * ============================================================================ */
+
+let activeModuleId = DOC_MODULES[0].id;
+let currentSearchHits = [];
+let selectedHitIndex = -1;
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => el.classList.remove('show'), 1600);
+}
+
+function copyText(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => showToast('Copied: ' + text)).catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); showToast('Copied: ' + text); } catch (_) {}
+  document.body.removeChild(ta);
+}
+
+function toggleMobileMenu(forceState) {
+  const sidebar = document.getElementById('sidebar');
+  const backdrop = document.getElementById('sidebarBackdrop');
+  const open = typeof forceState === 'boolean' ? forceState : !sidebar.classList.contains('open');
+  sidebar.classList.toggle('open', open);
+  backdrop.classList.toggle('open', open);
+}
+
+function renderSidebar() {
+  const groups = [];
+  DOC_MODULES.forEach(m => {
+    let grp = groups.find(g => g.name === m.group);
+    if (!grp) {
+      grp = { name: m.group, items: [] };
+      groups.push(grp);
+    }
+    grp.items.push(m);
+  });
+
+  const navList = document.getElementById('navList');
+  navList.innerHTML = groups.map(g => `
+    <div class="nav-group">
+      <div class="nav-group-label">${escapeHtml(g.name)}</div>
+      ${g.items.map(m => `
+        <button type="button" class="nav-link ${m.id === activeModuleId ? 'active' : ''}" data-mod="${escapeHtml(m.id)}">${escapeHtml(m.navLabel)}</button>
+      `).join('')}
+    </div>
+  `).join('');
+
+  navList.querySelectorAll('.nav-link').forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchModule(btn.dataset.mod);
+      toggleMobileMenu(false);
+    });
+  });
+}
+
+function switchModule(modId, targetSecId) {
+  const mod = DOC_MODULES.find(m => m.id === modId) || DOC_MODULES[0];
+  activeModuleId = mod.id;
+
+  if (location.hash !== '#' + mod.id) {
+    try { history.replaceState(null, '', '#' + mod.id); } catch (_) {}
+  }
+
+  renderSidebar();
+
+  const articleRoot = document.getElementById('articleRoot');
+  articleRoot.className = mod.wide ? 'article wide' : 'article';
+
+  const tocHtml = (mod.toc && mod.toc.length)
+    ? `<div class="page-toc"><span class="page-toc-label">On this page:</span>${mod.toc.map(t => `<a class="toc-chip" href="#${escapeHtml(mod.id)}" data-jump-sec="${escapeHtml(t.id)}">${escapeHtml(t.label)}</a>`).join('')}</div>`
+    : '';
+
+  articleRoot.innerHTML = `
+    <div class="page-header">
+      <div class="page-breadcrumb">${escapeHtml(mod.group)} / ${escapeHtml(mod.navLabel)}</div>
+      <h1>${escapeHtml(mod.title)}</h1>
+      <p class="page-lead">${escapeHtml(mod.subtitle)}</p>
+    </div>
+    ${tocHtml}
+    ${mod.render()}
+  `;
+
+  wireArticleWidgets();
+
+  if (targetSecId) {
+    const secEl = document.getElementById(targetSecId);
+    if (secEl) {
+      secEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      secEl.classList.remove('sec-flash');
+      void secEl.offsetWidth;
+      secEl.classList.add('sec-flash');
+      return;
+    }
+  }
+  window.scrollTo({ top: 0, behavior: 'auto' });
+}
+
+function wireArticleWidgets() {
+  const root = document.getElementById('articleRoot');
+
+  root.querySelectorAll('[data-jump-sec]').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.getElementById(link.dataset.jumpSec);
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  root.querySelectorAll('[data-copy-literal]').forEach(el => {
+    el.addEventListener('click', () => copyText(el.dataset.copyLiteral));
+  });
+
+  root.querySelectorAll('[data-copy-target]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const codeEl = document.getElementById(btn.dataset.copyTarget);
+      if (codeEl) copyText(codeEl.textContent);
+    });
+  });
+
+  // Commands table filters (category pills + inline text input)
+  const cmdTable = document.getElementById('commandsTable');
+  if (cmdTable) {
+    let activeModFilter = 'ALL';
+    const cmdTextInput = document.getElementById('cmdTableFilter');
+    const applyCmdFilters = () => {
+      const q = cmdTextInput ? cmdTextInput.value.trim().toLowerCase() : '';
+      cmdTable.querySelectorAll('tbody tr').forEach(row => {
+        const modOk = activeModFilter === 'ALL' || row.dataset.cmdMod === activeModFilter;
+        const textOk = !q || (row.dataset.cmdText || '').includes(q);
+        row.style.display = (modOk && textOk) ? '' : 'none';
+      });
+    };
+    root.querySelectorAll('#cmdFilters .pill-btn').forEach(pill => {
+      pill.addEventListener('click', () => {
+        root.querySelectorAll('#cmdFilters .pill-btn').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        activeModFilter = pill.dataset.cmdFilter;
+        applyCmdFilters();
+      });
+    });
+    if (cmdTextInput) cmdTextInput.addEventListener('input', applyCmdFilters);
+  }
+
+  // Placeholders table inline filter
+  const phTable = document.getElementById('placeholdersTable');
+  const phTextInput = document.getElementById('phTableFilter');
+  if (phTable && phTextInput) {
+    phTextInput.addEventListener('input', () => {
+      const q = phTextInput.value.trim().toLowerCase();
+      phTable.querySelectorAll('tbody tr').forEach(row => {
+        row.style.display = (!q || (row.dataset.phText || '').includes(q)) ? '' : 'none';
+      });
+    });
+  }
+
+  // Pet category filter
+  root.querySelectorAll('#petFilters .pill-btn').forEach(pill => {
+    pill.addEventListener('click', () => {
+      root.querySelectorAll('#petFilters .pill-btn').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      const f = pill.dataset.petFilter;
+      root.querySelectorAll('#petsTable tbody tr').forEach(row => {
+        const cat = row.dataset.petCat || '';
+        const show = f === 'ALL' || cat === f;
+        row.style.display = show ? '' : 'none';
+      });
+    });
+  });
+
+  // Stat calculator
+  const calcOut = document.getElementById('statCalcOut');
+  if (calcOut) {
+    const updateStatCalc = () => {
+      const w = Math.max(0, Number(document.getElementById('cWepSurge').value) || 0);
+      const p = Math.max(0, Number(document.getElementById('cPetSurge').value) || 0);
+      const a = Math.max(0, Number(document.getElementById('cAccSurge').value) || 0);
+      const baseRes = Math.max(2, Number(document.getElementById('cResBase').value) || 2);
+      const resCount = Math.max(0, Number(document.getElementById('cResCount').value) || 0);
+      const totalSurge = w + p + a;
+      const effRes = resCount <= 0 ? 'None' : `${Math.max(2, Math.round(baseRes - Math.max(0, resCount - 1)))}-Hit Cadence`;
+      calcOut.innerHTML = `<span>Stacked Surge Cap: <code>+${totalSurge}%</code></span><span>Effective Resonance: <code>${effRes}</code></span>`;
+    };
+    ['cWepSurge', 'cPetSurge', 'cAccSurge', 'cResBase', 'cResCount'].forEach(id => {
+      const inp = document.getElementById(id);
+      if (inp) inp.addEventListener('input', updateStatCalc);
+    });
+    updateStatCalc();
+  }
+
+  // Emperor scaling simulator
+  const empOut = document.getElementById('empCalcOut');
+  if (empOut) {
+    const updateEmpCalc = () => {
+      const n = Math.max(1, Number(document.getElementById('cEmpPlayers').value) || 1);
+      const base = Math.max(1, Number(document.getElementById('cEmpBaseDmg').value) || 20);
+      const scale = n <= 1 ? 1.0 : 1.0 + ((n - 1) * 0.33);
+      const empOutgoing = (base * scale).toFixed(1);
+      const playerDmgPct = ((1.0 / scale) * 100).toFixed(1);
+      empOut.innerHTML = `<span>angerScale: <code>${scale.toFixed(2)}x</code></span><span>Boss Outgoing: <code>${empOutgoing}</code></span><span>Player Damage Weight: <code>${playerDmgPct}%</code></span>`;
+    };
+    ['cEmpPlayers', 'cEmpBaseDmg'].forEach(id => {
+      const inp = document.getElementById(id);
+      if (inp) inp.addEventListener('input', updateEmpCalc);
+    });
+    updateEmpCalc();
+  }
+}
+
+/* ============================================================================
+ * SECTION 5: SEARCH POPOVER CONTROLLER
+ * ============================================================================ */
+
+function closeSearchPopover() {
+  document.getElementById('searchPopover').classList.remove('open');
+  selectedHitIndex = -1;
+}
+
+function openSearchHit(hit) {
+  if (!hit) return;
+  closeSearchPopover();
+  switchModule(hit.modId, hit.secId);
+}
+
+function renderSearchPopover(query) {
+  const pop = document.getElementById('searchPopover');
+  const clearBtn = document.getElementById('searchClearBtn');
+  const kbdEl = document.getElementById('searchKbd');
+  const q = query.trim().toLowerCase();
+
+  clearBtn.classList.toggle('visible', q.length > 0);
+  kbdEl.style.display = q.length > 0 ? 'none' : '';
+
+  if (!q) {
+    currentSearchHits = [];
+    closeSearchPopover();
+    return;
+  }
+
+  const terms = q.split(/\s+/).filter(Boolean);
+  const scored = [];
+  for (const item of SEARCH_INDEX) {
+    if (!terms.every(t => item.haystack.includes(t))) continue;
+    let score = 0;
+    const titleLower = item.title.toLowerCase();
+    if (titleLower === q) score += 100;
+    else if (titleLower.includes(q)) score += 30;
+    if (item.kind === 'Page') score += 15;
+    if (item.kind === 'Command' && titleLower.startsWith(q)) score += 20;
+    scored.push({ item, score });
+  }
+  scored.sort((a, b) => b.score - a.score);
+  currentSearchHits = scored.slice(0, 16).map(x => x.item);
+  selectedHitIndex = currentSearchHits.length ? 0 : -1;
+
+  if (!currentSearchHits.length) {
+    pop.innerHTML = `<div class="search-pop-head"><span>No matches for "${escapeHtml(query)}"</span><span>Esc to close</span></div>`;
+    pop.classList.add('open');
+    return;
+  }
+
+  pop.innerHTML = `
+    <div class="search-pop-head">
+      <span>${scored.length} match${scored.length === 1 ? '' : 'es'}${scored.length > 16 ? ' (top 16)' : ''}</span>
+      <span>Up/Down · Enter</span>
+    </div>
+    ${currentSearchHits.map((h, i) => `
+      <div class="search-hit ${i === selectedHitIndex ? 'selected' : ''}" data-hit-idx="${i}" role="option">
+        <div class="search-hit-body">
+          <div class="search-hit-top">
+            <span class="tag ${h.tagCls}">${escapeHtml(h.kind)}</span>
+            <span class="search-hit-title">${escapeHtml(h.title)}</span>
+          </div>
+          <div class="search-hit-sub">${escapeHtml(h.sub)}</div>
+        </div>
+        ${h.copy ? `<button type="button" class="pill-btn" data-hit-copy="${escapeHtml(h.copy)}">Copy</button>` : ''}
+      </div>
+    `).join('')}
+  `;
+  pop.classList.add('open');
+
+  pop.querySelectorAll('.search-hit').forEach(el => {
+    el.addEventListener('click', () => {
+      const idx = Number(el.dataset.hitIdx);
+      openSearchHit(currentSearchHits[idx]);
+    });
+  });
+
+  pop.querySelectorAll('[data-hit-copy]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      copyText(btn.dataset.hitCopy);
+    });
+  });
+}
+
+function updateSelectedHitClass() {
+  const rows = document.querySelectorAll('#searchPopover .search-hit');
+  rows.forEach((row, i) => {
+    row.classList.toggle('selected', i === selectedHitIndex);
+    if (i === selectedHitIndex && row.scrollIntoView) {
+      row.scrollIntoView({ block: 'nearest' });
+    }
+  });
+}
+
+// Init
+buildSearchIndex();
+
+const searchInput = document.getElementById('globalSearch');
+searchInput.addEventListener('input', e => renderSearchPopover(e.target.value));
+searchInput.addEventListener('focus', e => {
+  if (e.target.value.trim()) renderSearchPopover(e.target.value);
+});
+searchInput.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeSearchPopover();
+    searchInput.blur();
+  } else if (e.key === 'ArrowDown' && currentSearchHits.length) {
+    e.preventDefault();
+    selectedHitIndex = (selectedHitIndex + 1) % currentSearchHits.length;
+    updateSelectedHitClass();
+  } else if (e.key === 'ArrowUp' && currentSearchHits.length) {
+    e.preventDefault();
+    selectedHitIndex = (selectedHitIndex - 1 + currentSearchHits.length) % currentSearchHits.length;
+    updateSelectedHitClass();
+  } else if (e.key === 'Enter' && selectedHitIndex >= 0 && currentSearchHits[selectedHitIndex]) {
+    e.preventDefault();
+    openSearchHit(currentSearchHits[selectedHitIndex]);
+  }
+});
+
+document.getElementById('searchClearBtn').addEventListener('click', () => {
+  searchInput.value = '';
+  renderSearchPopover('');
+  searchInput.focus();
+});
+
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('searchWrap');
+  if (wrap && !wrap.contains(e.target)) closeSearchPopover();
+});
+
+document.addEventListener('keydown', e => {
+  const tag = document.activeElement ? document.activeElement.tagName : '';
+  if ((e.ctrlKey && e.key.toLowerCase() === 'k') || (e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA')) {
+    e.preventDefault();
+    searchInput.focus();
+    searchInput.select && searchInput.select();
+  }
+});
+
+document.getElementById('mobileMenuBtn').addEventListener('click', () => toggleMobileMenu());
+document.getElementById('sidebarBackdrop').addEventListener('click', () => toggleMobileMenu(false));
+document.getElementById('brandHomeBtn').addEventListener('click', () => switchModule('overview'));
+document.getElementById('jumpCommandsBtn').addEventListener('click', () => switchModule('commands'));
+document.getElementById('jumpPlaceholdersBtn').addEventListener('click', () => switchModule('placeholders'));
+
+const initialHash = location.hash ? location.hash.slice(1) : '';
+const initialMod = DOC_MODULES.some(m => m.id === initialHash) ? initialHash : DOC_MODULES[0].id;
+switchModule(initialMod);
+</script>
+</body>
+</html>

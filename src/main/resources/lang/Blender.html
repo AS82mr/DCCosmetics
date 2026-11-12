@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Minecraft to Web 3D Workflow</title>
+    <style>
+      :root {
+        --bg-color: #0f172a;
+        --card-bg: #1e293b;
+        --text-main: #f8fafc;
+        --text-muted: #cbd5e1;
+        --accent: #3b82f6;
+        --code-bg: #0b1120;
+      }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        line-height: 1.6;
+        padding: 40px 20px;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      h1,
+      h2,
+      h3 {
+        color: #60a5fa;
+      }
+      h1 {
+        border-bottom: 2px solid var(--card-bg);
+        padding-bottom: 10px;
+      }
+      .step-card {
+        background-color: var(--card-bg);
+        border-radius: 8px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+      code {
+        background-color: var(--code-bg);
+        color: #34d399;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: monospace;
+      }
+      pre {
+        background-color: var(--code-bg);
+        padding: 16px;
+        border-radius: 8px;
+        overflow-x: auto;
+        border: 1px solid #334155;
+      }
+      pre code {
+        background-color: transparent;
+        padding: 0;
+        color: #e2e8f0;
+      }
+      .warning {
+        background-color: #7f1d1d;
+        border-left: 4px solid #ef4444;
+        padding: 12px;
+        margin: 16px 0;
+        border-radius: 0 4px 4px 0;
+      }
+      ul {
+        padding-left: 20px;
+        color: var(--text-muted);
+      }
+      li {
+        margin-bottom: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🚀 Minecraft to React Three Fiber Workflow</h1>
+    <p>
+      The definitive guide to exporting, baking, and heavily compressing a
+      Minecraft Spawn City for a Next.js homepage.
+    </p>
+
+    <div class="step-card">
+      <h2>Phase 1: Mineways Export</h2>
+      <p>Extract the raw model from the Minecraft world save.</p>
+      <ul>
+        <li>Open world in Mineways and select the area.</li>
+        <li>
+          <strong>Crucial Settings:</strong>
+          <ul>
+            <li>
+              Check <code>Simplify mesh</code> (Drastically reduces polygons).
+            </li>
+            <li>
+              Texture Output:
+              <code>Export all textures to three large, mosaic images</code>.
+            </li>
+            <li>
+              Check <code>Fill air bubbles</code> and
+              <code>Seal off entrances</code>.
+            </li>
+            <li>Check <code>Center model around the origin</code>.</li>
+          </ul>
+        </li>
+        <li>Export as <code>.obj</code>.</li>
+      </ul>
+    </div>
+
+    <div class="step-card">
+      <h2>Phase 2: Blender Preparation & UV Unwrapping</h2>
+      <ul>
+        <li>
+          Open Blender (v5.1+). Delete the default cube, light, and camera.
+        </li>
+        <li>
+          Go to <strong>File &gt; Import &gt; Wavefront (.obj)</strong> and
+          select your file.
+        </li>
+        <li>
+          <strong>Add a Light:</strong> Press <code>Shift + A</code> &gt; Light
+          &gt; Sun. Rotate it to cast nice shadows.
+        </li>
+        <li>
+          <strong>UV Unwrap:</strong>
+          <ul>
+            <li>Select the city. Press <code>Tab</code> (Edit Mode).</li>
+            <li>Press <code>A</code> (Select All).</li>
+            <li>
+              Press <code>U</code> &gt; <strong>Smart UV Project</strong>. Set
+              Island Margin to <code>0.002</code> and hit OK.
+            </li>
+            <li>Press <code>Tab</code> to return to Object Mode.</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+    <div class="step-card">
+      <h2>Phase 3: The Pre-Bake Script</h2>
+      <p>
+        Go to the <strong>Scripting</strong> tab, create a
+        <code>+ New</code> script, paste this, and hit Run. This forces blocky
+        textures and prepares the 4K bake target.
+      </p>
+      <pre><code>import bpy
+
+# 1. Set all textures to 'Closest' (Pixelated/Minecraft Look)
+for mat in bpy.data.materials:
+    if mat.node_tree:
+        for node in mat.node_tree.nodes:
+            if node.type == 'TEX_IMAGE':
+                node.interpolation = 'Closest'
+
+# 2. Create the 4K Bake Target Image
+image_name = "City_Bake_Final"
+if image_name not in bpy.data.images:
+    bake_image = bpy.data.images.new(image_name, width=4096, height=4096)
+else:
+    bake_image = bpy.data.images[image_name]
+
+# 3. Attach Bake Target to all Materials
+for mat in bpy.data.materials:
+    if mat.node_tree:
+        node = mat.node_tree.nodes.get("Bake_Target")
+        if not node:
+            node = mat.node_tree.nodes.new(type='ShaderNodeTexImage')
+            node.name = "Bake_Target"
+        node.image = bake_image
+        mat.node_tree.nodes.active = node 
+
+print("--- Pre-Bake Setup Complete! ---")</code></pre>
+    </div>
+
+    <div class="step-card">
+      <h2>Phase 4: Baking the Lighting</h2>
+      <ul>
+        <li>Go to <strong>Render Properties</strong> (Camera Icon).</li>
+        <li>Render Engine: <code>Cycles</code>.</li>
+        <li>Device: <code>GPU Compute</code>.</li>
+        <li>Scroll down to <strong>Bake</strong>.</li>
+        <li>Bake Type: <code>Combined</code>.</li>
+        <li>Margin Size: <code>2 px</code>.</li>
+        <li>
+          Click <strong>Bake</strong> and wait for the progress bar to hit 100%.
+        </li>
+      </ul>
+      <div class="warning">
+        <strong>CRITICAL:</strong> Once done, open the
+        <strong>Image Editor</strong> window, select
+        <code>City_Bake_Final</code>, and go to
+        <strong>Image &gt; Save As</strong>. Save it as a `.png` or `.jpg` to
+        your computer. Do not skip this!
+      </div>
+    </div>
+
+    <div class="step-card">
+      <h2>Phase 5: The Post-Bake Cleanup Script</h2>
+      <p>
+        Before exporting to GLB, run this second script. It deletes the 198
+        complex Minecraft materials and replaces them with a single,
+        highly-optimized material using your new baked image. This guarantees a
+        tiny file size.
+      </p>
+      <pre><code>import bpy
+
+bake_image = bpy.data.images.get("City_Bake_Final")
+
+if bake_image:
+    for mat in bpy.data.materials:
+        if mat.node_tree:
+            nodes = mat.node_tree.nodes
+            links = mat.node_tree.links
+            
+            # Find the Principled BSDF and Output nodes
+            bsdf = nodes.get("Principled BSDF")
+            output = nodes.get("Material Output")
+            
+            if bsdf and output:
+                # Delete all other nodes to clean up the file
+                for node in nodes:
+                    if node != bsdf and node != output:
+                        nodes.remove(node)
+                
+                # Create the final baked texture node
+                tex = nodes.new('ShaderNodeTexImage')
+                tex.image = bake_image
+                tex.interpolation = 'Closest'
+                tex.location = (-300, 0)
+                
+                # Link it to the Base Color
+                links.new(tex.outputs['Color'], bsdf.inputs['Base Color'])
+                
+    print("--- Post-Bake Cleanup Complete! Ready for Export. ---")
+else:
+    print("ERROR: Could not find 'City_Bake_Final' image.")</code></pre>
+    </div>
+
+    <div class="step-card">
+      <h2>Phase 6: Final GLB Export</h2>
+      <p>Go to <strong>File &gt; Export &gt; glTF 2.0 (.glb/.gltf)</strong>.</p>
+      <ul>
+        <li>
+          <strong>Include:</strong> Check <code>Selected Objects</code> (Ensure
+          the city is selected in the viewport!).
+        </li>
+        <li>
+          <strong>Mesh:</strong> Check <code>Compression</code> (Draco). Set
+          compression level to <code>6</code>.
+        </li>
+        <li>
+          <strong>Materials &gt; Images:</strong> Set to
+          <code>WebP Format</code>, Quality <code>75</code>.
+        </li>
+      </ul>
+      <p>
+        Hit Export. Your file should drop from hundreds of megabytes down to
+        ~10MB!
+      </p>
+    </div>
+  </body>
+</html>

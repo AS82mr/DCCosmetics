@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DCCosmetics | The Ultimate Documentation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --surface: #111827;
+            --surface-hover: #1f2937;
+            --primary: #0ea5e9;
+            --secondary: #8b5cf6;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border: #1e293b;
+            --accent-red: #ef4444;
+            --accent-green: #10b981;
+            --accent-yellow: #f59e0b;
+            --accent-pink: #d946ef;
+        }
+        
+        html { scroll-behavior: smooth; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { font-family: 'Inter', sans-serif; line-height: 1.6; color: var(--text-main); background-color: var(--bg-color); display: flex; }
+
+        /* Sidebar Navigation */
+        nav { width: 300px; background: var(--surface); border-right: 1px solid var(--border); height: 100vh; position: fixed; padding: 2.5rem 2rem; overflow-y: auto; box-shadow: 4px 0 15px rgba(0,0,0,0.3); }
+        nav h2 { font-size: 1.4rem; background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 2rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+        nav ul { list-style: none; }
+        nav li { margin-bottom: 0.85rem; }
+        nav a { color: var(--text-muted); text-decoration: none; font-size: 0.95rem; font-weight: 600; transition: all 0.2s; display: block; border-left: 2px solid transparent; padding-left: 10px; }
+        nav a:hover { color: var(--primary); border-left: 2px solid var(--primary); padding-left: 14px; }
+
+        /* Main Content */
+        main { margin-left: 300px; padding: 4rem 5rem; max-width: 1200px; width: 100%; }
+
+        h1, h2, h3, h4 { font-weight: 600; margin-top: 2.5rem; margin-bottom: 1rem; }
+        h1 { font-size: 3.5rem; font-weight: 800; background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-top: 0; margin-bottom: 0.5rem; letter-spacing: -1px; }
+        p.subtitle { font-size: 1.25rem; color: var(--text-muted); margin-bottom: 4rem; font-weight: 300; }
+        
+        h2 { font-size: 2rem; border-bottom: 2px solid var(--border); padding-bottom: 0.75rem; color: #fff; display: flex; align-items: center; gap: 10px; }
+        h3 { font-size: 1.4rem; color: var(--primary); margin-top: 2rem; }
+        h4 { font-size: 1.1rem; color: var(--text-main); text-transform: uppercase; letter-spacing: 1px; }
+        
+        p, li { color: var(--text-muted); margin-bottom: 1.2rem; font-size: 1.05rem; }
+        ul, ol { padding-left: 1.5rem; margin-bottom: 2rem; }
+        li { margin-bottom: 0.6rem; }
+
+        /* Code Blocks */
+        pre { background-color: var(--surface); border: 1px solid var(--border); padding: 1.5rem; border-radius: 12px; overflow-x: auto; font-family: 'Fira Code', monospace; font-size: 0.95rem; line-height: 1.6; margin-bottom: 2.5rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
+        code { font-family: 'Fira Code', monospace; background-color: var(--surface-hover); padding: 0.2rem 0.4rem; border-radius: 6px; color: var(--accent-red); font-size: 0.9em; border: 1px solid var(--border); }
+        pre code { background-color: transparent; padding: 0; color: var(--text-main); }
+
+        /* Syntax Highlighting Colors */
+        .yaml-key { color: var(--primary); }
+        .yaml-string { color: var(--accent-green); }
+        .yaml-number { color: var(--accent-yellow); }
+        .yaml-comment { color: #475569; font-style: italic; }
+        .yaml-boolean { color: var(--accent-pink); }
+
+        /* Callouts / Pro-Tips */
+        .callout { background-color: rgba(14, 165, 233, 0.05); border-left: 4px solid var(--primary); padding: 1.5rem; margin-bottom: 2.5rem; border-radius: 0 12px 12px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .callout.warning { border-left-color: var(--accent-red); background-color: rgba(239, 68, 68, 0.05); }
+        .callout.success { border-left-color: var(--accent-green); background-color: rgba(16, 185, 129, 0.05); }
+        
+        .callout strong { color: var(--primary); font-weight: 800; display: block; margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .callout.warning strong { color: var(--accent-red); }
+        .callout.success strong { color: var(--accent-green); }
+        .callout p { margin-bottom: 0; color: var(--text-main); }
+
+        /* Shape Badges */
+        .badge { display: inline-block; background-color: var(--surface-hover); color: var(--primary); padding: 0.2rem 0.75rem; border-radius: 9999px; font-size: 0.85rem; font-weight: 700; border: 1px solid var(--border); margin-right: 0.5rem; margin-bottom: 0.5rem; }
+        .badge.slot { color: var(--secondary); border-color: rgba(139, 92, 246, 0.3); background-color: rgba(139, 92, 246, 0.1); }
+        .badge.cmd { color: var(--accent-green); border-color: rgba(16, 185, 129, 0.3); background-color: rgba(16, 185, 129, 0.1); font-family: 'Fira Code', monospace; }
+        
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 2.5rem; background: var(--surface); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        th, td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background-color: var(--surface-hover); color: #fff; font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
+        td { color: var(--text-muted); font-size: 0.95rem; }
+        tr:last-child td { border-bottom: none; }
+        td code { background: rgba(0,0,0,0.3); }
+        
+    </style>
+</head>
+<body>
+
+<nav>
+    <h2>DCCosmetics</h2>
+    <ul>
+        <li><a href="#overview">1. Overview</a></li>
+        <li><a href="#blockbench">2. Blockbench Importer</a></li>
+        <li><a href="#combat-engine">3. Combat Hit Engine</a></li>
+        <li><a href="#footstep-engine">4. Footstep Engine</a></li>
+        <li><a href="#kinematics">5. Kinematics & Wings</a></li>
+        <li><a href="#scrolls">6. Scrolls & Customise</a></li>
+        <li><a href="#procedural-shapes">7. Procedural Shapes</a></li>
+        <li><a href="#commands">8. Commands Guide</a></li>
+    </ul>
+</nav>
+
+<main>
+    <h1>DCCosmetics Documentation</h1>
+    <p class="subtitle">The definitive guide to creating zero-lag, NMS packet-based 3D cosmetics.</p>
+
+    <h2 id="overview">1. Overview</h2>
+    <p>The DCCosmetics engine is a highly optimized, purely packet-based 3D renderer. It generates geometry via Quaternions by manipulating the background matrix of invisible <code>TextDisplay</code> entities. It bypasses conventional Minecraft physics entirely, resulting in <strong>zero server lag</strong> and flawless client-side interpolation.</p>
+    
+    <h2 id="blockbench">2. The Blockbench Importer</h2>
+    <p>DCCosmetics features a native JSON parser that mathematically converts standard Blockbench elements into universally colored TextDisplay matrices!</p>
+
+    <h3>Workflow: Creating a Model</h3>
+    <ol>
+        <li>Open Blockbench and click <strong>File > New > Java Block/Item</strong>.</li>
+        <li>Create your elements (cubes). Do not use textures! DCCosmetics uses physical geometry coloring.</li>
+        <li><strong>Coloring:</strong> You can right-click elements and apply a Hex color, or use the 0-7 palette index.</li>
+        <li><strong>Centering & Offsets:</strong> Go to the <strong>Display</strong> tab at the top right, select <strong>Third Person Right Hand</strong>, and adjust your model's position and scale. <em>The DCCosmetics Importer automatically extracts these values to perfectly center your item!</em></li>
+        <li>Click <strong>File > Save Project As...</strong> and save it as a <code>.bbmodel</code>.</li>
+    </ol>
+    
+    <div class="callout">
+        <strong>Command: /cosmetics import &lt;filename&gt;</strong>
+        <p>Drop your <code>my_model.bbmodel</code> file into the <code>plugins/DCCosmetics/imports/</code> folder. Run <code>/cosmetics import my_model chest</code> in-game. The engine will instantly convert it to YAML, place it in the correct folder, and hot-reload the plugin!</p>
+    </div>
+
+    <h3>Debugging Blockbench Geometry</h3>
+    <p>If your faces are "stretching" or leaving gaps, it means your aspect ratio scaling is slightly off. You can fix this globally via command!</p>
+    <ul>
+        <li><span class="badge cmd">/cosmetics debugbb corners</span> Shows mathematically perfect flame particles at the 4 corners of the geometry plane.</li>
+        <li><span class="badge cmd">/cosmetics debugbb ratio 0.92 3.5 1.0</span> Live-tunes the internal matrix stretching algorithm to seamlessly seal models together.</li>
+    </ul>
+
+    <h2 id="combat-engine">3. The Combat Hit Engine (Swords)</h2>
+    <p>Swords do not float on your back. Instead, they completely <strong>override Minecraft's vanilla combat particles</strong> (slashes and crit stars) using ProtocolLib, replacing them with explosive 3D Shrapnel Matrix geometry!</p>
+
+    <h3>The 3-Tier Attack System</h3>
+    <p>In your <code>sword</code> YAML file, map your geometry under the <code>attack_types:</code> section:</p>
+<pre><code><span class="yaml-key">id:</span> <span class="yaml-string">"my_custom_cosmetic"</span>       <span class="yaml-comment"># The unique internal ID</span>
+<span class="yaml-key">type:</span> <span class="yaml-string">"sword"</span>
+<span class="yaml-key">attack_types:</span>
+  <span class="yaml-key">crit:</span>                 <span class="yaml-comment"># Triggers on running jumps</span>
+    <span class="yaml-key">duration:</span> <span class="yaml-number">12</span>            <span class="yaml-comment"># Ticks it stays alive</span>
+    <span class="yaml-key">fade:</span> <span class="yaml-number">8</span>                 <span class="yaml-comment"># Ticks it takes to fade opacity to 0</span>
+    <span class="yaml-key">burst_1:</span>
+      <span class="yaml-key">type:</span> <span class="yaml-string">"burst"</span>       <span class="yaml-comment"># Explodes outward aggressively like shrapnel</span>
+      <span class="yaml-key">sides:</span> <span class="yaml-number">8</span>
+      <span class="yaml-key">length:</span> <span class="yaml-number">1.2</span>
+      <span class="yaml-key">width:</span> <span class="yaml-number">0.08</span>
+  
+  <span class="yaml-key">sweep:</span>                <span class="yaml-comment"># Triggers on standing slashes</span>
+    <span class="yaml-key">duration:</span> <span class="yaml-number">10</span>
+    <span class="yaml-key">slash_1:</span>
+      <span class="yaml-key">type:</span> <span class="yaml-string">"flat_ring"</span>   <span class="yaml-comment"># Progressively draws itself across the Y-Axis!</span>
+      <span class="yaml-key">sides:</span> <span class="yaml-number">16</span>
+      <span class="yaml-key">radius:</span> <span class="yaml-number">1.2</span>
+      <span class="yaml-key">width:</span> <span class="yaml-number">0.15</span>
+      
+  <span class="yaml-key">regular:</span>              <span class="yaml-comment"># Standard hits (Falls back here if sweep/crit not defined)</span>
+    <span class="yaml-key">duration:</span> <span class="yaml-number">6</span>
+    <span class="yaml-key">hit_1:</span>
+      <span class="yaml-key">type:</span> <span class="yaml-string">"solid"</span></code></pre>
+      
+    <div class="callout success">
+        <strong>Command: /cosmetics debughit &lt;id&gt; [type] [color]</strong>
+        <p>You can instantly preview your sword animations without hitting an entity! Example: <code>/cosmetics debughit plasma_blade sweep #FF0000</code> shoots the sweep effect directly in front of your crosshair.</p>
+    </div>
+
+    <h2 id="footstep-engine">4. The Footstep Engine (Boots)</h2>
+    <p>Boots cosmetics can generate transient holographic footprints, emit custom sounds, and spawn vanilla particles on a perfectly tracked walking cycle!</p>
+
+<pre><code><span class="yaml-key">id:</span> <span class="yaml-string">"angel_boots"</span>
+<span class="yaml-key">type:</span> <span class="yaml-string">"boots"</span>
+<span class="yaml-key">footstep:</span>
+  <span class="yaml-key">particle:</span> <span class="yaml-string">"DUST"</span>
+  <span class="yaml-key">color:</span> <span class="yaml-string">"#FF55FF"</span>
+  <span class="yaml-key">sound:</span> <span class="yaml-string">"BLOCK_AMETHYST_BLOCK_CHIME"</span>
+  <span class="yaml-key">volume:</span> <span class="yaml-number">0.5</span>
+  <span class="yaml-key">pitch:</span> <span class="yaml-number">1.2</span></code></pre>
+
+    <ul>
+        <li><strong>Dynamic Footprints:</strong> If your Boots ID contains words like <code>star</code>, <code>heart</code>, or <code>ring</code>, the engine will automatically lay down specialized Unicode holographic footprints behind the player!</li>
+        <li><strong>Toggle Sound:</strong> Players can type <span class="badge cmd">/cosmetics sound</span> to mute/unmute cosmetic footsteps locally.</li>
+    </ul>
+
+    <h2 id="kinematics">5. Kinematics & Wing Engines</h2>
+    <p>DCCosmetics contains native inverse kinematic physics engines. By simply naming your nodes or procedural shapes properly, the engine applies real-time math manipulation to them!</p>
+    
+    <table>
+        <tr>
+            <th>Prefix Trigger</th>
+            <th>Slot Requirement</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><code>left_</code> or <code>right_</code></td>
+            <td><span class="badge slot">Boots</span></td>
+            <td>Injects a procedural walk cycle that accurately measures block distance to swing the leg geometry perfectly matching the player's gait.</td>
+        </tr>
+        <tr>
+            <td><code>wing_left_</code> or <code>wing_right_</code></td>
+            <td><span class="badge slot">Chest</span></td>
+            <td>Reads the player state (Falling = gliding, Jumping = fast flap, Sprinting = rhythmic jog) to physically rotate the geometry like real wings.</td>
+        </tr>
+    </table>
+
+    <h3>Global Animations</h3>
+    <p>You can set <code>animated: true</code> globally in the YAML. The <code>animation-type:</code> supports:</p>
+    <ul>
+        <li><code>spin</code> - Rotates the entire cosmetic evenly around the player.</li>
+        <li><code>float</code> - Smoothly bobs the item up and down on a Sine wave.</li>
+        <li><code>glitch</code> - Randomly jitters the matrix coordinates.</li>
+    </ul>
+
+    <h2 id="scrolls">6. Scrolls & Customise GUI</h2>
+    <p>Cosmetics are physically bound to actual Minecraft weapons and armor! They seamlessly stack with Custom Model Data and enchantments.</p>
+
+    <div class="callout">
+        <strong>Command: /cosmetics scroll &lt;player&gt; &lt;id&gt; [color]</strong>
+        <p>Gives the player a physical Cosmetic Scroll. Players simply drag-and-drop the scroll directly onto an applicable piece of armor/weapon in their inventory to permanently forge the 3D model into it!</p>
+    </div>
+
+    <h3>Dyeing & Detaching (/customise)</h3>
+    <p>If a player holds an enchanted item with a cosmetic attached and runs <span class="badge cmd">/customise</span>, a GUI opens allowing them to detach the scroll (returning it safely to their inventory) or Dye it.</p>
+    <p>You can control which dyes are available in the YAML:</p>
+<pre><code><span class="yaml-key">allowed-colors:</span>
+  - <span class="yaml-string">"#FF0000:Blood Red"</span>
+  - <span class="yaml-string">"#00FFFF:Diamond Aqua"</span></code></pre>
+    <p><em>Pro-Tip: If a component's color is left as <code>#FFFFFF</code> (White), the engine will automatically override it with whatever Dye the user selects in the Customise menu!</em></p>
+
+    <h2 id="procedural-shapes">7. Procedural Shapes Library</h2>
+    <p>If you don't want to use Blockbench, DCCosmetics has a massive mathematical geometry library built right into the YAML parser!</p>
+
+    <table>
+        <tr>
+            <th>Shape <span class="badge">type:</span></th>
+            <th>Properties</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><code>cube</code></td>
+            <td><code>width</code>, <code>height</code>, <code>depth</code>, <code>hidden-faces</code></td>
+            <td>True 3D Boxes. You can hide specific walls using <code>hidden-faces: [north, up]</code> to prevent Z-fighting lag when connecting them!</td>
+        </tr>
+        <tr>
+            <td><code>solid</code></td>
+            <td><code>length</code>, <code>width</code>, <code>sides</code>, <code>pitch</code></td>
+            <td>Spawns flat 2D planes. Increasing <code>sides</code> generates multiple planes in an outward circular pattern.</td>
+        </tr>
+        <tr>
+            <td><code>flat_ring</code></td>
+            <td><code>radius</code>, <code>width</code>, <code>sides</code></td>
+            <td>Calculates tangent angles to draw a perfectly sealed flat 2D circle on the floor (or sweeping arc in the air).</td>
+        </tr>
+        <tr>
+            <td><code>cylinder</code></td>
+            <td><code>radius</code>, <code>height</code>, <code>sides</code></td>
+            <td>Same math as a ring, but pitched completely vertically to create 3D walls.</td>
+        </tr>
+        <tr>
+            <td><code>star</code></td>
+            <td><code>length</code>, <code>short-length</code>, <code>width</code>, <code>sides</code></td>
+            <td>Alternates lengths sequentially to draw spiky, aggressive starbursts.</td>
+        </tr>
+        <tr>
+            <td><code>burst</code></td>
+            <td><code>length</code>, <code>width</code>, <code>sides</code></td>
+            <td>Uses a Golden Ratio Fibonacci Sphere algorithm to evenly distribute points across a 3D sphere! Excellent for Critical Hit explosions.</td>
+        </tr>
+        <tr>
+            <td><code>hourglass</code></td>
+            <td><code>radius</code>, <code>height</code>, <code>inward-pitch</code></td>
+            <td>Creates an upper and lower ring that slant inwards toward each other.</td>
+        </tr>
+    </table>
+
+    <h2 id="commands">8. Commands & Editor Hub</h2>
+    <p>DCCosmetics includes a powerful suite of Admin commands for live-editing and debugging.</p>
+
+    <h3>Player Commands</h3>
+    <ul>
+        <li><span class="badge cmd">/cosmetics</span> - Opens the main profile and viewing GUI.</li>
+        <li><span class="badge cmd">/customise</span> - Dye, detach, or mute the cosmetic item currently in your hand.</li>
+        <li><span class="badge cmd">/profile &lt;player&gt;</span> - Inspect another player's equipped cosmetics and gear!</li>
+        <li><span class="badge cmd">/cosmetics sound</span> - Globally mutes all custom footstep sounds for the user.</li>
+    </ul>
+
+    <h3>Admin Core</h3>
+    <ul>
+        <li><span class="badge cmd">/cosmetics reload</span> - Reloads the configurations. (The plugin also auto-reloads files when you save them!)</li>
+        <li><span class="badge cmd">/cosmetics scroll &lt;player&gt; &lt;id&gt; [color]</span> - Give a physical application scroll.</li>
+    </ul>
+
+    <h3>The Live Sculptor</h3>
+    <ul>
+        <li><span class="badge cmd">/cosmetics sculpt &lt;id&gt;</span> - Spawns a dummy Mannequin that renders your YAML changes instantly.</li>
+        <li><span class="badge cmd">/cosmetics sculpt editor</span> - Opens an interactive inventory GUI to shift coordinates, add shapes, and change sizes visually!</li>
+        <li><span class="badge cmd">/cosmetics sculpt toggle</span> - Makes the underlying dummy invisible.</li>
+        <li><span class="badge cmd">/cosmetics sculpt clear</span> - Destroys the dummy.</li>
+    </ul>
+
+    <h3>The Debugger Suite</h3>
+    <ul>
+        <li><span class="badge cmd">/cosmetics debughit &lt;id&gt; [type]</span> - Simulates a sword hit physics effect directly at your crosshair.</li>
+        <li><span class="badge cmd">/cosmetics debugnode &lt;id&gt;</span> - Isolates a single geometry element, turning the rest of the model totally invisible so you can pinpoint issues! Type <code>clear</code> to reset.</li>
+        <li><span class="badge cmd">/cosmetics debugboots</span> - Prints internal Y-Drop tracking vectors to the console.</li>
+        <li><span class="badge cmd">/cosmetics debugbb corners</span> - Plots mathematical flame particles at the corners of Blockbench geometry to verify matrix sealing.</li>
+    </ul>
+</main>
+</body>
+</html>

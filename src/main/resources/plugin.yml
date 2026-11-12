@@ -1,0 +1,124 @@
+name: DCEssentials
+version: 2.0.0
+main: dc.dccosmetics.DCCosmetics
+api-version: "1.20"
+
+author: Dragoncote Team
+description: Dragoncote Core Essentials — Unified Cosmetics, Holographic Engine, Temporal Keystone, RNG Meter, Pity Core & Worldgen.
+
+generators:
+  DCEssentials: dc.dccosmetics.worldgen.VoidGenerator
+  dcessentials: dc.dccosmetics.worldgen.VoidGenerator
+
+softdepend:
+  - ProtocolLib
+  - PlaceholderAPI
+  - TAB
+  - MythicMobs
+  - Citizens
+  - WorldEdit
+  - FastAsyncWorldEdit
+  - ModelEngine
+  - Adapt
+  - WorldGuard
+  - Vegas
+  - UltimateUI
+  - ExecutableItems
+  - SCore
+  - ItemsAdder
+
+commands:
+  dcessentials:
+    description: Core command for DCEssentials.
+    aliases: [dce, dragoncote]
+    usage: /<command> [reload|status|gui]
+  cosmetics:
+    description: Open the cosmetics menu or manage cosmetics.
+    aliases: [dcc, dccosmetics]
+    usage: /<command>
+  profile:
+    description: View your own or another player's profile.
+    usage: /<command> [player]
+  customise:
+    description: Customise the cosmetic applied to your held item.
+    aliases: [customize]
+    usage: /<command>
+  setupcinematicworld:
+    description: Generates custom biome datapacks, void worlds, and locks flags.
+    permission: dccosmetics.admin
+    usage: /<command> <datapack|create|fix|setbiome> [worldname] [apply_dp]
+  draincolors:
+    description: Converts WE selection to cinematic grayscale/cyan while preserving all decorations.
+    permission: dccosmetics.admin
+    usage: /<command>
+  spawnsync:
+    description: Git-style incremental multi-world spawn synchronization.
+    aliases: [sync, gitsync]
+    permission: dccosmetics.admin
+    usage: /<command> [wand|push|status|discard|stagewe|snow]
+  wardrobe:
+    description: Enter the gaming wardrobe or configure it.
+    usage: /<command> [wand|setup|setspawn|setnpc|setexit]
+  keystone:
+    description: Manage your Temporal Keystone matrix, heat stability, and energy.
+    aliases: [matrix, tesseract, keystonemenu]
+    usage: /<command> [gui|charge|clearheat|status]
+  rng:
+    description: Interactive Hypixel-style RNG Meter and Drop Probability Explorer.
+    aliases: [rngmeter, droprates, luck]
+    usage: /<command> [category]
+  pity:
+    description: Deterministic Milestone Progression Track and Essential Rewards.
+    aliases: [pitycore, milestones]
+    usage: /<command> [category]
+  waypoint:
+    description: Toggle or manage your 3D navigational waypoint arrow.
+    aliases: [track, wp]
+    usage: /<command> [toggle|clear|<target>]
+  rnghook:
+    description: Internal action processor for combat, bosses, and casino games.
+    permission: dcessentials.admin
+    usage: /rnghook <player> <category> <boost_pct> <xp> <combat|casino>
+  glow:
+    description: Select or toggle your custom scoreboard outline glow.
+    aliases: [glows, glowing, dcglow]
+    usage: /<command> [color|off]
+  dcnpc:
+    description: Core command for Dragoncote Multiverse NPCs, district warping, and setup wand.
+    aliases: [lorenpc, dce_npc]
+    usage: /<command> [talk|warp|track|wand|skin|spawn|reload]
+  lore:
+    description: View your discovered personnel and storyline dossiers.
+    aliases: [dossier, personnel]
+    usage: /<command> [sector]
+  timeline:
+    description: View your storyline quest progression track across dimensions.
+    aliases: [storyline, questline]
+    usage: /<command>
+  events:
+    description: View active world cycle events, upcoming schedules, and event calendar.
+    aliases: [calendar, event, dcevent, schedule]
+    usage: /<command> [page|list|swap|time|start|stop|reload]
+  pet:
+    description: Manage, summon, level, and toggle packet-based DCEPets companions.
+    aliases: [pets, dcepet, dcepets]
+    usage: /<command> [menu|summon|dismiss|visibility|autocast|tracker|ally|give|unlockall|addxp|reload]
+  tpeffect:
+    description: Equip, preview, mute, manage, and configure cosmetic teleportation effects.
+    aliases: [tpeffects, tpe]
+    usage: /<command> [list|set|clear|preview|info|mute|unmute|test|give|enable|disable|hide|show|reload]
+  tooltip:
+    description: Toggle between compact and expanded item tooltips.
+    aliases: [tooltips, loreview]
+    usage: /<command> [compact|expanded|toggle]
+
+permissions:
+  dccosmetics.admin:
+    description: Allows administrative access to cinematic generation, biome setup, color draining, and spawn sync.
+    default: op
+  dcessentials.admin:
+    description: Allows administrative access to internal action processor hooks.
+    default: op
+  dce.pet.admin:
+    description: Allows administrative management of DCEPets companions.
+    default: op

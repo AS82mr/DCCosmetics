@@ -1,0 +1,71 @@
+# ==============================================================================
+# DCEssentials Per-Rarity Format Configuration
+# Configure exact display formatting, hex colors, ItemsAdder tags, gradients,
+# dividers, and tooltip styles per rarity.
+# ==============================================================================
+
+common:
+  name_color: "&7"
+  bracket_color: "&7"
+  tag: ":lztooltips:common:"
+  divider: "&#1D1D1D&l&n__________________________"
+  tooltip_style: "lztooltips:common"
+  header:
+    - "&#808080&l&n&m_&#7E857E&l&n&m_&#7C8A7C&l&n&m_&#7A8F7A&l&n&m_&#799479&l&n&m_&#779977&l&n&m_&#759E75&l&n&m_&#73A373&l&n&m_&#72A872&l&n&m_&#70AD70&l&n&m_&#6EB26E&l&n&m_&#6DB76D&l&n&m_&#6BBC6B&l&n&m_&#69C269&l&n&m_&#67C767&l&n&m_&#66CC66&l&n&m_&#64D164&l&n&m_&#62D662&l&n&m_&#61DB61&l&n&m_&#5FE05F&l&n&m_&#5DE55D&l&n&m_&#5BEA5B&l&n&m_&#5AEF5A&l&n&m_&#58F458&l&n&m_&#56F956&l&n&m_&#55FF55&l&n&m_"
+  footer:
+    - "&#808080&l&n&m_&#7E857E&l&n&m_&#7C8A7C&l&n&m_&#7A8F7A&l&n&m_&#799479&l&n&m_&#779977&l&n&m_&#759E75&l&n&m_&#73A373&l&n&m_&#72A872&l&n&m_&#70AD70&l&n&m_&#6EB26E&l&n&m_&#6DB76D&l&n&m_&#6BBC6B&l&n&m_&#69C269&l&n&m_&#67C767&l&n&m_&#66CC66&l&n&m_&#64D164&l&n&m_&#62D662&l&n&m_&#61DB61&l&n&m_&#5FE05F&l&n&m_&#5DE55D&l&n&m_&#5BEA5B&l&n&m_&#5AEF5A&l&n&m_&#58F458&l&n&m_&#56F956&l&n&m_&#55FF55&l&n&m_"
+
+uncommon:
+  name_color: "<#55FF55>"
+  bracket_color: "<#55FF55>"
+  tag: ":lztooltips:uncommon:"
+  divider: "&#1D1D1D&l&n__________________________"
+  tooltip_style: "lztooltips:uncommon"
+  header:
+    - "&#55FF55&l&n&m_&#51FA5B&l&n&m_&#4EF662&l&n&m_&#4AF269&l&n&m_&#47EE70&l&n&m_&#44EA77&l&n&m_&#40E67D&l&n&m_&#3DE284&l&n&m_&#39DE8B&l&n&m_&#36D992&l&n&m_&#33D599&l&n&m_&#2FD19F&l&n&m_&#2CCDA6&l&n&m_&#28C9AD&l&n&m_&#25C5B4&l&n&m_&#22C1BB&l&n&m_&#1EBDC1&l&n&m_&#1BB8C8&l&n&m_&#17B4CF&l&n&m_&#14B0D6&l&n&m_&#11ACDD&l&n&m_&#0DA8E3&l&n&m_&#0AA4EA&l&n&m_&#06A0F1&l&n&m_&#039CF8&l&n&m_&#0098FF&l&n&m_"
+  footer:
+    - "&#55FF55&l&n&m_&#51FA5B&l&n&m_&#4EF662&l&n&m_&#4AF269&l&n&m_&#47EE70&l&n&m_&#44EA77&l&n&m_&#40E67D&l&n&m_&#3DE284&l&n&m_&#39DE8B&l&n&m_&#36D992&l&n&m_&#33D599&l&n&m_&#2FD19F&l&n&m_&#2CCDA6&l&n&m_&#28C9AD&l&n&m_&#25C5B4&l&n&m_&#22C1BB&l&n&m_&#1EBDC1&l&n&m_&#1BB8C8&l&n&m_&#17B4CF&l&n&m_&#14B0D6&l&n&m_&#11ACDD&l&n&m_&#0DA8E3&l&n&m_&#0AA4EA&l&n&m_&#06A0F1&l&n&m_&#039CF8&l&n&m_&#0098FF&l&n&m_"
+
+rare:
+  name_color: "<#0098FF>"
+  bracket_color: "<#0098FF>"
+  tag: ":lztooltips:rare:"
+  divider: "&#1D1D1D&l&n__________________________"
+  tooltip_style: "lztooltips:rare"
+  header:
+    - "&#0098FF&l&n&m_&#0591FF&l&n&m_&#0B8BFF&l&n&m_&#1085FF&l&n&m_&#167FFF&l&n&m_&#1B79FF&l&n&m_&#2173FF&l&n&m_&#266DFF&l&n&m_&#2C67FF&l&n&m_&#3161FF&l&n&m_&#375BFF&l&n&m_&#3C55FF&l&n&m_&#424FFF&l&n&m_&#4748FF&l&n&m_&#4D42FF&l&n&m_&#523CFF&l&n&m_&#5836FF&l&n&m_&#5D30FF&l&n&m_&#632AFF&l&n&m_&#6824FF&l&n&m_&#6E1EFF&l&n&m_&#7318FF&l&n&m_&#7912FF&l&n&m_&#7E0CFF&l&n&m_&#8406FF&l&n&m_&#8A00FF&l&n&m_"
+  footer:
+    - "&#0098FF&l&n&m_&#0591FF&l&n&m_&#0B8BFF&l&n&m_&#1085FF&l&n&m_&#167FFF&l&n&m_&#1B79FF&l&n&m_&#2173FF&l&n&m_&#266DFF&l&n&m_&#2C67FF&l&n&m_&#3161FF&l&n&m_&#375BFF&l&n&m_&#3C55FF&l&n&m_&#424FFF&l&n&m_&#4748FF&l&n&m_&#4D42FF&l&n&m_&#523CFF&l&n&m_&#5836FF&l&n&m_&#5D30FF&l&n&m_&#632AFF&l&n&m_&#6824FF&l&n&m_&#6E1EFF&l&n&m_&#7318FF&l&n&m_&#7912FF&l&n&m_&#7E0CFF&l&n&m_&#8406FF&l&n&m_&#8A00FF&l&n&m_"
+
+epic:
+  name_color: "<#8A00FF>"
+  bracket_color: "<#8A00FF>"
+  tag: ":lztooltips:epic:"
+  divider: "&#1D1D1D&l&n__________________________"
+  tooltip_style: "lztooltips:epic"
+  header:
+    - "&#8A00FF&l&n&m_&#8F09F5&l&n&m_&#9311EB&l&n&m_&#981AE0&l&n&m_&#9D22D6&l&n&m_&#A12BCC&l&n&m_&#A634C2&l&n&m_&#AB3CB8&l&n&m_&#AF45AD&l&n&m_&#B44DA3&l&n&m_&#B95699&l&n&m_&#BD5F8F&l&n&m_&#C26785&l&n&m_&#C7707A&l&n&m_&#CC7870&l&n&m_&#D08166&l&n&m_&#D58A5C&l&n&m_&#DA9252&l&n&m_&#DE9B47&l&n&m_&#E3A33D&l&n&m_&#E8AC33&l&n&m_&#ECB529&l&n&m_&#F1BD1F&l&n&m_&#F6C614&l&n&m_&#FACE0A&l&n&m_&#FFD700&l&n&m_"
+  footer:
+    - "&#8A00FF&l&n&m_&#8F09F5&l&n&m_&#9311EB&l&n&m_&#981AE0&l&n&m_&#9D22D6&l&n&m_&#A12BCC&l&n&m_&#A634C2&l&n&m_&#AB3CB8&l&n&m_&#AF45AD&l&n&m_&#B44DA3&l&n&m_&#B95699&l&n&m_&#BD5F8F&l&n&m_&#C26785&l&n&m_&#C7707A&l&n&m_&#CC7870&l&n&m_&#D08166&l&n&m_&#D58A5C&l&n&m_&#DA9252&l&n&m_&#DE9B47&l&n&m_&#E3A33D&l&n&m_&#E8AC33&l&n&m_&#ECB529&l&n&m_&#F1BD1F&l&n&m_&#F6C614&l&n&m_&#FACE0A&l&n&m_&#FFD700&l&n&m_"
+
+legendary:
+  name_color: "<#FFD700>"
+  bracket_color: "<#FFD700>"
+  tag: ":lztooltips:legendary:"
+  divider: "&#1D1D1D&l&n__________________________"
+  tooltip_style: "lztooltips:legendary"
+  header:
+    - "&#FFD700&l&n&m_&#FFD103&l&n&m_&#FFCC06&l&n&m_&#FFC70A&l&n&m_&#FFC20D&l&n&m_&#FFBD11&l&n&m_&#FFB714&l&n&m_&#FFB217&l&n&m_&#FFAD1B&l&n&m_&#FFA81E&l&n&m_&#FFA322&l&n&m_&#FF9D25&l&n&m_&#FF9828&l&n&m_&#FF932C&l&n&m_&#FF8E2F&l&n&m_&#FF8933&l&n&m_&#FF8336&l&n&m_&#FF7E39&l&n&m_&#FF793D&l&n&m_&#FF7440&l&n&m_&#FF6F44&l&n&m_&#FF6947&l&n&m_&#FF644A&l&n&m_&#FF5F4E&l&n&m_&#FF5A51&l&n&m_&#FF5555&l&n&m_"
+  footer:
+    - "&#FFD700&l&n&m_&#FFD103&l&n&m_&#FFCC06&l&n&m_&#FFC70A&l&n&m_&#FFC20D&l&n&m_&#FFBD11&l&n&m_&#FFB714&l&n&m_&#FFB217&l&n&m_&#FFAD1B&l&n&m_&#FFA81E&l&n&m_&#FFA322&l&n&m_&#FF9D25&l&n&m_&#FF9828&l&n&m_&#FF932C&l&n&m_&#FF8E2F&l&n&m_&#FF8933&l&n&m_&#FF8336&l&n&m_&#FF7E39&l&n&m_&#FF793D&l&n&m_&#FF7440&l&n&m_&#FF6F44&l&n&m_&#FF6947&l&n&m_&#FF644A&l&n&m_&#FF5F4E&l&n&m_&#FF5A51&l&n&m_&#FF5555&l&n&m_"
+
+mastery:
+  name_color: "<#FF5555>"
+  bracket_color: "<#FF5555>"
+  tag: ":lztooltips:mastery:"
+  divider: "&#1D1D1D&l&n__________________________"
+  tooltip_style: "lztooltips:mastery"
+  header:
+    - "&#FF5555&l&n&m_&#F55252&l&n&m_&#EB4F4F&l&n&m_&#E24C4C&l&n&m_&#D84A4A&l&n&m_&#CF4747&l&n&m_&#C54444&l&n&m_&#BC4141&l&n&m_&#B23F3F&l&n&m_&#A93C3C&l&n&m_&#9F3939&l&n&m_&#963737&l&n&m_&#8C3434&l&n&m_&#833131&l&n&m_&#792E2E&l&n&m_&#702C2C&l&n&m_&#662929&l&n&m_&#5D2626&l&n&m_&#532424&l&n&m_&#4A2121&l&n&m_&#401E1E&l&n&m_&#371B1B&l&n&m_&#2D1919&l&n&m_&#241616&l&n&m_&#1A1313&l&n&m_&#111111&l&n&m_"
+  footer:
+    - "&#FF5555&l&n&m_&#F55252&l&n&m_&#EB4F4F&l&n&m_&#E24C4C&l&n&m_&#D84A4A&l&n&m_&#CF4747&l&n&m_&#C54444&l&n&m_&#BC4141&l&n&m_&#B23F3F&l&n&m_&#A93C3C&l&n&m_&#9F3939&l&n&m_&#963737&l&n&m_&#8C3434&l&n&m_&#833131&l&n&m_&#792E2E&l&n&m_&#702C2C&l&n&m_&#662929&l&n&m_&#5D2626&l&n&m_&#532424&l&n&m_&#4A2121&l&n&m_&#401E1E&l&n&m_&#371B1B&l&n&m_&#2D1919&l&n&m_&#241616&l&n&m_&#1A1313&l&n&m_&#111111&l&n&m_"

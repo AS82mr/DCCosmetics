@@ -1,0 +1,45 @@
+id: "abyssal_demon_wings"
+type: "chest"
+rarity: "legendary"
+global-offset: [0.0, 0.7, -0.15]
+nodes:
+  wing_left_main:
+    scale: [0.7, 0.08, 0.02]
+    translation: [0.4, 0.3, 0.0]
+    rotation: [0.0, 0.0, -15.0]
+    color: "#8B0000"
+  wing_left_spike1:
+    scale: [0.04, 0.5, 0.01]
+    translation: [0.6, 0.0, 0.0]
+    rotation: [0.0, 0.0, 15.0]
+    color: "#111111"
+  wing_left_spike2:
+    scale: [0.04, 0.4, 0.01]
+    translation: [0.4, -0.1, 0.0]
+    rotation: [0.0, 0.0, 5.0]
+    color: "#111111"
+  wing_left_spike3:
+    scale: [0.04, 0.3, 0.01]
+    translation: [0.2, -0.2, 0.0]
+    rotation: [0.0, 0.0, -5.0]
+    color: "#111111"
+  wing_right_main:
+    scale: [0.7, 0.08, 0.02]
+    translation: [-0.4, 0.3, 0.0]
+    rotation: [0.0, 0.0, 15.0]
+    color: "#8B0000"
+  wing_right_spike1:
+    scale: [0.04, 0.5, 0.01]
+    translation: [-0.6, 0.0, 0.0]
+    rotation: [0.0, 0.0, -15.0]
+    color: "#111111"
+  wing_right_spike2:
+    scale: [0.04, 0.4, 0.01]
+    translation: [-0.4, -0.1, 0.0]
+    rotation: [0.0, 0.0, -5.0]
+    color: "#111111"
+  wing_right_spike3:
+    scale: [0.04, 0.3, 0.01]
+    translation: [-0.2, -0.2, 0.0]
+    rotation: [0.0, 0.0, 5.0]
+    color: "#111111"

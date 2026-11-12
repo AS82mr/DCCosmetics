@@ -1,0 +1,161 @@
+locations:
+  corvus:
+    ==: org.bukkit.Location
+    world_key: minecraft:spawn_main
+    x: 3.3733
+    y: 51
+    z: -1.585
+    pitch: 12.6
+    yaw: -100.72
+  kristoph:
+    ==: org.bukkit.Location
+    world_key: minecraft:spawn_main
+    x: -60.5
+    y: 49
+    z: 54.5
+    pitch: -10.5
+    yaw: -77.2
+  lyra:
+    ==: org.bukkit.Location
+    world_key: minecraft:spawn_main
+    x: 173.5
+    y: 48
+    z: 15.5
+    pitch: -1
+    yaw: 94.9
+  echo:
+    ==: org.bukkit.Location
+    world_key: minecraft:spawn_main
+    x: 161.5
+    y: 80
+    z: 32.5
+    pitch: 21
+    yaw: 132
+  vane:
+    ==: org.bukkit.Location
+    world_key: minecraft:spawn_main
+    x: 114.5
+    y: 48
+    z: 18.5
+    pitch: 0
+    yaw: -44.6
+  jax:
+    ==: org.bukkit.Location
+    world_key: minecraft:spawn_main
+    x: 101.5
+    y: 49
+    z: -21.5
+    pitch: 0
+    yaw: -90.1
+  sylas:
+    ==: org.bukkit.Location
+    world_key: minecraft:spawn_main
+    x: 187.5
+    y: 42
+    z: 163.5
+    pitch: 0
+    yaw: -38.9
+  ronald:
+    ==: org.bukkit.Location
+    world_key: minecraft:spawn_main
+    x: 36.5
+    y: 48
+    z: 11.5
+    pitch: -24.5
+    yaw: 139.3
+  hesper:
+    ==: org.bukkit.Location
+    world_key: minecraft:spawn_main
+    x: -61.5
+    y: 59.5
+    z: 57.5
+    pitch: 44.2
+    yaw: -73.6
+  valen:
+    ==: org.bukkit.Location
+    world_key: minecraft:spawn_main
+    x: 72.5
+    y: 59.5
+    z: -66.5
+    pitch: 0
+    yaw: 177.8
+  aurelius:
+    ==: org.bukkit.Location
+    world_key: minecraft:spawn_main
+    x: -0.5
+    y: 59.5
+    z: 71.5
+    pitch: 0
+    yaw: 179.8
+  marion:
+    ==: org.bukkit.Location
+    world_key: minecraft:spawn_main
+    x: -69.5
+    y: 49
+    z: 60.5
+    pitch: 0
+    yaw: 94.3
+  valerius:
+    ==: org.bukkit.Location
+    world_key: minecraft:spawn_main
+    x: 104.5
+    y: 45
+    z: -112.5
+    pitch: 0
+    yaw: -77.5
+  finn:
+    ==: org.bukkit.Location
+    world_key: minecraft:spawn_main
+    x: 19.5
+    y: 45
+    z: -259.5
+    pitch: 0
+    yaw: -140.9
+  vivienne:
+    ==: org.bukkit.Location
+    world_key: minecraft:spawn_main
+    x: 92.5
+    y: 49
+    z: -39.5
+    pitch: 0
+    yaw: -122
+  orion:
+    ==: org.bukkit.Location
+    world_key: minecraft:spawn_main
+    x: -67.5
+    y: 77.1
+    z: 47.5
+    pitch: 0
+    yaw: 52.7
+  thrum:
+    ==: org.bukkit.Location
+    world_key: minecraft:spawn_main
+    x: -208.5
+    y: 25
+    z: 74.5
+    pitch: 0
+    yaw: 96.7
+  clara:
+    ==: org.bukkit.Location
+    world_key: minecraft:spawn_main
+    x: -76.5
+    y: 59.1
+    z: -37.5
+    pitch: 0
+    yaw: -140.6
+  elden:
+    ==: org.bukkit.Location
+    world_key: minecraft:spawn_main
+    x: -111.5
+    y: 38
+    z: -205.5
+    pitch: 0
+    yaw: 132.4
+  balthazar:
+    ==: org.bukkit.Location
+    world_key: minecraft:spawn_main
+    x: 35.4
+    y: 48
+    z: -5.3
+    pitch: -24.9
+    yaw: -37.3

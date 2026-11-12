@@ -1,0 +1,120 @@
+settings:
+  evacuation_world: lowercity
+  evacuation_command: iris teleport player=%player% world=minecraft:lowercity
+  evacuation_fallback_command: mw tp lowercity %player%
+  evacuation_warning_seconds: 60
+  redirect_spawn_command: true
+  enable_ambient_effects: true
+world_cycles:
+  cycle_order:
+  - sanctuary_dawn
+  - void_convergence
+  - glacial_grand_prix
+  events:
+    sanctuary_dawn:
+      title: '&6&lSanctuary Dawn'
+      subtitle: '&eThe Prime Timeline'
+      world: spawn_main
+      icon: SUNFLOWER
+      custom_model_data: 0
+      duration_minutes: 180
+      sound: UI_TOAST_CHALLENGE_COMPLETE
+      perks:
+      - '&7• Full access to Citadel Plaza, Market & Academy'
+      - '&7• Normal timeline quest progression with Corvus'
+      - '&7• Standard merchant vendor trading & bank'
+      lore:
+      - '&7The radiant prime timeline of Dragoncote.'
+      - '&7Bathed in warm sunlight, all city operations'
+      - '&7are operating at peak efficiency.'
+    void_convergence:
+      title: '&8&lThe Void Convergence'
+      subtitle: '&5Eclipse of Shadows'
+      world: spawn_bw
+      icon: ENDER_EYE
+      custom_model_data: 0
+      duration_minutes: 60
+      sound: ENTITY_WITHER_SPAWN
+      perks:
+      - '&5• Monochrome Shadow World & Raven Swarms'
+      - '&5• Spooky Dimensional Rifts active across the plaza'
+      - '&5• Resistance operatives whisper encrypted secrets'
+      - '&5• +25% Shadow drop rates across all regions'
+      lore:
+      - '&7The dimensional tether fractures, plunging'
+      - '&7the citadel into an eerie monochrome void.'
+      - '&7Crows circle overhead as dark secrets emerge.'
+    glacial_grand_prix:
+      title: '&b&lGlacial Frost Grand Prix'
+      subtitle: '&fWinter Solstice & IceBoat Trials'
+      world: spawn_snow
+      icon: PACKED_ICE
+      custom_model_data: 0
+      duration_minutes: 60
+      sound: ENTITY_PLAYER_LEVELUP
+      perks:
+      - '&b• IceBoat Racing Championship tournament queue open'
+      - '&b• Snow Colosseum PvP Duel Arenas active'
+      - '&b• Frozen cosmetic crates & winter souvenirs'
+      - '&b• 1.5x Speed and Agility in snow districts'
+      lore:
+      - '&7A sub-zero polar front locks the hub in ice.'
+      - '&7Pilots gather for high-octane boat races'
+      - '&7and intense winter Colosseum trial matches.'
+mini_events:
+  colosseum_koth:
+    title: '&c&lColosseum King of the Hill'
+    subtitle: '&4Combat Master Valerius'' Arena'
+    icon: NETHERITE_SWORD
+    custom_model_data: 0
+    duration_minutes: 20
+    interval_minutes: 120
+    warp: colosseum
+    start_command: none
+    end_command: none
+    sound: ITEM_TRIDENT_THUNDER
+    reward_summary: Colosseum Glory Tokens & Warrior Title
+    lore:
+    - '&7Hold the central hill in the Grand Colosseum.'
+    - '&7Earn exclusive PvP tokens, leaderboard clout,'
+    - '&7and the blessing of Combat Master Valerius.'
+    perks:
+    - '&c• Double PvP Honor points inside the Colosseum'
+    - '&c• Direct warp via &f/warp colosseum'
+  adapt_exp_surge:
+    title: '&a&lAdapt EXP Surge'
+    subtitle: '&22x Skill Mastery Across the Realm'
+    icon: EXPERIENCE_BOTTLE
+    custom_model_data: 0
+    duration_minutes: 30
+    interval_minutes: 180
+    warp: ''
+    start_command: none
+    end_command: none
+    sound: ENTITY_EXPERIENCE_ORB_PICKUP
+    reward_summary: Double Experience for all Adapt Skills
+    lore:
+    - '&7An arcane surge energizes the island ley lines.'
+    - '&7Earn double experience towards all Adapt skills'
+    - '&7including Mining, Combat, Woodcutting, and Foraging.'
+    perks:
+    - '&a• 2x Multiplier on all Adapt skill gains'
+    - '&a• Applies across all dimensions automatically'
+  iceboat_rally:
+    title: '&3&lSupersonic IceBoat Rally'
+    subtitle: '&bDrift Track Open & Time Trials'
+    icon: OAK_BOAT
+    custom_model_data: 0
+    duration_minutes: 15
+    interval_minutes: 90
+    warp: iceboat
+    start_command: none
+    end_command: none
+    sound: ENTITY_BOAT_PADDLE_WATER
+    reward_summary: Speedster Trophy & Drift Particles
+    lore:
+    - '&7High-speed ice racing circuit heats are live!'
+    - '&7Jump into your boat and post the top lap time.'
+    perks:
+    - '&b• Ice drift physics enabled'
+    - '&b• Clickable warp available: &f/warp iceboat'
