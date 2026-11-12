@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>World Events &amp; NPCs · DCEssentials Wiki</title>
+  <link rel="stylesheet" href="assets/wiki.css" />
+</head>
+<body data-page="world-events" data-view="admin">
+
+<div class="wiki-shell">
+  <aside class="sidebar" id="sidebar" aria-label="Documentation sections"></aside>
+
+  <main class="wiki-main">
+    <article class="article">
+      <div class="page-header">
+        <div class="page-breadcrumb">World &amp; Boss / World Events &amp; NPCs</div>
+        <h1>World Events, DCNPC, Warps &amp; RNG</h1>
+        <p class="page-lead">Rotating 3-realm dimensional hub cycles, scheduled mini-events, the 43-step Citizens DCNPC pipeline, district warps, 3D HUD waypoints, and RNG/Pity progression.</p>
+      </div>
+
+      <div class="page-toc">
+        <span class="page-toc-label">On this page:</span>
+        <a class="toc-chip" href="#sec-events">World Cycles &amp; Mini-Events</a>
+        <a class="toc-chip" href="#sec-dcnpc">DCNPC Pipeline, Warps &amp; RNG</a>
+      </div>
+
+      <section class="wiki-sec" id="sec-events">
+        <h2>Rotating World Cycles &amp; Mini-Events (<code>events.yml</code>)</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3>3-Realm Hub Cycle</h3>
+            <ul>
+              <li><strong>Sanctuary Dawn</strong> (<code>spawn_main</code> &middot; <code>180m</code>): Prime sunlit hub world.</li>
+              <li><strong>The Void Convergence</strong> (<code>spawn_bw</code> &middot; <code>60m</code>): Monochrome realm with crow flocks, dimensional rifts, and +25% shadow drops.</li>
+              <li><strong>Glacial Frost Grand Prix</strong> (<code>spawn_snow</code> &middot; <code>60m</code>): Polar hub for IceBoat heats, Colosseum duels, and 1.5x snow agility.</li>
+              <li><strong>Evacuation Safety:</strong> 60s countdown teleports hub players cleanly to <code>lowercity</code> before swap.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Scheduled Mini-Events</h3>
+            <ul>
+              <li><strong>Colosseum King of the Hill</strong> (<code>colosseum_koth</code>): 20m every 120m &middot; double PvP honor (<code>/warp colosseum</code>).</li>
+              <li><strong>Adapt EXP Surge</strong> (<code>adapt_exp_surge</code>): 30m every 180m &middot; global 2x Adapt skill XP.</li>
+              <li><strong>Supersonic IceBoat Rally</strong> (<code>iceboat_rally</code>): 15m every 90m &middot; drift circuit (<code>/warp iceboat</code>).</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-dcnpc">
+        <h2>Canon NPC Pipeline, Fast Travel &amp; Meters</h2>
+        <div class="grid-3">
+          <div class="box">
+            <h3>Tri-World DCNPCs</h3>
+            <p><code>/dcnpc canon live</code> replicates Sector 1 NPCs across <code>spawn_main</code>, <code>spawn_bw</code> (grayscale skins), and <code>spawn_snow</code> (frost textures) while keeping Sectors 2–4 anchored in <code>lowercity</code>.</p>
+          </div>
+          <div class="box">
+            <h3>Fast Travel &amp; Compass</h3>
+            <p><code>/warp [name]</code> opens the 54-slot Fast Travel District Menu; <code>/waypoint [next|npcId|clear]</code> locks the 3D HUD compass arrow; <code>/lore</code> and <code>/timeline</code> track the 25-node storyline.</p>
+          </div>
+          <div class="box">
+            <h3>RNG &amp; Pity Meters</h3>
+            <p><code>/rng [category]</code> and <code>/pity [category]</code> display selected drop luck progression and deterministic milestones, fed via <code>/rnghook</code> and internal drop services.</p>
+          </div>
+        </div>
+        <div class="box" data-audience="admin" style="margin-top:14px;">
+          <h3>Staff DCNPC Wands &amp; Anchors</h3>
+          <ul>
+            <li><strong>Setup Wand</strong> (<code>/dcnpc wand</code>): Places the 43 storyline characters + scenes and binds district warps.</li>
+            <li><strong>Editor Wand</strong> (<code>/dcnpc editor</code>): Inspects stages, dialogue lines, yaw facing, and patrol waypoints; <code>/setwarp &lt;name&gt;</code> calibrates warp anchors.</li>
+          </ul>
+        </div>
+      </section>
+    </article>
+  </main>
+</div>
+
+<script src="data/search_pages.js"></script>
+<script src="data/stats.js"></script>
+<script src="data/scrolls.js"></script>
+<script src="data/pets.js"></script>
+<script src="data/commands.js"></script>
+<script src="data/placeholders.js"></script>
+<script src="assets/wiki.js"></script>
+</body>
+</html>

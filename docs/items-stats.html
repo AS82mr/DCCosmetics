@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DCEItems &amp; 16 Stats · DCEssentials Wiki</title>
+  <link rel="stylesheet" href="assets/wiki.css" />
+</head>
+<body data-page="items-stats" data-view="admin">
+
+<div class="wiki-shell">
+  <aside class="sidebar" id="sidebar" aria-label="Documentation sections"></aside>
+
+  <main class="wiki-main">
+    <article class="article">
+      <div class="page-header">
+        <div class="page-breadcrumb">Core Systems / DCEItems &amp; 16 Stats</div>
+        <h1>DCEItems &amp; 16 Stackable Stats</h1>
+        <p class="page-lead">16 combat, defense, and utility attributes merged across 7 StatSources, unified combat mitigation, anti-dupe gathering fortune, expandable tooltips, and Scrolls.</p>
+      </div>
+
+      <div class="page-toc">
+        <span class="page-toc-label">On this page:</span>
+        <a class="toc-chip" href="#sec-stats">All 16 Stats</a>
+        <a class="toc-chip" href="#sec-pipeline">Combat Pipeline</a>
+        <a class="toc-chip" href="#sec-sources">StatSources &amp; Calculator</a>
+        <a class="toc-chip" href="#sec-gathering">Gathering &amp; Artisan</a>
+        <a class="toc-chip" href="#sec-tooltips">Expandable Tooltips</a>
+        <a class="toc-chip" href="#sec-warper">Void Warper</a>
+        <a class="toc-chip" href="#sec-scrolls">Scrolls Catalog</a>
+      </div>
+
+      <section class="wiki-sec" id="sec-stats">
+        <h2>All 16 Attributes (<code>ItemStat</code>)</h2>
+        <div class="toolbar">
+          <div class="filter-pills" id="statFilters">
+            <button type="button" class="pill-btn active" data-stat-filter="ALL">All (16)</button>
+            <button type="button" class="pill-btn" data-stat-filter="OFFENSE">Offense (6)</button>
+            <button type="button" class="pill-btn" data-stat-filter="DEFENSE">Defense (5)</button>
+            <button type="button" class="pill-btn" data-stat-filter="UTILITY">Utility (5)</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Stat</th><th>Category</th><th>Brief &amp; Mechanics</th><th>Cap</th></tr>
+            </thead>
+            <tbody id="statsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-pipeline">
+        <h2>Unified Damage Pipeline (<code>StatCombatEngine</code>)</h2>
+        <p>Both live combat and <code>/dce tester</code> dummies share the exact same resolution order inside <code>StatCombatEngine</code>:</p>
+        <div class="grid-2">
+          <div class="box">
+            <h3>Incoming Damage Resolution Order</h3>
+            <ol>
+              <li><strong>Unstable Keystone Vulnerability:</strong> At <code>&ge; 80</code> Heat (without Singularity Anchor stabilization), emperor-tagged entities, <code>SONIC_BOOM</code>, and void causes deal <code>+15%</code> incoming damage.</li>
+              <li><strong><code>DEFLECT</code> Glancing Parry:</strong> Rolls <code>min(35%, X%)</code> chance; on proc, halves incoming entity hit damage (<code>-50%</code>) and plays spark feedback.</li>
+              <li><strong><code>WARD</code> / <code>AEGIS</code> Reduction:</strong> Applies <code>WARD</code> (max <code>60%</code>) for physical/projectile hits, or <code>AEGIS</code> (max <code>60%</code>) for hazard/magic causes.</li>
+              <li><strong>Combined Mitigation Floor:</strong> Total percentage reduction can never exceed <code>80%</code>.</li>
+              <li><strong><code>BASTION</code> Single-Hit Ceiling:</strong> While your HP is at or above <code>60%</code> of max health, caps single-hit loss at <code>maxHP &times; max(0.40, 1 - BASTION/100)</code>.</li>
+            </ol>
+          </div>
+          <div class="box">
+            <h3>On-Kill Conduit Siphon &amp; Transient Attributes</h3>
+            <ul>
+              <li><strong>Conduit Mob-Kill Siphon:</strong> Killing a hostile mob grants <code>min(25%, CONDUIT)%</code> chance to siphon <code>25–100 mC</code> into your Keystone buffer (rate-limited at <code>400 mC/min</code> per player).</li>
+              <li><strong><code>BASTION</code> Poise Attribute:</strong> Applies transient <code>KNOCKBACK_RESISTANCE</code> (<code>min(0.30, X/200)</code>, key <code>dce_bastion_kb</code>) on snapshot refresh.</li>
+              <li><strong><code>TEMPO</code> Haste Attribute:</strong> Applies transient <code>BLOCK_BREAK_SPEED</code> (<code>+min(50%, X)%</code>, key <code>dce_tempo_break</code>) on the main thread.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-sources">
+        <h2>7 Stackable Sources &amp; Calculator</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3><code>StatAggregator</code> (250ms Cached Snapshot)</h3>
+            <ul id="statSourcesList"></ul>
+          </div>
+          <div class="box">
+            <h3>Interactive Stack &amp; mC Cost Calculator</h3>
+            <p>Preview combined Surge cap, Resonance cadence, and Microcharge ability cost:</p>
+            <div class="calc-grid">
+              <div class="calc-field"><label>Weapon Surge %</label><input type="number" id="cWepSurge" value="25" min="0" /></div>
+              <div class="calc-field"><label>Pet Surge %</label><input type="number" id="cPetSurge" value="25" min="0" /></div>
+              <div class="calc-field"><label>Accessory Surge %</label><input type="number" id="cAccSurge" value="10" min="0" /></div>
+              <div class="calc-field"><label>Base Resonance</label><input type="number" id="cResBase" value="5" min="2" max="8" /></div>
+              <div class="calc-field"><label>Resonance Sources</label><input type="number" id="cResCount" value="2" min="0" max="7" /></div>
+              <div class="calc-field"><label>Conduit % (0–40)</label><input type="number" id="cConduit" value="20" min="0" max="40" /></div>
+              <div class="calc-field"><label>Flux Scroll %</label><input type="number" id="cFlux" value="25" min="0" max="25" /></div>
+              <div class="calc-field"><label>Keystone Tier %</label><select id="cTierPct"><option value="0">Rare (0%)</option><option value="15">Epic (15%)</option><option value="30" selected>Legendary (30%)</option></select></div>
+            </div>
+            <div class="calc-out" id="statCalcOut"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-gathering">
+        <h2>Gathering &amp; Artisan Bonuses (<code>GatheringBonusService</code>)</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3><code>PROSPERITY</code> &amp; Anti-Dupe Protection</h3>
+            <ul>
+              <li>Combines gear <code>PROSPERITY</code> + pet <code>GATHERING_FORTUNE</code> perks to duplicate <strong>actual dropped items</strong> via <code>BlockDropItemEvent</code> and <code>PlayerFishEvent</code>.</li>
+              <li>Backed by chunk-PDC <code>PlacedBlockTracker</code> on ores, crops, logs, melons, pumpkins, and sugar cane — player-placed blocks never proc bonus drops.</li>
+              <li>Silk Touch tools and Creative mode are strictly excluded.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3><code>TEMPO</code> &amp; <code>REFINEMENT</code></h3>
+            <ul>
+              <li><strong><code>TEMPO</code> (max 50%):</strong> Boosts mining break speed via <code>Attribute.BLOCK_BREAK_SPEED</code> and reduces fishing <code>FishHook</code> min/max wait ticks by <code>X%</code>.</li>
+              <li><strong><code>REFINEMENT</code> (max 40%):</strong> Awards <code>+X%</code> Adapt XP on crafting, brewing, and enchanting, plus gives an <code>X%</code> chance to refund enchantment level costs cleanly.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-tooltips">
+        <h2>Expandable Tooltips &amp; 2&times; Socket Icons</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3>Non-Destructive Viewer Modes</h3>
+            <p>Server-side stacks always store clean <strong>COMPACT</strong> lore. When a viewer selects <strong>EXPANDED</strong> mode, ProtocolLib rewrites the item packet only inside the viewer's own survival inventory (Creative/Spectator are never rewritten).</p>
+            <ul>
+              <li><code>/tooltip [compact|expanded|toggle]</code> — Saves persistent setting to <code>dce_player_settings</code>.</li>
+              <li><strong>Profile Slot 51:</strong> Dedicated Tooltip Toggle book inside <code>/profile</code>.</li>
+              <li><strong>Shift + Right-Click:</strong> Flip tooltip mode directly on any DCE item in your inventory.</li>
+              <li><strong>Sneak-on-Open:</strong> Hold Sneak when opening containers/GUIs for session-scoped expanded lore.</li>
+              <li><code>/dce inspect</code> — Read-only GUI displaying the full expanded breakdown of your held item.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Expanded Lore &amp; 20px Socket Badges</h3>
+            <div class="lore-preview">
+              <div><span style="color:#fcd34d">⚡ Surge</span> ········ <span style="color:#fff">+12%</span></div>
+              <div class="lore-sub">Stacking hit momentum &amp; attack speed burst</div>
+              <div><span style="color:#3b82f6">🛡 Ward</span> ········· <span style="color:#fff">+25%</span></div>
+              <div class="lore-sub">Reduces incoming physical &amp; projectile damage</div>
+              <div class="lore-div">__________________________</div>
+              <div>&nbsp;</div>
+              <div>[<span style="color:#a855f7">⬡</span>][<span style="color:#38bdf8">⬡</span>][<span style="color:#64748b">⬡</span>] <span style="color:#8b949e">(2x scale glyphs, 1 spacer line above &amp; below)</span></div>
+              <div>&nbsp;</div>
+              <div><span style="color:#38bdf8">Cryo-Heatsink</span> | -35% Heat, +50% Cooling</div>
+              <div><span style="color:#ffd700">Capacitor II</span>  | +100 Max 🗲</div>
+              <div class="lore-div">__________________________</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-warper">
+        <h2>Void Warper &amp; Stat Tester Dummy</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3>Void Warper (<code>void_warper.yml</code>)</h3>
+            <ul>
+              <li><strong>Right-Click (Void Bounce · 75 mC base):</strong> Computes safe blink destination (up to <code>8.0m</code>) before charging. If displacement is <code>&le; 0.05m</code>, no energy is spent; otherwise spends <code>75 mC</code> (reduced by Tier + Conduit + Flux, up to 70% off).</li>
+              <li><strong>Shift + Right-Click (Sonic Boom · 250 mC base):</strong> Charges for <code>1.2s</code> with Slowness V, cancels safely if the player dies mid-charge, then charges <code>250 mC</code> on detonation for a <code>38.0m</code> dash dealing <code>14.0</code> damage.</li>
+              <li><strong>Overdraw Mode:</strong> At <code>0</code> Energy/mC (or without an attuned Keystone), abilities remain castable by adding configured Overdraw Heat instead (<code>+6</code> Bounce / <code>+15</code> Sonic Boom).</li>
+            </ul>
+          </div>
+          <div class="box" data-audience="admin">
+            <h3>Stat Tester &amp; Visual Editor (Admin)</h3>
+            <ul>
+              <li><code>/dce tester spawn</code> — Spawns a Netherite <code>ArmorStand</code> routed through <code>StatCombatEngine</code> so dummy mitigation matches live combat.</li>
+              <li><code>/dce editor [itemId]</code> — Uses the categorized <code>ItemStatEditorMenu</code> with <strong>Offense</strong>, <strong>Defense</strong>, and <strong>Utility</strong> tabs (slots <code>2/4/6</code>) to edit all 16 stats, auto-bump versions, and live-sync player inventories.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-scrolls">
+        <h2>Complete Scrolls &amp; Augments Catalog</h2>
+        <div class="toolbar">
+          <div class="filter-pills" id="scrollFilters">
+            <button type="button" class="pill-btn active" data-scroll-filter="ALL">All</button>
+            <button type="button" class="pill-btn" data-scroll-filter="Keystone">Keystone</button>
+            <button type="button" class="pill-btn" data-scroll-filter="Emperor">Emperor</button>
+            <button type="button" class="pill-btn" data-scroll-filter="Mastery">Mastery</button>
+          </div>
+          <input type="text" class="inline-filter" id="scrollsTableFilter" placeholder="Filter scrolls..." />
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Scroll ID</th><th>Rarity</th><th>Group</th><th>Target</th><th>Effect &amp; Mechanics</th></tr></thead>
+            <tbody id="scrollsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </article>
+  </main>
+</div>
+
+<script src="data/search_pages.js"></script>
+<script src="data/stats.js"></script>
+<script src="data/scrolls.js"></script>
+<script src="data/pets.js"></script>
+<script src="data/commands.js"></script>
+<script src="data/placeholders.js"></script>
+<script src="assets/wiki.js"></script>
+</body>
+</html>

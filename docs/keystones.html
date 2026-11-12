@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Keystones &amp; Energy · DCEssentials Wiki</title>
+  <link rel="stylesheet" href="assets/wiki.css" />
+</head>
+<body data-page="keystones" data-view="admin">
+
+<div class="wiki-shell">
+  <aside class="sidebar" id="sidebar" aria-label="Documentation sections"></aside>
+
+  <main class="wiki-main">
+    <article class="article">
+      <div class="page-header">
+        <div class="page-breadcrumb">Core Systems / Keystones &amp; Energy</div>
+        <h1>Native Keystones &amp; Microcharge Matrix</h1>
+        <p class="page-lead">Account-bound Temporal Keystones (Tesseract, Chronolith, Singularity), the 1,000 mC Microcharge buffer, Overdraw Heat thermodynamics, multi-socket scrolls, and the native 54-slot Matrix GUI.</p>
+      </div>
+
+      <div class="page-toc">
+        <span class="page-toc-label">On this page:</span>
+        <a class="toc-chip" href="#sec-tiers">3 Keystone Tiers</a>
+        <a class="toc-chip" href="#sec-micro">1,000 mC Buffer &amp; Simulator</a>
+        <a class="toc-chip" href="#sec-heat">Heat, Unstable &amp; Overload</a>
+        <a class="toc-chip" href="#sec-sockets">Native GUI &amp; Scrolls</a>
+      </div>
+
+      <section class="wiki-sec" id="sec-tiers">
+        <h2>Native Keystones &amp; Tier Scaling</h2>
+        <p>Keystone items are native <code>DCEItem</code> custom heads (<code>category: KEYSTONE</code>) equipped in <code>/profile</code> slot <code>11</code> (or by right-clicking from your hotbar when empty). Tier derives <strong>strictly</strong> from your equipped Keystone item, while stored Tesseract Energy persists safely across swaps and unattuned periods ("parked" energy).</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Keystone Item</th><th>Tier &amp; ID</th><th>Base Max 🗲</th><th>Sockets</th><th>Cost Reduction</th><th>Passive Cooling</th><th>Depleted Warp Heat</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Unattuned</td><td><code>NONE</code></td><td><code>0</code> (Energy parked)</td><td><code>0</code></td><td><code>0%</code></td><td><code>1 / 30s</code></td><td><code>10–15 🔥</code> (Overdraw)</td></tr>
+              <tr><td><strong style="color:#38bdf8">Tesseract</strong></td><td><span class="tag blue">RARE</span> <code>tesseract</code></td><td><code>200 🗲</code></td><td><code>1</code> Slot</td><td><code>0%</code></td><td><code>1 / 30s</code></td><td>Base <code>4 🔥</code></td></tr>
+              <tr><td><strong style="color:#bc8cff">Chronolith</strong></td><td><span class="tag purple">EPIC</span> <code>chronolith</code></td><td><code>400 🗲</code></td><td><code>2</code> Slots</td><td><code>-15%</code></td><td><code>2 / 30s</code></td><td>Base <code>2 🔥</code></td></tr>
+              <tr><td><strong style="color:#fcd34d">Singularity</strong></td><td><span class="tag amber">LEGENDARY</span> <code>singularity</code></td><td><code>600 🗲</code></td><td><code>3</code> Slots</td><td><code>-30%</code></td><td><code>4 / 30s</code></td><td>Base <code>1 🔥</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout note">
+          <div class="callout-title">Non-Destructive Swaps &amp; Overflow Protection</div>
+          <p>Unequipping a Keystone never wipes your energy — it simply becomes "parked" until re-attuned. Downgrading to a lower tier or detaching a Capacitor scroll refunds any energy above the new capacity directly as physical <code>tesseract_cube</code> items.</p>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-micro">
+        <h2>The 1,000 mC Microcharge Buffer &amp; Overdraw</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3>How Cracking &amp; Spending Works</h3>
+            <ul>
+              <li><strong>Conversion Ratio:</strong> <code>1</code> whole Tesseract charge (<code>🗲</code>) equals <code>1,000 Microcharges (mC)</code> inside your active buffer.</li>
+              <li><strong>Ability Costs:</strong> Gameplay abilities spend Microcharges cleanly (e.g. Void Bounce = <code>75 mC</code>, Sonic Boom = <code>250 mC</code>). Whenever <code>micro &lt; cost</code> and <code>usableEnergy &gt; 0</code>, the matrix automatically cracks <code>1 🗲</code> into <code>+1,000 mC</code>.</li>
+              <li><strong>Full Warp Costs:</strong> Charged commands (<code>/home</code>, <code>/tpa</code>, <code>/tpahere</code>, <code>/tpaccept</code>, <code>/tpyes</code>) cost <code>1,000–3,000 mC</code> through the exact same buffer, so leftover Microcharges are never wasted.</li>
+              <li><strong>Free Bypass Commands:</strong> <code>/back</code>, <code>/spawn</code>, <code>/warp</code>, <code>/pwarp</code>, and <code>/pw</code> are validated accurately via Bukkit <code>CommandMap</code> and cost <code>0 mC</code>. Ender pearls are also exempt.</li>
+              <li><strong>Cost Reduction Pool:</strong> Tier bonus + <code>CONDUIT</code> stat + Flux scrolls combine additively up to a hard <code>70%</code> cost-reduction cap.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Microcharge &amp; Overdraw Simulator</h3>
+            <p>Test how the Keystone engine cracks whole charges or calculates Overdraw Heat:</p>
+            <div class="calc-grid">
+              <div class="calc-field"><label>Energy (🗲)</label><input type="number" id="kEnergy" value="2" min="0" /></div>
+              <div class="calc-field"><label>Micro (mC)</label><input type="number" id="kMicro" value="50" min="0" max="999" /></div>
+              <div class="calc-field"><label>Eff. Cost (mC)</label><input type="number" id="kCost" value="75" min="1" /></div>
+              <div class="calc-field"><label>Base Overdraw 🔥</label><input type="number" id="kOverHeat" value="6" min="1" /></div>
+              <div class="calc-field"><label>Dim Mult</label><select id="kDim"><option value="1">Overworld/End (1.0x)</option><option value="2">Nether (2.0x)</option></select></div>
+              <div class="calc-field"><label>Thermal %</label><input type="number" id="kThermal" value="0" min="0" max="60" /></div>
+            </div>
+            <div class="calc-out" id="ksCalcOut"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-heat">
+        <h2>Thermodynamics, Unstable Heat &amp; Overload</h2>
+        <div class="grid-3">
+          <div class="box">
+            <h3>Unstable State (<code>80–99 🔥</code>)</h3>
+            <ul>
+              <li>Emits soul-fire sparks and warns nearby players within 10 blocks at <code>85+</code>.</li>
+              <li>Applies safe spatial arrival jitter (<code>2–4 blocks</code>) on warps unless suppressed by an Epic/Legendary/Mastery Anchor scroll.</li>
+              <li>Applies <code>+15%</code> vulnerability against Emperor bosses, <code>SONIC_BOOM</code>, and Void damage.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Overload Lock (<code>100 🔥</code>)</h3>
+            <ul>
+              <li>When Heat hits <code>100</code>, <strong>Overload</strong> triggers a <code>300s</code> Nexus Incursion sentinel encounter.</li>
+              <li>While overloaded, charged warps and active Keystone abilities are denied until Heat cools to <code>&le; 50 🔥</code> (free commands like <code>/spawn</code> &amp; <code>/warp</code> remain usable).</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Cryo Cooling &amp; Shields</h3>
+            <ul>
+              <li><strong>Cryo Immersion:</strong> Submerging in Water or Powder Snow cools <code>20 🔥</code> every 5 seconds.</li>
+              <li><strong><code>THERMAL</code> Stat &amp; Heatsinks:</strong> Reduce Heat accumulation by up to <code>60%</code> and speed up passive 30s cooling cycles.</li>
+              <li><strong>Newbie Shield:</strong> First 3 days grant <code>0</code> Heat on all Overdraw warps and abilities.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-sockets">
+        <h2>Native <code>/keystone</code> Matrix GUI &amp; Multi-Socket Scrolls</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3>54-Slot <code>KeystoneMenu</code> Controls</h3>
+            <ul>
+              <li><strong>Slot 11:</strong> Attuned Keystone overview, effective capacity, and active scroll list.</li>
+              <li><strong>Slots 13–15:</strong> Live Energy bar (<code>🗲</code>), Microcharge buffer bar (<code>0–1,000 mC</code>), and Heat stability/Overload gauge.</li>
+              <li><strong>Slots 20–22:</strong> Up to 3 Keystone Scroll socket slots (drop scroll from cursor to infuse, Shift-Click to detach &amp; refund). Duplicate mechanic families are rejected.</li>
+              <li><strong>Slots 28–34:</strong> Race-safe cube deposit (<code>+1</code>, <code>+10</code>, <code>All</code>, cursor deposit) and withdraw (<code>-1</code>, <code>-10</code>). Accepts both native <code>tesseract_cube</code> and legacy Energy Cubes.</li>
+              <li><strong>Hotbar Shortcut:</strong> Right-click a Tesseract Energy Cube in hand to feed <code>+1 🗲</code> (Shift+Right-Click feeds full stack up to capacity).</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Keystone Scroll Families</h3>
+            <ul>
+              <li><strong><code>KEYSTONE_HEAT</code> (Heatsink / <code>ks_thermal_*</code>):</strong> Reduces warp/ability Overdraw Heat by 15%–35% and accelerates passive cooling by +25% to +60%.</li>
+              <li><strong><code>KEYSTONE_TESSERACT</code> (Flux / <code>ks_flux_*</code>):</strong> Reduces Microcharge cost by 10%–25% (shares 70% reduction cap).</li>
+              <li><strong><code>KEYSTONE_CAPACITOR</code> (<code>ks_capacitor_*</code>):</strong> Increases effective max energy capacity by <code>+50</code> / <code>+100</code> / <code>+150 🗲</code> (never past 800).</li>
+              <li><strong><code>KEYSTONE_ANCHOR</code> (<code>ks_anchor_*</code>):</strong> Negates Nether <code>2.0x</code> heat (Epic), suppresses unstable warp jitter (Legendary), and locks Heat at <code>99</code> to prevent Overload (Mastery).</li>
+              <li><strong><code>KEYSTONE_RECLAIM</code> (<code>ks_reclaim_epic</code>):</strong> Refunds <code>40%</code> of charged <code>/tpa</code> costs directly back as Microcharges.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </article>
+  </main>
+</div>
+
+<script src="data/search_pages.js"></script>
+<script src="data/stats.js"></script>
+<script src="data/scrolls.js"></script>
+<script src="data/pets.js"></script>
+<script src="data/commands.js"></script>
+<script src="data/placeholders.js"></script>
+<script src="assets/wiki.js"></script>
+</body>
+</html>

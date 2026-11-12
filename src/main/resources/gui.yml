@@ -148,15 +148,15 @@ items:
     name: "%luckperms_prefix%{target}"
     slots: [ 13 ]
     lore:
-      - "&7Power Level:&#ff793f %mcmmogui_power-level%"
-      - ''
-      - "&8[Combat Skills]"
-      - ' &#e67e22Acrobatics &8» &7lvl.&f%mcmmogui_skill_acrobatics_level%'
-      - ' &#e67e22Archery &8» &7lvl.&f%mcmmogui_skill_archery_level%'
-      - ' &#e67e22Unarmed &8» &7lvl.&f%mcmmogui_skill_unarmed_level%'
-      - ' &#e67e22Swords &8» &7lvl.&f%mcmmogui_skill_swords_level%'
-      - ' &#e67e22Taming &8» &7lvl.&f%mcmmogui_skill_taming_level%'
-      - ' &#e67e22Axes &8» &7lvl.&f%mcmmogui_skill_axes_level%'
+      - "&8[Keystone & Companion]"
+      - " &3🌀 &7Keystone: &f%dragoncote_keystone_name% &8(&b%dragoncote_tesseract%&8/&b%dragoncote_keystone_max%🗲 &8| &e%dragoncote_microcharges%mC &8| &c%dragoncote_heat%🔥&8)"
+      - " &d🐾 &7Pet: %dragoncote_pet_name% &8(&7Lv.&f%dragoncote_pet_level% &8• &7%dragoncote_pet_category%&8)"
+      - ""
+      - "&8[Combat & Utility Stats]"
+      - " &#FF5E57⚡ Surge: &f%dragoncote_stat_surge% &8| &#48DBFB🛡 Ward: &f%dragoncote_stat_ward%"
+      - " &#FF9F43⚔ Ferocity: &f%dragoncote_stat_ferocity% &8| &#FECA57⌖ Precision: &f%dragoncote_stat_precision%"
+      - " &#94A3B8⛨ Bastion: &f%dragoncote_stat_bastion% &8| &#38BDF8↺ Deflect: &f%dragoncote_stat_deflect%"
+      - " &#34D399✚ Aegis: &f%dragoncote_stat_aegis% &8| &#06B6D4⚛ Conduit: &f%dragoncote_stat_conduit%"
 
   backButton:
     material: "head;eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDQ2NmM1YmQwNDlmNzVhYzdhYWJhZTgyY2MzZmNlNDIzMzUzMmFhNTk4NjMyZmEzYmVmYjE1YWM0MGIwMTUyNiJ9fX0="
@@ -243,3 +243,17 @@ items:
     name: "&7Empty Offhand"
     slots: [ 22 ]
     lore: []
+
+  tooltipToggle:
+    material: BOOK
+    name: "&#38BDF8&lTooltip View: &f%dragoncote_tooltip_mode%"
+    slots: [ 51 ]
+    onlyOwner: true
+    lore:
+      - "&7Switch between clean &fCOMPACT &7tooltips"
+      - "&7and detailed &bEXPANDED &7stat/socket breakdowns."
+      - ""
+      - "&8Tip: Shift+Right-Click any DCE item in inventory!"
+      - "&eClick to Toggle"
+    leftClickCommands: [ "[PLAYER] tooltip toggle" ]
+    rightClickCommands: [ "[PLAYER] tooltip toggle" ]

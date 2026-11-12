@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teleport Effects · DCEssentials Wiki</title>
+  <link rel="stylesheet" href="assets/wiki.css" />
+</head>
+<body data-page="tpeffects" data-view="admin">
+
+<div class="wiki-shell">
+  <aside class="sidebar" id="sidebar" aria-label="Documentation sections"></aside>
+
+  <main class="wiki-main">
+    <article class="article">
+      <div class="page-header">
+        <div class="page-breadcrumb">Core Systems / Teleport Effects</div>
+        <h1>Teleportation Effects &amp; 1:1 Pixel-Replica Camera</h1>
+        <p class="page-lead">Rarity-organized YAML configuration (DCEssentials/tpeffects/), MythicMobs portal packs, pre-baked dragoncote_tp pixel-band rigs, TextDisplay float camera sync, and Wardrobe UX.</p>
+      </div>
+
+      <div class="page-toc">
+        <span class="page-toc-label">On this page:</span>
+        <a class="toc-chip" href="#sec-tp-arch">Folder Layout &amp; Triggers</a>
+        <a class="toc-chip" href="#sec-tp-tiers">35 Effects &amp; Cinematics</a>
+        <a class="toc-chip" href="#sec-tp-ux">Wardrobe UX &amp; Blackout</a>
+        <a class="toc-chip" href="#sec-tp-yaml">Rarity YAML Schema</a>
+      </div>
+
+      <section class="wiki-sec" id="sec-tp-arch">
+        <h2>Standalone Storage &amp; Triggers</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3>Rarity Organization</h3>
+            <ul>
+              <li><strong>One File Per Rarity:</strong> <code>uncommon.yml</code>, <code>rare.yml</code>, <code>epic.yml</code>, <code>legendary.yml</code>, <code>mastery.yml</code>.</li>
+              <li><strong>Per-Effect Timing:</strong> Optional <code>duration:</code> key (<code>4s</code>, <code>80t</code>, <code>4000ms</code>) scales phase and camera timings proportionally.</li>
+              <li><strong>Live Toggle Commands:</strong> <code>/tpeffect enable|disable [id]</code> and <code>/tpeffect hide|show &lt;id&gt;</code>.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Persistence &amp; Telemetry</h3>
+            <ul>
+              <li>Equipped effect and personal mute flag store directly in Player PDC (<code>selected_tpeffect</code>, <code>muted_tpeffect</code>).</li>
+              <li>Optional LuckPerms sync mirrors active choice to <code>dc.seltpeffect.&lt;id&gt;</code> and migrates legacy perms automatically on join.</li>
+              <li><code>TpEffectListener</code> skips Wardrobe sessions, muted players, and short teleports, playing arrival plunges for Nether/End portals.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-tp-tiers">
+        <h2>35 Effects Lineup &amp; 3D Camera Engine</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Rarity File</th><th>Engine</th><th>Count</th><th>Included Effects</th></tr></thead>
+            <tbody>
+              <tr><td class="nowrap-col"><span class="tag green">uncommon.yml</span></td><td><code>MYTHIC_MOB</code></td><td class="nowrap-col">10</td><td><code>hologram</code>, <code>holy_absorption</code>, <code>aqua_splash</code>, <code>photosynthesis</code>, <code>rusty_decay</code>, <code>stone_crumble</code>, <code>void_collapse</code>, <code>spectral_fade</code>, <code>sound_wave</code>, <code>water_evaporation</code>.</td></tr>
+              <tr><td class="nowrap-col"><span class="tag blue">rare.yml</span></td><td><code>MYTHIC_MOB</code></td><td class="nowrap-col">10</td><td><code>nebula</code>, <code>smoky</code>, <code>paper_burn</code>, <code>shadow_merge</code>, <code>mosaic</code>, <code>electric_zap</code>, <code>dimensional_pulls</code>, <code>floral_bloom</code>, <code>mirror</code>, <code>time_retrace</code>.</td></tr>
+              <tr><td class="nowrap-col"><span class="tag purple">epic.yml</span></td><td><code>MYTHIC_MOB</code></td><td class="nowrap-col">10</td><td><code>sweet_honey</code>, <code>outline_retrace</code>, <code>quill_ink</code>, <code>constellation</code>, <code>aurora_sky</code>, <code>fog_envelop</code>, <code>jade_crystallize</code>, <code>kinetic_energy</code>, <code>northstar</code>, <code>prismatic_light</code>.</td></tr>
+              <tr><td class="nowrap-col"><span class="tag amber">legendary.yml</span></td><td><code>CINEMATIC</code></td><td class="nowrap-col">2</td><td><code>obsidian_dissolution</code> &amp; <code>umbral_dissolution</code> (4s) — 1:1 Pixel Replica (<code>1/16</code> skin slim/classic + 2nd layer, trimmed armor, elytra &amp; held items).</td></tr>
+              <tr><td class="nowrap-col"><span class="tag red">mastery.yml</span></td><td><code>CINEMATIC</code></td><td class="nowrap-col">3</td><td><code>chrono_singularity</code> (helical orbit), <code>shadow_drift</code> (3.2s low-angle ARGB ink wisps), and <code>skyline_switch</code> (4.8s GTA V-style 3-beat sky zoom &amp; plunge).</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-tp-ux">
+        <h2>Wardrobe Interaction &amp; Blackout Hooks</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3>Hover &rarr; Preview &rarr; Equip Flow</h3>
+            <ul>
+              <li><strong>Hover / Hotbar Scroll:</strong> Highlights card and stops any previous mannequin showcase cleanly.</li>
+              <li><strong>1st Left-Click:</strong> Plays MythicMob showcase on the mannequin NPC, or transitions to open-sky <code>room.tp_preview</code> for full 3D camera cinematics before returning with <code>[ CLICK AGAIN TO EQUIP ]</code>.</li>
+              <li><strong>2nd Left-Click:</strong> Verifies ownership (<code>dc.tpeffect.&lt;id&gt;</code>) and equips or unequips.</li>
+            </ul>
+          </div>
+          <div class="box" data-audience="admin">
+            <h3>Fullscreen Blackout &amp; Camera Pipeline (Internal)</h3>
+            <ul>
+              <li><code>cinematic.blackout.mode</code> supports <code>AUTO</code>, <code>ULTIMATEUI_HUD</code>, <code>ULTIMATEUI_PANEL</code>, <code>TITLE_GLYPH</code>, and <code>POTION_DARKNESS</code>.</li>
+              <li>Requires ItemsAdder pack <code>contents/dragoncote_tp/</code> (<code>tp_white.png</code> + 21 <code>items/tp_rig/*.json</code> + 1,353 <code>models/item/tp_px/*.json</code>).</li>
+              <li>Uses interpolated <code>TextDisplay</code> camera entities with 32-bit float position sync packets and <code>rayTraceBlocks</code> collision checks.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-tp-yaml" data-audience="admin">
+        <h2>Rarity Entry Schema</h2>
+        <pre><button type="button" class="copy-btn" data-copy-target="tpYamlCode">Copy</button><code id="tpYamlCode">rarity: legendary
+
+effects:
+  umbral_dissolution:
+    enabled: true
+    hidden: false
+    duration: 4s
+    display-name: "&#64748B&amp;lUmbral Dissolution"
+    permission: "dc.tpeffect.umbral_dissolution"
+    type: CINEMATIC
+    cinematic-style: "UMBRAL_DISSOLUTION"
+    material: OBSIDIAN</code></pre>
+      </section>
+    </article>
+  </main>
+</div>
+
+<script src="data/search_pages.js"></script>
+<script src="data/stats.js"></script>
+<script src="data/scrolls.js"></script>
+<script src="data/pets.js"></script>
+<script src="data/commands.js"></script>
+<script src="data/placeholders.js"></script>
+<script src="assets/wiki.js"></script>
+</body>
+</html>

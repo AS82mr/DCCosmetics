@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cosmetics &amp; Profile · DCEssentials Wiki</title>
+  <link rel="stylesheet" href="assets/wiki.css" />
+</head>
+<body data-page="cosmetics" data-view="player">
+
+<div class="wiki-shell">
+  <aside class="sidebar" id="sidebar" aria-label="Documentation sections"></aside>
+
+  <main class="wiki-main">
+    <article class="article">
+      <div class="page-header">
+        <div class="page-breadcrumb">Core Systems / Cosmetics &amp; Profile</div>
+        <h1>Cosmetics, Profile &amp; Wardrobe</h1>
+        <p class="page-lead">Quaternion TextDisplay 3D cosmetics, Blockbench imports, Profile equipment slots (Keystone, Accessories, Tooltip toggle), Wardrobe Camera Studio, and /glow.</p>
+      </div>
+
+      <div class="page-toc">
+        <span class="page-toc-label">On this page:</span>
+        <a class="toc-chip" href="#sec-profile">Profile GUI Slots</a>
+        <a class="toc-chip" href="#sec-engines">Cosmetic Engine, Wardrobe &amp; Glow</a>
+      </div>
+
+      <section class="wiki-sec" id="sec-profile">
+        <h2>Profile GUI Layout (<code>/profile [player]</code>)</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3>Armor, Cosmetic Drawers &amp; Summary</h3>
+            <ul>
+              <li><strong>Column 1 (Slots 10, 19, 28, 37):</strong> Helmet, Chestplate, Leggings, Boots (Main Hand <code>12</code>, Offhand <code>21</code>).</li>
+              <li><strong>Column 0 Drawers (Slots 9, 18, 27, 36):</strong> Sliding drawers for <code>head</code>, <code>chest</code>, <code>waist</code>, and <code>boots</code> showing attached cosmetic scrolls.</li>
+              <li><strong>Slot 13 (Player Head):</strong> Live Keystone tier/energy/heat, active Pet name &amp; level, and stacked combat/utility stats (<code>%dragoncote_stat_*%</code>).</li>
+              <li><strong>Slot 51 (<code>tooltipToggle</code>):</strong> Owner-only button displaying <code>%dragoncote_tooltip_mode%</code> to flip between <code>COMPACT</code> and <code>EXPANDED</code> item lore.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Column 2 Equipment Storage</h3>
+            <ul>
+              <li><strong>Slot 11 (<code>keystone</code>):</strong> Temporal Keystone slot. Strictly accepts valid Keystones (<code>Tesseract</code>, <code>Chronolith</code>, <code>Singularity</code>); left-click opens the 54-slot <code>KeystoneMenu</code>.</li>
+              <li><strong>Slot 20 (<code>amulet</code>):</strong> Amulet accessory slot (feeds <code>StatSource.ACCESSORIES</code>).</li>
+              <li><strong>Slot 29 (<code>cloak</code>):</strong> Cloak accessory slot.</li>
+              <li><strong>Slot 38 (<code>gloves</code>):</strong> Gloves accessory slot.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-engines">
+        <h2>Cosmetic Engine, Wardrobe &amp; Glow</h2>
+        <div class="grid-3">
+          <div class="box">
+            <h3>Blockbench &amp; Kinematics</h3>
+            <ul>
+              <li>Place <code>.bbmodel</code> / <code>.json</code> files in <code>imports/</code> and run <code>/cosmetics import &lt;file&gt; [slot]</code>.</li>
+              <li><code>left_</code> / <code>right_</code> (Boots): inverse kinematic walking stride.</li>
+              <li><code>wing_left_</code> / <code>wing_right_</code> (Chest): reactive glide/flap/sprint wings.</li>
+              <li><code>animated: true</code>: supports <code>spin</code>, <code>float</code>, and <code>glitch</code>.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Combat VFX &amp; Footsteps</h3>
+            <ul>
+              <li>Sword templates define <code>attack_types: crit | sweep | regular</code> rendered via ProtocolLib.</li>
+              <li>Boots <code>footstep:</code> configures custom particle, hex color, and sound (<code>/cosmetics sound</code> toggles local audio).</li>
+              <li>Procedural shapes: <code>cube</code>, <code>solid</code>, <code>flat_ring</code>, <code>cylinder</code>, <code>star</code>, <code>burst</code>, <code>hourglass</code>.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Wardrobe, Customise &amp; /glow</h3>
+            <ul>
+              <li><code>/customise</code> opens the dye &amp; detach GUI for <code>#FFFFFF</code> colorable cosmetics.</li>
+              <li><code>/wardrobe studio</code> configures V2 camera angles (<code>overview</code>, <code>head</code>, <code>chest</code>, <code>waist</code>, <code>boots</code>, <code>teleport</code>).</li>
+              <li><code>/glow &lt;color|off&gt;</code> toggles scoreboard-team outline glow colors cleanly.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </article>
+  </main>
+</div>
+
+<script src="data/search_pages.js"></script>
+<script src="data/stats.js"></script>
+<script src="data/scrolls.js"></script>
+<script src="data/pets.js"></script>
+<script src="data/commands.js"></script>
+<script src="data/placeholders.js"></script>
+<script src="assets/wiki.js"></script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DCEPets &amp; Domains · DCEssentials Wiki</title>
+  <link rel="stylesheet" href="assets/wiki.css" />
+</head>
+<body data-page="pets" data-view="admin">
+
+<div class="wiki-shell">
+  <aside class="sidebar" id="sidebar" aria-label="Documentation sections"></aside>
+
+  <main class="wiki-main">
+    <article class="article">
+      <div class="page-header">
+        <div class="page-breadcrumb">Core Systems / DCEPets &amp; Domains</div>
+        <h1>DCEPets &amp; SkillDomain Mapping</h1>
+        <p class="page-lead">Floating packet-skull companions with Lv 1–100 progression, 1–5 rarity perks, smoothed stationary perch physics, and weighted Adapt SkillDomain XP mapping.</p>
+      </div>
+
+      <div class="page-toc">
+        <span class="page-toc-label">On this page:</span>
+        <a class="toc-chip" href="#sec-pet-arch">Stationary Perch &amp; Architecture</a>
+        <a class="toc-chip" href="#sec-domains">SkillDomain XP Mapping</a>
+        <a class="toc-chip" href="#sec-pet-catalog">Registered Companions (15)</a>
+        <a class="toc-chip" href="#sec-pet-yaml">YAML Schema</a>
+      </div>
+
+      <section class="wiki-sec" id="sec-pet-arch">
+        <h2>Core Architecture &amp; Stationary Perch Physics</h2>
+        <div class="grid-3">
+          <div class="box">
+            <h3>Lv 1–100 &amp; Perks (1/2/3/4/5)</h3>
+            <p>All pet stats (including any of the 16 <code>ItemStat</code>s via <code>STAT_*</code> perks) scale smoothly from Lv 1 to Lv 100. Perks unlock at milestones based on rarity: Common (1), Uncommon (2), Rare (3), Epic (4), Legendary &amp; Mastery (5).</p>
+          </div>
+          <div class="box">
+            <h3>Smoothed Stationary Perch</h3>
+            <ul>
+              <li>Uses <code>0.06 / 0.03</code> horizontal delta hysteresis over 6 ticks to detect movement cleanly (supports walking, mounts, and Elytra).</li>
+              <li><strong>Stationary:</strong> Freezes horizontal <code>anchorXZ</code> and shoulder yaw while keeping subtle vertical bobbing. Your pet stays put instead of whipping around when you turn your camera.</li>
+              <li><strong>Idle Gaze &amp; Re-Anchor:</strong> Smoothly turns up to <code>15&deg;/tick</code> toward your combat target or eyes while idle, and re-anchors if distance exceeds <code>3.2m</code> or on world change.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>VFX, Auto-Cast &amp; Target Ring</h3>
+            <p>Companions project a glowing particle ring under looked-at targets (<code>/pet tracker</code>), trigger active combat skills automatically (<code>/pet autocast</code>), and spawn clean <code>dce_vfx_*</code> ModelEngine animations.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-domains">
+        <h2><code>SkillDomain</code> &amp; Weighted Adapt XP Mapping</h2>
+        <p>Instead of flat skill lists that misclassify hybrid skills (such as Adapt <code>axes</code> earning both combat hit XP and woodcutting XP), <code>PetsConfig</code> maps every Adapt skill across 12 normalized <code>SkillDomain</code> weights (e.g., <code>axes: {MELEE: 0.5, FORAGING: 0.5}</code>, and mining scrolls fixed to <code>pickaxe</code>). Optional <code>pets.exclude-scroll-bonus-xp</code> prevents Mastery scroll self-grants from double-feeding pet XP.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Pet Category</th><th>Matching <code>SkillDomain</code>s</th><th>Weighted Adapt Sources (100% / Split)</th></tr></thead>
+            <tbody id="domainsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-pet-catalog">
+        <h2>Registered Companions (15)</h2>
+        <div class="toolbar">
+          <div class="filter-pills" id="petFilters">
+            <button type="button" class="pill-btn active" data-pet-filter="ALL">All (15)</button>
+            <button type="button" class="pill-btn" data-pet-filter="Combat">Combat</button>
+            <button type="button" class="pill-btn" data-pet-filter="Mining">Mining</button>
+            <button type="button" class="pill-btn" data-pet-filter="Farming">Farming</button>
+            <button type="button" class="pill-btn" data-pet-filter="Foraging">Foraging</button>
+            <button type="button" class="pill-btn" data-pet-filter="Fishing">Fishing</button>
+            <button type="button" class="pill-btn" data-pet-filter="Alchemy">Alchemy</button>
+            <button type="button" class="pill-btn" data-pet-filter="Enchanting">Enchanting</button>
+            <button type="button" class="pill-btn" data-pet-filter="Omni-Skill">Omni-Skill</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Companion</th><th>Category</th><th>Rarity</th><th>Lv 1&rarr;100 Stats</th><th>Auto Ability &amp; Perks</th></tr>
+            </thead>
+            <tbody id="petsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-pet-yaml" data-audience="admin">
+        <h2>Custom YAML Schema (<code>pets_config.yml</code> &amp; <code>pets/&lt;id&gt;.yml</code>)</h2>
+        <pre><button type="button" class="copy-btn" data-copy-target="petYamlCode">Copy</button><code id="petYamlCode">config-version: 2
+id: astral
+display-name: "Astral"
+category: ENCHANTING
+rarity: LEGENDARY
+max-level: 100
+stats:
+  SURGE: { min: 4.0, max: 32.0 }
+  CATALYST: { min: 3.5, max: 28.0 }
+  RESONANCE: { min: 7.0, max: 3.0 }
+active-skill:
+  type: astral_supernova
+  trigger: ON_TARGET_LOCK
+  max-cooldown-ms: 13500
+  min-cooldown-ms: 5500
+  min-power: 38.0
+  max-power: 114.0
+  range: 28.0
+  vfx-model: "dce_vfx_astral"</code></pre>
+      </section>
+    </article>
+  </main>
+</div>
+
+<script src="data/search_pages.js"></script>
+<script src="data/stats.js"></script>
+<script src="data/scrolls.js"></script>
+<script src="data/pets.js"></script>
+<script src="data/commands.js"></script>
+<script src="data/placeholders.js"></script>
+<script src="assets/wiki.js"></script>
+</body>
+</html>

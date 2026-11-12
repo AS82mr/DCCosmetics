@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Emperor · DCEssentials Wiki</title>
+  <link rel="stylesheet" href="assets/wiki.css" />
+</head>
+<body data-page="emperor" data-view="admin">
+
+<div class="wiki-shell">
+  <aside class="sidebar" id="sidebar" aria-label="Documentation sections"></aside>
+
+  <main class="wiki-main">
+    <article class="article">
+      <div class="page-header">
+        <div class="page-breadcrumb">World &amp; Boss / The Emperor</div>
+        <h1>The Emperor</h1>
+        <p class="page-lead">5-phase Temporal Sovereign (<code>helly</code>) boss rework, Void Holder tether mechanics, anti-Mace/Spear barriers, BossBar/TAB scaling, and floating heal popups.</p>
+      </div>
+
+      <div class="page-toc">
+        <span class="page-toc-label">On this page:</span>
+        <a class="toc-chip" href="#sec-emp-java">Java Boss Engine &amp; Scaling</a>
+        <a class="toc-chip" href="#sec-emp-phases">5 Boss Phases</a>
+        <a class="toc-chip" href="#sec-emp-voidholders">Void Holders &amp; Counters</a>
+      </div>
+
+      <section class="wiki-sec" id="sec-emp-java">
+        <h2>Java Engine &amp; Multiplayer Scaling</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3><code>EmperorBossManager</code></h3>
+            <ul>
+              <li><strong>BossBar:</strong> Tracks <code>helly</code> in world <code>lowercity</code> every 10 ticks and displays a crimson <code>NOTCHED_20</code> Adventure BossBar to players within <code>80.0m</code>.</li>
+              <li><strong>Difficulty Scaling:</strong> Solo = <code>1.0x</code>; each additional Survival/Adventure player in 80m adds <code>+0.33x</code> outgoing boss damage and incoming damage dampening in <code>EmperorListener</code>.</li>
+              <li><strong>Heal Displays:</strong> Renders rising emissive <code>TextDisplay</code> popups (<code>+X ❤</code>, tagged <code>emp_heal_txt</code>) with heartbeat audio on Void Holder pulses.</li>
+              <li><strong>TAB v6.x Hook:</strong> <code>EmperorTabHook</code> feeds <code>%dragoncote_emperor_*%</code> and <code>%dragoncote_active_events_*%</code> directly into TAB.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Scaling Simulator</h3>
+            <p>Preview <code>EmperorBossManager.getAngerScale()</code> for any party size:</p>
+            <div class="calc-grid">
+              <div class="calc-field"><label>Players in 80m</label><input type="number" id="cEmpPlayers" value="3" min="1" max="20" /></div>
+              <div class="calc-field"><label>Base Hit Damage</label><input type="number" id="cEmpBaseDmg" value="20" min="1" /></div>
+            </div>
+            <div class="calc-out" id="empCalcOut"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-emp-phases">
+        <h2>The 5 Phases (<code>emperor_phase1-5.yml</code>)</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Phase &amp; HP</th><th>Title &amp; Tags</th><th>Mechanics &amp; Locks</th></tr></thead>
+            <tbody>
+              <tr><td class="nowrap-col"><strong>Phase I</strong><br>100%–80%</td><td>Temporal Sovereign<br><code>active_p1</code></td><td>Core melee/kinetic combo openings while shroomlight Void Holders awaken around the arena.</td></tr>
+              <tr><td class="nowrap-col"><strong>Phase II</strong><br>80%–60%</td><td>The Sentinel Bastion<br><code>reached_p2</code>, <code>sentinel_barrier</code></td><td>Summons Fallen Defender &amp; Defendress at <code>365.5, 136.0, 254.5</code> and rises 6 blocks (<code>y=142.0</code>) inside a soulfire knockback sphere until both Sentinels fall.</td></tr>
+              <tr><td class="nowrap-col"><strong>Phase III</strong><br>60%–40%</td><td>Temporal Tempest<br><code>reached_p3</code>, <code>mask_broken</code></td><td>Shatters helmet with 3D explosion and unlocks <strong>Turbo Sprint Shockwave Rush</strong> + <strong>360 Sweeping Blade Tempest</strong>.</td></tr>
+              <tr><td class="nowrap-col"><strong>Phase IV</strong><br>40%–15%</td><td>The Sovereign's Vanguard<br><code>reached_p4</code>, <code>phase4_ascended</code></td><td>Summons <code>The Fallen Mauler</code> and ascends inside an invulnerable barrier (DR 255) until the Mauler is defeated (<code>MAULER_DESTROYED</code>).</td></tr>
+              <tr><td class="nowrap-col"><strong>Phase V</strong><br>&lt;15% Rebirth</td><td>Sovereign's Wrath<br><code>phase5_rebirthing</code> &rarr; <code>phase5_enraged</code></td><td><code>Emperor_OnDeathRouter</code> intercepts lethal hit, plays blackout/lightning rebirth, restores <code>999 HP</code>, grants Speed II + Strength II, and cycles <strong>Ravage Rush</strong>, <strong>Void Cataclysm</strong>, and <strong>Blade Frenzy</strong> until <code>Emperor_OnTrueDeath</code>.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-emp-voidholders">
+        <h2>Void Holders &amp; Barrier Counters</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3>Void Holder Tether (<code>CRIMSON_MINION</code>)</h3>
+            <ul>
+              <li>When <code>helly</code> is within 80 blocks, Void Holders land on shroomlight pads and fire green heal pulses (<code>voidholder_heal_projectile</code>).</li>
+              <li><strong>5-Hit Sever:</strong> <code>VoidHolder_OnHit</code> counts hits in Survival, Creative, OP, and left/right interact. Hit 5 triggers <code>VoidHolder_Sever</code>, lifting the minion into <code>STASIS</code> (12–13 blocks up) and running <code>voidholders deactivate</code>.</li>
+              <li>Phase heal caps pause heals at thresholds (<code>&lt;999</code> P1, <code>&lt;800</code> P2, <code>&lt;600</code> P3) and during barriers/stasis.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Mace/Spear Barrier &amp; Counter Scrolls</h3>
+            <ul>
+              <li>Un-breached flying Mace smashes and Trident throws/melee are canceled unless Emperor has tag <code>frozen_stasis</code> or attacker holds <code>mace_bypassed</code>.</li>
+              <li>Use a Mace infused with <strong>Chrono-Slip Scroll</strong> (5th hit breaches), trigger <strong>Temporal Stasis Core</strong> (15s freeze), and stack <strong>Emperor Slayer Scrolls</strong> (+15% / +20% / +35%).</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </article>
+  </main>
+</div>
+
+<script src="data/search_pages.js"></script>
+<script src="data/stats.js"></script>
+<script src="data/scrolls.js"></script>
+<script src="data/pets.js"></script>
+<script src="data/commands.js"></script>
+<script src="data/placeholders.js"></script>
+<script src="assets/wiki.js"></script>
+</body>
+</html>

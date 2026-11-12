@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Placeholders · DCEssentials Wiki</title>
+  <link rel="stylesheet" href="assets/wiki.css" />
+</head>
+<body data-page="placeholders" data-view="admin">
+
+<div class="wiki-shell">
+  <aside class="sidebar" id="sidebar" aria-label="Documentation sections"></aside>
+
+  <main class="wiki-main">
+    <article class="article">
+      <div class="page-header">
+        <div class="page-breadcrumb">Reference / Placeholders</div>
+        <h1>PlaceholderAPI &amp; TAB Identifiers</h1>
+        <p class="page-lead">All <code>%dragoncote_*%</code> placeholders registered by <code>DCEssentialsExpansion</code> and <code>EmperorTabHook</code> across Keystones v2, Microcharges, Tooltips, 16 Stats, DCEPets, and Events. Click any placeholder to copy.</p>
+      </div>
+
+      <section class="wiki-sec" id="sec-ph-list">
+        <h2>Placeholder Registry</h2>
+        <div class="toolbar">
+          <span id="phCountLabel" style="color:var(--text-muted);font-size:0.86rem;"></span>
+          <input type="text" class="inline-filter" id="phTableFilter" placeholder="Filter placeholders..." />
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Placeholder</th><th>Scope</th><th>Return Value</th><th>Description</th></tr>
+            </thead>
+            <tbody id="placeholdersTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </article>
+  </main>
+</div>
+
+<script src="data/search_pages.js"></script>
+<script src="data/stats.js"></script>
+<script src="data/scrolls.js"></script>
+<script src="data/pets.js"></script>
+<script src="data/commands.js"></script>
+<script src="data/placeholders.js"></script>
+<script src="assets/wiki.js"></script>
+</body>
+</html>

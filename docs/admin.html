@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff &amp; Internal Docs · DCEssentials Wiki</title>
+  <link rel="stylesheet" href="assets/wiki.css" />
+</head>
+<body data-page="admin" data-view="admin">
+
+<div class="wiki-shell">
+  <aside class="sidebar" id="sidebar" aria-label="Documentation sections"></aside>
+
+  <main class="wiki-main">
+    <article class="article">
+      <div class="page-header">
+        <div class="page-breadcrumb">Reference / Staff &amp; Internal Docs</div>
+        <h1>Staff Tools, Database Schemas &amp; Internals</h1>
+        <p class="page-lead">Developer and staff reference: administrative commands, SQLite/MySQL v2 database schemas, PDC key registry, ProtocolLib packet threading rules, and repository paths.</p>
+      </div>
+
+      <div class="page-toc">
+        <span class="page-toc-label">On this page:</span>
+        <a class="toc-chip" href="#sec-admin-db">Database Schema v2</a>
+        <a class="toc-chip" href="#sec-admin-pdc">PDC Keys &amp; Threading</a>
+        <a class="toc-chip" href="#sec-admin-paths">Project &amp; Server Paths</a>
+        <a class="toc-chip" href="#sec-admin-tools">Staff &amp; Debug Commands</a>
+      </div>
+
+      <section class="wiki-sec" id="sec-admin-db">
+        <h2>SQLite / MySQL Schema v2 (<code>DatabaseManager</code>)</h2>
+        <div class="callout warn">
+          <div class="callout-title">SQLite WAL Pre-Migration Backup</div>
+          <p>Before applying v2 column migrations, SQLite checkpoints WAL (<code>PRAGMA wal_checkpoint(TRUNCATE)</code>) and copies <code>data/database.db</code> into <code>data/backup/database-pre-v2-&lt;ts&gt;.db</code>.</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Table</th><th>Columns / Primary Key</th><th>Purpose</th></tr></thead>
+            <tbody>
+              <tr><td class="nowrap-col"><code>dce_keystones</code></td><td><code>uuid (PK), tier, energy, heat, shield_until, micro, overloaded, updated_at</code></td><td>Persistent Keystone energy, Microcharge buffer, Heat, Overload lock, and newbie shield timestamps (flushed via <code>KeystonePersistence</code>).</td></tr>
+              <tr><td class="nowrap-col"><code>dce_meta</code></td><td><code>k (PK), v</code></td><td>Tracks <code>schema_version = 2</code>.</td></tr>
+              <tr><td class="nowrap-col"><code>dce_player_settings</code></td><td><code>uuid (PK), tooltip_mode</code></td><td>Stores player preference <code>COMPACT</code> or <code>EXPANDED</code> for <code>TooltipModeService</code>.</td></tr>
+              <tr><td class="nowrap-col"><code>dce_cube_drops</code></td><td><code>uuid, hour_bucket, n</code> (PK: <code>uuid, hour_bucket</code>)</td><td>Hourly cap tracking for native cube drops (optional when enabled).</td></tr>
+              <tr><td class="nowrap-col"><code>dce_pets_player</code></td><td><code>uuid (PK), active_pet_id, visibility_mode, auto_cast, pets_data, allies_data</code></td><td>Stores unlocked companions, XP, rarity overrides, and ally whitelist.</td></tr>
+              <tr><td class="nowrap-col"><code>dce_item_tracking</code></td><td><code>instance_uuid (PK), item_id, user_uuid, user_name, location_type, world, x, y, z, vault_number, amount, last_seen</code></td><td>Live item tracking ledger across player inventories, containers, and PlayerVaults.</td></tr>
+              <tr><td class="nowrap-col"><code>dce_rng_player</code> &amp; <code>dce_pity_player</code></td><td><code>uuid, category, selected_drop / current_tier, *_xp</code></td><td>Active RNG Meter selections, XP, and deterministic Pity tiers.</td></tr>
+              <tr><td class="nowrap-col"><code>dce_quest_progress</code></td><td><code>uuid (PK), quest_index, active_node, met_npcs, claimed_stages</code></td><td>25-node storyline questline progression.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-admin-pdc">
+        <h2>PDC Keys &amp; Threading Architecture</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3><code>dccosmetics</code> PDC Registry</h3>
+            <ul>
+              <li><strong>Items &amp; Stats:</strong> <code>item_id</code>, <code>item_version</code>, <code>item_uuid</code>, <code>item_category</code>, <code>item_rarity</code>, <code>equipment_slot</code>, <code>instance_stats</code>.</li>
+              <li><strong>Sockets:</strong> <code>socket_combat</code>, <code>socket_keystone</code> (legacy slot 1 fallback), <code>socket_keystone_slots</code> (comma-separated multi-socket string), <code>socket_mastery</code>, <code>ks_converted</code>.</li>
+              <li><strong>Pets &amp; Cosmetics:</strong> <code>dce_pet_id</code>, <code>dce_pet_level</code>, <code>dce_pet_xp</code>, <code>dce_pet_rarity</code>, <code>cosmetic_id</code>, <code>cosmetic_color</code>, <code>scroll_id</code>, <code>scroll_type</code>.</li>
+              <li><strong>Attributes &amp; Blocks:</strong> <code>dce_pet_speed_bonus</code>, <code>dce_bastion_kb</code>, <code>dce_tempo_break</code>, chunk-PDC <code>PlacedBlockTracker</code> array.</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Threading &amp; ProtocolLib Rules</h3>
+            <ul>
+              <li><strong>Main Thread:</strong> Bukkit API, inventory mutation, entity/attribute updates, <code>KeystoneMenu</code> click ops.</li>
+              <li><strong>DB Thread (<code>DCEssentials-DB-Worker</code>):</strong> Single FIFO executor returning immutable <code>KeystoneSnapshot</code> records; never mutates live <code>KeystoneProfile</code> or <code>ItemStack</code>.</li>
+              <li><strong>ProtocolLib Netty Thread:</strong> <code>TooltipPacketListener</code> (listening on <code>SET_SLOT</code>, <code>WINDOW_ITEMS</code>, <code>SET_CURSOR_ITEM</code>, plus <code>SET_PLAYER_INVENTORY</code> if available) reads only lock-free <code>TooltipModeService</code> maps, <code>volatile</code> immutable registry snapshots, and <code>FontImageUtil.GLYPH_CACHE</code>.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-admin-paths">
+        <h2>Source &amp; Server File Paths</h2>
+        <div class="grid-2">
+          <div class="box">
+            <h3>Java Modules</h3>
+            <ul>
+              <li><strong>Items, Stats &amp; Tooltips:</strong> <code>dc.dcessentials.modules.items.*</code></li>
+              <li><strong>Keystones &amp; Teleportation:</strong> <code>dc.dcessentials.modules.teleportation.*</code></li>
+              <li><strong>Pets Engine:</strong> <code>dc.dcessentials.modules.pets.*</code></li>
+              <li><strong>Emperor Boss:</strong> <code>dc.dcessentials.modules.boss.*</code></li>
+              <li><strong>Cosmetics &amp; Wardrobe:</strong> <code>dc.dccosmetics.*</code></li>
+              <li><strong>Teleport Effects:</strong> <code>dc.dccosmetics.tpeffects.*</code></li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Server Mirror Paths</h3>
+            <ul>
+              <li><strong>Core Configs:</strong> <code>Survival\DCEssentials\config.yml</code>, <code>scrolls.yml</code>, <code>pets_config.yml</code>, <code>profile.yml</code>, <code>events.yml</code></li>
+              <li><strong>Keystone Items:</strong> <code>Survival\DCEssentials\items\keystone\{tesseract,chronolith,singularity,tesseract_cube}.yml</code></li>
+              <li><strong>ItemsAdder Socket Scaling:</strong> <code>Survival\ItemsAdder\contents\lztooltips\configs\lztooltips.yml</code> (<code>scale_ratio: 20, y_position: 16</code>)</li>
+              <li><strong>Pet VFX Blueprints:</strong> <code>Survival\ModelEngine\blueprints\DCE_Pets_VFX\dce_vfx_*.bbmodel</code></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-admin-tools">
+        <h2>Staff &amp; Debug Commands</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Command</th><th>Permission</th><th>Module</th><th>Description</th></tr></thead>
+            <tbody id="adminCmdsBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </article>
+  </main>
+</div>
+
+<script src="data/search_pages.js"></script>
+<script src="data/stats.js"></script>
+<script src="data/scrolls.js"></script>
+<script src="data/pets.js"></script>
+<script src="data/commands.js"></script>
+<script src="data/placeholders.js"></script>
+<script src="assets/wiki.js"></script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Overview · DCEssentials Wiki</title>
+  <link rel="stylesheet" href="assets/wiki.css" />
+</head>
+<body data-page="index" data-view="admin">
+
+<div class="wiki-shell">
+  <aside class="sidebar" id="sidebar" aria-label="Documentation sections"></aside>
+
+  <main class="wiki-main">
+    <article class="article">
+      <div class="page-header">
+        <div class="page-breadcrumb">Core Systems / Overview</div>
+        <h1>DCEssentials Wiki</h1>
+        <p class="page-lead">Modular Paper 26.2 documentation covering the 16-stat combat/utility engine, Native Keystones &amp; Microcharges, DCEPets, 3D Cosmetics, Teleport Effects, The Emperor, and World Events.</p>
+      </div>
+
+      <div class="page-toc">
+        <span class="page-toc-label">On this page:</span>
+        <a class="toc-chip" href="#sec-arch">System Layers</a>
+        <a class="toc-chip" href="#sec-modules">Browse Modules</a>
+        <a class="toc-chip" href="#sec-changelog">Keystone v2 &amp; Phase 1–3 Highlights</a>
+      </div>
+
+      <section class="wiki-sec" id="sec-arch">
+        <h2>System Layers</h2>
+        <p><code>DCEssentials</code> runs inside the <code>DCCosmetics</code> host plugin on Paper 26.2 + ProtocolLib and coordinates four core layers:</p>
+        <div class="grid-2">
+          <div class="box">
+            <h3>1. Core &amp; Cosmetics Host</h3>
+            <p>Plugin lifecycle, SQLite/MySQL v2 persistence, ProtocolLib packet rewriting for expanded tooltips &amp; display entities, Profile GUI slots, and the 3D Wardrobe Camera Studio.</p>
+          </div>
+          <div class="box">
+            <h3>2. DCEItems &amp; 16-Stat Engine</h3>
+            <p>Reads PDC stats from 7 <code>StatSource</code> slots, enforces soft/hard caps in <code>StatAggregator</code> (cached <code>250ms</code>), and executes combat mitigation &amp; gathering bonuses via <code>StatCombatEngine</code> &amp; <code>GatheringBonusService</code>.</p>
+          </div>
+          <div class="box">
+            <h3>3. Native Keystones &amp; DCEPets</h3>
+            <p>Native head keystones (<code>Tesseract</code>, <code>Chronolith</code>, <code>Singularity</code>) powered by a <code>1,000 mC</code> Microcharge buffer, Overdraw Heat thermodynamics, and stationary-perched <code>DCEPets</code> with weighted Adapt <code>SkillDomain</code> XP.</p>
+          </div>
+          <div class="box">
+            <h3>4. Emperor, Events &amp; DCNPCs</h3>
+            <p>MythicMobs <code>helly</code> 5-phase Sovereign boss scaling via <code>EmperorBossManager</code> + TAB hooks, rotating tri-world hub cycles, and the 43-step Citizens NPC pipeline.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-modules">
+        <h2>Browse Modules</h2>
+        <div class="grid-3">
+          <a class="box box-link" href="items-stats.html">
+            <h3>DCEItems &amp; 16 Stats <span class="tag blue">Updated</span></h3>
+            <p>6 Offense, 5 Defense, and 5 Utility stats, <code>StatCombatEngine</code> damage pipeline, expandable tooltips, 2&times; socket badges, and Scrolls.</p>
+          </a>
+          <a class="box box-link" href="keystones.html">
+            <h3>Keystones &amp; Energy <span class="tag blue">New v2</span></h3>
+            <p>Native Keystones, <code>1,000 mC</code> Microcharge cracking algorithm, Overdraw Heat rules, Nexus Incursions, and the 54-slot <code>/keystone</code> GUI.</p>
+          </a>
+          <a class="box box-link" href="pets.html">
+            <h3>DCEPets &amp; Domains <span class="tag blue">Updated</span></h3>
+            <p>15 packet companions, Lv 1–100 scaling, smoothed stationary shoulder perch &amp; idle gaze, and weighted Adapt <code>SkillDomain</code> mapping.</p>
+          </a>
+          <a class="box box-link" href="cosmetics.html">
+            <h3>Cosmetics &amp; Profile</h3>
+            <p>Blockbench kinematics, Profile slot 11 Keystone, slot 51 <code>/tooltip</code> toggle, Wardrobe V2 Camera Studio, and <code>/glow</code>.</p>
+          </a>
+          <a class="box box-link" href="tpeffects.html">
+            <h3>Teleport Effects</h3>
+            <p>35 effects across 5 rarities and 1:1 Pixel-Replica 3D Camera cinematics powered by <code>TextDisplay</code> float sync.</p>
+          </a>
+          <a class="box box-link" href="emperor.html">
+            <h3>The Emperor Boss</h3>
+            <p>5-phase boss encounter, 80m multiplayer scaling simulator, Void Holder 5-hit sever, and Chrono-Slip / Stasis counters.</p>
+          </a>
+        </div>
+      </section>
+
+      <section class="wiki-sec" id="sec-changelog">
+        <h2>Keystone v2 &amp; Phase 1–3 Highlights</h2>
+        <div class="callout note">
+          <div class="callout-title">Offline Navigation &amp; Audience Mode</div>
+          <p>Press <code>/</code> or <code>Ctrl+K</code> anywhere to search across all 11 HTML pages, 16 stats, commands, placeholders, pets, and scrolls. Use the topbar <strong>Player Wiki / Admin View</strong> toggle to hide or show staff commands, debug tools, database schemas, and internal paths.</p>
+        </div>
+        <ul>
+          <li><strong>Native Keystones &amp; Microcharges (Phases 1–2):</strong> Replaced legacy ExecutableItems Keystones and DeluxeMenus <code>kris_*</code> with <code>Tesseract</code> (200🗲), <code>Chronolith</code> (400🗲), and <code>Singularity</code> (600🗲), multi-socket Keystone scrolls, non-destructive tier switching, and a <code>1,000 mC</code> Microcharge buffer per Tesseract charge.</li>
+          <li><strong>16-Stat System &amp; Gathering (Phase 3):</strong> Expanded <code>ItemStat</code> with <code>BASTION</code>, <code>DEFLECT</code>, <code>AEGIS</code>, <code>PROSPERITY</code>, <code>TEMPO</code>, <code>REFINEMENT</code>, <code>CONDUIT</code>, and <code>THERMAL</code>, unified under <code>StatCombatEngine</code> and anti-dupe <code>PlacedBlockTracker</code> + <code>GatheringBonusService</code>.</li>
+          <li><strong>Expandable Tooltips &amp; 2&times; Socket Icons (Phase 3):</strong> Added <code>/tooltip</code>, Shift+Right-Click quick toggle, sneak-on-open preview, <code>/dce inspect</code>, and 20px scaled socket glyphs with clean spacing.</li>
+          <li><strong>Stationary Pet Perch &amp; SkillDomain Mapping (Phase 3):</strong> Pets freeze smoothly on shoulder when idle, track targets with 15&deg;/tick gaze, and map dual-nature Adapt skills (like <code>axes</code>) cleanly via weighted <code>SkillDomain</code> weights.</li>
+        </ul>
+      </section>
+    </article>
+  </main>
+</div>
+
+<script src="data/search_pages.js"></script>
+<script src="data/stats.js"></script>
+<script src="data/scrolls.js"></script>
+<script src="data/pets.js"></script>
+<script src="data/commands.js"></script>
+<script src="data/placeholders.js"></script>
+<script src="assets/wiki.js"></script>
+</body>
+</html>

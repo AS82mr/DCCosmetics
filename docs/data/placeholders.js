@@ -1,0 +1,76 @@
+window.WIKI_DATA = window.WIKI_DATA || {};
+
+window.WIKI_DATA.PLACEHOLDERS_REGISTRY = [
+  // Keystones, Microcharges & Shield
+  { ph: "%dragoncote_keystone_name%", scope: "PAPI + TAB", returns: "Tesseract / Chronolith / Singularity / None", audience: "player", desc: "Clean display name of your currently attuned Keystone tier." },
+  { ph: "%dragoncote_keystone_tier%", scope: "PAPI", returns: "Colored Tier", audience: "player", desc: "Formatted Keystone tier label (NONE, RARE, EPIC, LEGENDARY)." },
+  { ph: "%dragoncote_keystone_tier_raw%", scope: "PAPI", returns: "Enum name", audience: "player", desc: "Raw Keystone tier enum name." },
+  { ph: "%dragoncote_tesseract%", scope: "PAPI + TAB", returns: "Integer", audience: "player", desc: "Alias for %dragoncote_keystone_energy% — stored whole Tesseract Energy charges." },
+  { ph: "%dragoncote_keystone_max%", scope: "PAPI", returns: "Integer", audience: "player", desc: "Effective max Tesseract Energy capacity (tier max + Capacitor scroll bonus, max 800)." },
+  { ph: "%dragoncote_keystone_parked%", scope: "PAPI", returns: "Integer", audience: "player", desc: "Stored account-bound energy exceeding your current tier (e.g., when unattuned)." },
+  { ph: "%dragoncote_microcharges%", scope: "PAPI + TAB", returns: "0 – 999", audience: "player", desc: "Alias %dragoncote_keystone_micro% — active Microcharge buffer (1 Tesseract charge = 1,000 mC)." },
+  { ph: "%dragoncote_tesseract_exact%", scope: "PAPI", returns: "e.g. 199.925", audience: "player", desc: "Combined usable charges + mC formatted as whole.thousandths." },
+  { ph: "%dragoncote_tesseract_total_micro%", scope: "PAPI", returns: "Integer", audience: "player", desc: "Total usable Microcharge pool (usableEnergy * 1000 + micro)." },
+  { ph: "%dragoncote_heat%", scope: "PAPI + TAB", returns: "0 – 100", audience: "player", desc: "Alias %dragoncote_keystone_heat% — current Timeline Heat (80+ Unstable, 100 Overload)." },
+  { ph: "%dragoncote_overloaded%", scope: "PAPI", returns: "true / false", audience: "player", desc: "Alias %dragoncote_keystone_overloaded% — true until Heat cools to <= 50." },
+  { ph: "%dragoncote_stability%", scope: "PAPI + TAB", returns: "Status label", audience: "player", desc: "Thermodynamic stability status label derived from Heat & Overload state." },
+  { ph: "%dragoncote_keystone_efficiency%", scope: "PAPI", returns: "Efficiency text", audience: "player", desc: "Legacy alias %dragoncote_keystone_insulation% — tier ability/warp cost reduction." },
+  { ph: "%dragoncote_tooltip_mode%", scope: "PAPI", returns: "COMPACT / EXPANDED", audience: "player", desc: "Player's persistent item tooltip view setting (/tooltip or /profile slot 51)." },
+  { ph: "%dragoncote_shield_active%", scope: "PAPI", returns: "true / false", audience: "player", desc: "Whether Newbie Shield protection (default 3 days) is active." },
+  { ph: "%dragoncote_shield_status%", scope: "PAPI", returns: "Formatted status", audience: "player", desc: "Remaining Newbie Shield time or status label." },
+
+  // Stackable Stats (All 16)
+  { ph: "%dragoncote_stats_summary%", scope: "PAPI", returns: "Icon strip", audience: "player", desc: "Compact strip of all non-zero stats across all 7 StatSources (250ms cached)." },
+  { ph: "%dragoncote_stat_<STAT>%", scope: "PAPI", returns: "Formatted value", audience: "player", desc: "Stacked total for any of the 16 stats: RESONANCE, SURGE, STASIS, CATALYST, EXECUTE, CLEAVE, SIPHON, WARD, BASTION, DEFLECT, AEGIS, PROSPERITY, TEMPO, REFINEMENT, CONDUIT, or THERMAL." },
+  { ph: "%dragoncote_stat_raw_<STAT>%", scope: "PAPI", returns: "Double", audience: "player", desc: "Raw unformatted numeric total for math/scoreboards." },
+  { ph: "%dragoncote_stat_icon_<STAT>%", scope: "PAPI", returns: "Glyph + color", audience: "player", desc: "Configured Unicode glyph and hex color for <STAT>." },
+  { ph: "%dragoncote_stat_line_<STAT>%", scope: "PAPI", returns: "Formatted line", audience: "player", desc: "Icon, display name, and current stacked value." },
+  { ph: "%dragoncote_stat_source_<SOURCE>_<STAT>%", scope: "PAPI", returns: "Numeric string", audience: "admin", desc: "Contribution from one StatSource: MAIN_HAND, OFF_HAND, ARMOR, ACCESSORIES, KEYSTONE, ACTIVE_PET, or SCROLLS." },
+
+  // DCEPets
+  { ph: "%dragoncote_pet_active%", scope: "PAPI", returns: "true / false", audience: "player", desc: "Whether the player currently has a summoned companion." },
+  { ph: "%dragoncote_pet_id%", scope: "PAPI", returns: "Pet ID / none", audience: "player", desc: "Active companion internal ID (e.g. spark, astral, crimson)." },
+  { ph: "%dragoncote_pet_name%", scope: "PAPI", returns: "Colored name", audience: "player", desc: "Rarity-colored display name of the active companion." },
+  { ph: "%dragoncote_pet_name_raw%", scope: "PAPI", returns: "Plain string", audience: "player", desc: "Stripped plain display name of the active companion." },
+  { ph: "%dragoncote_pet_category%", scope: "PAPI", returns: "Category label", audience: "player", desc: "Skill category of the active companion (Combat, Mining, Farming, Foraging, Fishing, Alchemy, Enchanting, Omni-Skill)." },
+  { ph: "%dragoncote_pet_rarity%", scope: "PAPI", returns: "Rarity label", audience: "player", desc: "Formatted rarity tier of the active companion." },
+  { ph: "%dragoncote_pet_level%", scope: "PAPI", returns: "Integer", audience: "player", desc: "Current level of the summoned companion (1–100)." },
+  { ph: "%dragoncote_pet_max_level%", scope: "PAPI", returns: "Integer", audience: "player", desc: "Maximum level from pets_config / pet YAML (default 100)." },
+  { ph: "%dragoncote_pet_xp%", scope: "PAPI", returns: "Numeric", audience: "player", desc: "Skill XP accumulated toward the next companion level." },
+  { ph: "%dragoncote_pet_xp_req%", scope: "PAPI", returns: "Numeric", audience: "player", desc: "XP required for the next level." },
+  { ph: "%dragoncote_pet_xp_pct%", scope: "PAPI", returns: "0–100%", audience: "player", desc: "Formatted percentage progress toward next companion level." },
+  { ph: "%dragoncote_pet_xp_bar%", scope: "PAPI", returns: "Progress bar", audience: "player", desc: "Formatted progress bar for current companion level." },
+  { ph: "%dragoncote_pet_visibility%", scope: "PAPI", returns: "ALL / OWN_ONLY / HIDDEN", audience: "player", desc: "Player's ProtocolLib companion visibility mode." },
+  { ph: "%dragoncote_pet_autocast%", scope: "PAPI", returns: "ON / OFF", audience: "player", desc: "Whether automatic ability casting is enabled." },
+  { ph: "%dragoncote_pet_tracker%", scope: "PAPI", returns: "ON / OFF", audience: "player", desc: "Whether the mob-look target tracker ring is enabled." },
+  { ph: "%dragoncote_pet_skill_name%", scope: "PAPI", returns: "Ability name", audience: "player", desc: "Display name of the active companion's signature ability." },
+  { ph: "%dragoncote_pet_skill_trigger%", scope: "PAPI", returns: "Trigger label", audience: "player", desc: "Activation condition label (e.g. Combat Strike, Focused Target, Defensive Counter)." },
+  { ph: "%dragoncote_pet_skill_cooldown%", scope: "PAPI", returns: "Seconds / Ready", audience: "player", desc: "Remaining cooldown on the active companion's combat ability." },
+  { ph: "%dragoncote_pet_perks_unlocked%", scope: "PAPI", returns: "N/M", audience: "player", desc: "Count of unlocked passive perks out of rarity cap (1/2/3/4/5)." },
+  { ph: "%dragoncote_pet_unlocked_count%", scope: "PAPI", returns: "Integer", audience: "player", desc: "Number of unlocked companions for this player." },
+  { ph: "%dragoncote_pet_total_count%", scope: "PAPI", returns: "Integer (15)", audience: "player", desc: "Total registered companions in PetRegistry." },
+
+  // Emperor & World Events
+  { ph: "%dragoncote_active_events_has%", scope: "PAPI + TAB", returns: "true / false", audience: "player", desc: "true when a mini-event or live Emperor encounter is active (drives TAB conditional HUD)." },
+  { ph: "%dragoncote_active_events_header%", scope: "PAPI + TAB", returns: "Header text", audience: "player", desc: "Dynamic section header displayed above active events in TAB." },
+  { ph: "%dragoncote_active_events_line%", scope: "PAPI + TAB", returns: "1–2 compact lines", audience: "player", desc: "Summary of running mini-events and Emperor encounter status." },
+  { ph: "%dragoncote_emperor_fighting%", scope: "PAPI + TAB", returns: "true / false", audience: "player", desc: "Whether helly (The Emperor) is alive inside lowercity or simulated via /emperortest scale." },
+  { ph: "%dragoncote_emperor_scale%", scope: "PAPI + TAB", returns: "e.g. 1.00x / 1.66x", audience: "player", desc: "Live multiplayer difficulty multiplier: 1.0 for 1 player, +0.33 per extra player in 80m radius." },
+  { ph: "%dragoncote_emperor_hp%", scope: "PAPI + TAB", returns: "e.g. 84% / 999", audience: "player", desc: "Tracked Emperor HP percentage or simulated HP." },
+  { ph: "%dragoncote_emperor_players%", scope: "PAPI + TAB", returns: "Integer", audience: "player", desc: "Count of Survival/Adventure players within 80 blocks of the Emperor." },
+  { ph: "%dragoncote_event_active_name%", scope: "PAPI", returns: "Cycle title", audience: "player", desc: "Alias %dragoncote_event_worldcycle_name% — current world cycle title." },
+  { ph: "%dragoncote_event_active_world%", scope: "PAPI", returns: "World name", audience: "player", desc: "Alias %dragoncote_event_worldcycle_world% — spawn_main, spawn_bw, or spawn_snow." },
+  { ph: "%dragoncote_event_active_time%", scope: "PAPI", returns: "MM:SS", audience: "player", desc: "Time remaining in the active world cycle (_raw for seconds)." },
+  { ph: "%dragoncote_event_next_name%", scope: "PAPI", returns: "Cycle title", audience: "player", desc: "Upcoming world cycle title (also _next_world, _next_time)." },
+  { ph: "%dragoncote_event_koth_status%", scope: "PAPI", returns: "Status", audience: "player", desc: "Status for colosseum_koth (also adapt_status, iceboat_status, mini_<id>)." },
+
+  // Waypoints, Timeline, Cosmetics, RNG
+  { ph: "%dragoncote_waypoint_visible%", scope: "PAPI", returns: "true / false", audience: "player", desc: "Whether a 3D HUD waypoint is active (also waypoint_name, waypoint_coords)." },
+  { ph: "%dragoncote_timeline_index%", scope: "PAPI", returns: "Integer", audience: "player", desc: "Current questline step (also timeline_total, timeline_percent, timeline_target*)." },
+  { ph: "%dragoncote_glow%", scope: "PAPI", returns: "Glow label", audience: "player", desc: "Equipped glow color (also glow_id, glow_color, has_glow_<id>, is_glow_<id>)." },
+  { ph: "%dragoncote_tpeffect%", scope: "PAPI", returns: "Effect ID / None", audience: "player", desc: "Equipped teleportation effect ID from player PDC (e.g. obsidian_dissolution)." },
+  { ph: "%dragoncote_tpeffect_display%", scope: "PAPI", returns: "Colored Name", audience: "player", desc: "Formatted hex display name of the equipped teleportation effect (&7None when empty)." },
+  { ph: "%dragoncote_tpeffect_rarity%", scope: "PAPI", returns: "Rarity / none", audience: "player", desc: "Rarity tier of the equipped teleportation effect (uncommon, rare, epic, legendary, mastery)." },
+  { ph: "%dragoncote_rng_<metric>%", scope: "PAPI", returns: "RNG metric", audience: "player", desc: "RNG meter fields: rng_cat_<cat>_* and rng_drop_<cat>_<id>_* (name, chance, xp, goal, pct, progress, mult)." },
+  { ph: "%dragoncote_pity_<metric>%", scope: "PAPI", returns: "Pity metric", audience: "player", desc: "Pity meter fields (selected, xp, goal, pct, progress, mult)." }
+];

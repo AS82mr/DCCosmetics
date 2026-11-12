@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Commands &amp; Permissions · DCEssentials Wiki</title>
+  <link rel="stylesheet" href="assets/wiki.css" />
+</head>
+<body data-page="commands" data-view="admin">
+
+<div class="wiki-shell">
+  <aside class="sidebar" id="sidebar" aria-label="Documentation sections"></aside>
+
+  <main class="wiki-main">
+    <article class="article">
+      <div class="page-header">
+        <div class="page-breadcrumb">Reference / Commands &amp; Permissions</div>
+        <h1>Commands &amp; Permissions</h1>
+        <p class="page-lead">Filterable reference across all modules. Switch between <strong>Player Wiki</strong> and <strong>Admin View</strong> in the topbar to filter staff commands automatically, or click any syntax to copy.</p>
+      </div>
+
+      <section class="wiki-sec" id="sec-cmd-list">
+        <h2>Command Registry</h2>
+        <div class="toolbar">
+          <div class="filter-pills" id="cmdFilters">
+            <button type="button" class="pill-btn active" data-cmd-filter="ALL">All</button>
+            <button type="button" class="pill-btn" data-cmd-filter="Core">Core</button>
+            <button type="button" class="pill-btn" data-cmd-filter="Items & Stats">Items &amp; Stats</button>
+            <button type="button" class="pill-btn" data-cmd-filter="Keystones & Events">Keystones &amp; Events</button>
+            <button type="button" class="pill-btn" data-cmd-filter="Pets">Pets</button>
+            <button type="button" class="pill-btn" data-cmd-filter="Emperor">Emperor</button>
+            <button type="button" class="pill-btn" data-cmd-filter="Cosmetics & Wardrobe">Cosmetics &amp; Wardrobe</button>
+            <button type="button" class="pill-btn" data-cmd-filter="DCNPC & Warps">DCNPC &amp; Warps</button>
+            <button type="button" class="pill-btn" data-cmd-filter="World Tools">World Tools</button>
+          </div>
+          <input type="text" class="inline-filter" id="cmdTableFilter" placeholder="Filter commands table..." />
+        </div>
+        <p id="cmdCountLabel" style="font-size:0.84rem;color:var(--text-muted);margin-bottom:8px;"></p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Command</th><th>Aliases</th><th>Permission</th><th>Module</th><th>Description</th></tr>
+            </thead>
+            <tbody id="commandsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </article>
+  </main>
+</div>
+
+<script src="data/search_pages.js"></script>
+<script src="data/stats.js"></script>
+<script src="data/scrolls.js"></script>
+<script src="data/pets.js"></script>
+<script src="data/commands.js"></script>
+<script src="data/placeholders.js"></script>
+<script src="assets/wiki.js"></script>
+</body>
+</html>
