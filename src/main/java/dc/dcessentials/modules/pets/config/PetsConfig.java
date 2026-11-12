@@ -2,6 +2,7 @@ package dc.dcessentials.modules.pets.config;
 
 import dc.dcessentials.modules.items.model.ItemRarity;
 import dc.dcessentials.modules.pets.model.PetCategory;
+import dc.dcessentials.modules.pets.model.SkillDomain;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -38,9 +39,12 @@ public class PetsConfig {
     private double omniCategoryXpMultiplier = 1.0;
     private boolean fallbackMobKillXp = true;
     private double fallbackMobKillAmount = 18.0;
+    private boolean excludeScrollBonusXp = false;
 
     private final EnumMap<PetCategory, Set<String>> categorySkillMap = new EnumMap<>(PetCategory.class);
     private final Map<String, PetCategory> reverseSkillLookup = new HashMap<>();
+    private final Map<String, EnumMap<SkillDomain, Double>> domainWeights = new HashMap<>();
+    private final EnumMap<PetCategory, Set<SkillDomain>> categoryDomains = new EnumMap<>(PetCategory.class);
 
     // Rarity Perk Rules
     private final EnumMap<ItemRarity, Integer> rarityMaxPerks = new EnumMap<>(ItemRarity.class);
@@ -89,7 +93,22 @@ public class PetsConfig {
                 "brewing", "chronos")));
         categorySkillMap.put(PetCategory.ENCHANTING, new LinkedHashSet<>(Arrays.asList(
                 "enchanting", "rift")));
+        categorySkillMap.put(PetCategory.UTILITY, new LinkedHashSet<>(Arrays.asList(
+                "agility", "stealth", "kinetics", "architect", "crafting", "discovery", "chronos", "rift", "brewing", "enchanting")));
         categorySkillMap.put(PetCategory.OMNI, new LinkedHashSet<>());
+
+        categoryDomains.clear();
+        categoryDomains.put(PetCategory.COMBAT, EnumSet.of(SkillDomain.MELEE, SkillDomain.RANGED, SkillDomain.DEFENSE));
+        categoryDomains.put(PetCategory.MINING, EnumSet.of(SkillDomain.MINING, SkillDomain.EXCAVATION));
+        categoryDomains.put(PetCategory.FARMING, EnumSet.of(SkillDomain.HARVEST));
+        categoryDomains.put(PetCategory.FORAGING, EnumSet.of(SkillDomain.FORAGING));
+        categoryDomains.put(PetCategory.FISHING, EnumSet.of(SkillDomain.FISHING));
+        categoryDomains.put(PetCategory.ALCHEMY, EnumSet.of(SkillDomain.ALCHEMY, SkillDomain.MOBILITY, SkillDomain.UTILITY));
+        categoryDomains.put(PetCategory.ENCHANTING, EnumSet.of(SkillDomain.ARCANE, SkillDomain.UTILITY));
+        categoryDomains.put(PetCategory.UTILITY, EnumSet.of(SkillDomain.ARCANE, SkillDomain.ALCHEMY, SkillDomain.MOBILITY, SkillDomain.UTILITY));
+        categoryDomains.put(PetCategory.OMNI, EnumSet.allOf(SkillDomain.class));
+
+        initDefaultDomainWeights();
 
         rarityMaxPerks.put(ItemRarity.COMMON, 1);
         rarityMaxPerks.put(ItemRarity.UNCOMMON, 2);
@@ -131,6 +150,28 @@ public class PetsConfig {
         omniCategoryXpMultiplier = Math.max(0.0, config.getDouble("skills-xp.omni-category-multiplier", 1.0));
         fallbackMobKillXp = config.getBoolean("skills-xp.fallback-mob-kill-xp", true);
         fallbackMobKillAmount = Math.max(0.0, config.getDouble("skills-xp.fallback-mob-kill-amount", 18.0));
+        excludeScrollBonusXp = config.getBoolean("skills-xp.exclude-scroll-bonus-xp",
+                config.getBoolean("pets.exclude-scroll-bonus-xp", false));
+
+        initDefaultDomainWeights();
+        ConfigurationSection dwSec = config.getConfigurationSection("skills-xp.domain-weights");
+        if (dwSec != null) {
+            for (String skillKey : dwSec.getKeys(false)) {
+                ConfigurationSection sSec = dwSec.getConfigurationSection(skillKey);
+                if (sSec == null) continue;
+                EnumMap<SkillDomain, Double> weights = new EnumMap<>(SkillDomain.class);
+                for (String domKey : sSec.getKeys(false)) {
+                    SkillDomain dom = SkillDomain.fromString(domKey);
+                    double w = sSec.getDouble(domKey, 0.0);
+                    if (dom != null && w > 0.0) {
+                        weights.put(dom, w);
+                    }
+                }
+                if (!weights.isEmpty()) {
+                    domainWeights.put(skillKey.trim().toLowerCase(Locale.ROOT), weights);
+                }
+            }
+        }
 
         ConfigurationSection catSec = config.getConfigurationSection("skills-xp.category-skills");
         if (catSec != null) {
@@ -183,6 +224,47 @@ public class PetsConfig {
         modelEngineVfxEnabled = config.getBoolean("combat.vfx.model-engine-enabled", true);
         defaultVfxDurationTicks = Math.max(10, config.getInt("combat.vfx.duration-ticks", 70));
         cooldownNotifyActionBar = config.getBoolean("combat.cooldown-notify-actionbar", false);
+    }
+
+    private void initDefaultDomainWeights() {
+        domainWeights.clear();
+        putDomainWeight("swords", SkillDomain.MELEE, 1.0);
+        putDomainWeight("unarmed", SkillDomain.MELEE, 1.0);
+        putDomainWeight("tragoul", SkillDomain.MELEE, 1.0);
+        putDomainWeight("ranged", SkillDomain.RANGED, 1.0);
+        putDomainWeight("hunter", SkillDomain.RANGED, 1.0);
+        putDomainWeight("blocking", SkillDomain.DEFENSE, 1.0);
+        putDomainWeight("pickaxe", SkillDomain.MINING, 1.0);
+        putDomainWeight("nether", SkillDomain.MINING, 1.0);
+        putDomainWeight("excavation", SkillDomain.EXCAVATION, 1.0);
+        putDomainWeight("herbalism", SkillDomain.HARVEST, 1.0);
+        putDomainWeight("taming", SkillDomain.HARVEST, 1.0);
+        putDomainWeight("axes", SkillDomain.MELEE, 0.50, SkillDomain.FORAGING, 0.50);
+        putDomainWeight("axe", SkillDomain.MELEE, 0.50, SkillDomain.FORAGING, 0.50);
+        putDomainWeight("seaborne", SkillDomain.FISHING, 1.0);
+        putDomainWeight("enchanting", SkillDomain.ARCANE, 1.0);
+        putDomainWeight("rift", SkillDomain.ARCANE, 1.0);
+        putDomainWeight("brewing", SkillDomain.ALCHEMY, 1.0);
+        putDomainWeight("chronos", SkillDomain.ALCHEMY, 1.0);
+        putDomainWeight("agility", SkillDomain.MOBILITY, 1.0);
+        putDomainWeight("stealth", SkillDomain.MOBILITY, 1.0);
+        putDomainWeight("kinetics", SkillDomain.MOBILITY, 1.0);
+        putDomainWeight("architect", SkillDomain.UTILITY, 1.0);
+        putDomainWeight("crafting", SkillDomain.UTILITY, 1.0);
+        putDomainWeight("discovery", SkillDomain.UTILITY, 1.0);
+    }
+
+    private void putDomainWeight(String skill, SkillDomain d1, double w1) {
+        EnumMap<SkillDomain, Double> m = new EnumMap<>(SkillDomain.class);
+        m.put(d1, w1);
+        domainWeights.put(skill, m);
+    }
+
+    private void putDomainWeight(String skill, SkillDomain d1, double w1, SkillDomain d2, double w2) {
+        EnumMap<SkillDomain, Double> m = new EnumMap<>(SkillDomain.class);
+        m.put(d1, w1);
+        m.put(d2, w2);
+        domainWeights.put(skill, m);
     }
 
     private void rebuildReverseSkillLookup() {
@@ -285,9 +367,24 @@ public class PetsConfig {
     }
 
     public double getCategoryXpMultiplier(PetCategory petCategory, String skillName) {
-        if (petCategory == null) return sameCategoryXpMultiplier;
+        if (petCategory == null) return sameCategoryXpMultiplier * globalSkillXpMultiplier;
         if (petCategory == PetCategory.OMNI) return omniCategoryXpMultiplier * globalSkillXpMultiplier;
         String cleanSkill = skillName != null ? skillName.trim().toLowerCase(Locale.ROOT) : "";
+
+        // 1. Weighted SkillDomain lookup (Section 8.6 / P3-09)
+        EnumMap<SkillDomain, Double> weights = domainWeights.get(cleanSkill);
+        Set<SkillDomain> petDoms = categoryDomains.get(petCategory);
+        if (weights != null && !weights.isEmpty() && petDoms != null) {
+            double weightedSum = 0.0;
+            for (Map.Entry<SkillDomain, Double> entry : weights.entrySet()) {
+                double w = entry.getValue() != null ? entry.getValue() : 0.0;
+                double mult = petDoms.contains(entry.getKey()) ? sameCategoryXpMultiplier : otherCategoryXpMultiplier;
+                weightedSum += w * mult;
+            }
+            return weightedSum * globalSkillXpMultiplier;
+        }
+
+        // 2. Legacy category-skills fallback
         Set<String> direct = categorySkillMap.get(petCategory);
         if (direct != null && direct.contains(cleanSkill)) {
             return sameCategoryXpMultiplier * globalSkillXpMultiplier;
@@ -297,6 +394,10 @@ public class PetsConfig {
             return sameCategoryXpMultiplier * globalSkillXpMultiplier;
         }
         return otherCategoryXpMultiplier * globalSkillXpMultiplier;
+    }
+
+    public boolean isExcludeScrollBonusXp() {
+        return excludeScrollBonusXp;
     }
 
     public int getMaxPerksForRarity(ItemRarity rarity) {

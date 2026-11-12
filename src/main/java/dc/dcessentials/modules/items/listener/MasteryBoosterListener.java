@@ -69,7 +69,7 @@ public class MasteryBoosterListener implements Listener {
         ScrollModel scroll = scrollRegistry.getScroll(scrollId);
         if (scroll == null) return;
 
-        String skillId = scroll.getMechanic("skill_id", "mining");
+        String skillId = scroll.getMechanic("skill_id", "pickaxe");
         double multiplier = scroll.getMechanic("xp_multiplier", 1.20);
 
         String matName = event.getBlock().getType().name();

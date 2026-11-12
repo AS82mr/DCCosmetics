@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class AdaptHook {
 
@@ -24,6 +25,9 @@ public final class AdaptHook {
     private static Method getSkillLinesMethod;
     private static Method getXpMethod;
     private static Method getPooledXpMethod;
+
+    // Tracks recent XP granted by DCEssentials itself (e.g. Mastery scrolls / Refinement) per player -> skill -> amount
+    private static final Map<UUID, Map<String, Double>> recentOwnGrants = new ConcurrentHashMap<>();
 
     private AdaptHook() {}
 
@@ -102,10 +106,15 @@ public final class AdaptHook {
      * updates the baseline map in-place, and returns any positive XP gained per skill.
      */
     public static Map<String, Double> pollSkillXpDeltas(Player player, Map<String, Double> baseline) {
-        if (baseline == null) return Collections.emptyMap();
+        return pollSkillXpDeltas(player, baseline, false);
+    }
+
+    public static Map<String, Double> pollSkillXpDeltas(Player player, Map<String, Double> baseline, boolean excludeOwnGrants) {
+        if (baseline == null || player == null) return Collections.emptyMap();
         Map<String, Double> current = readSkillXpTotals(player);
         if (current.isEmpty()) return Collections.emptyMap();
 
+        Map<String, Double> ownGrants = recentOwnGrants.remove(player.getUniqueId());
         if (baseline.isEmpty()) {
             baseline.putAll(current);
             return Collections.emptyMap();
@@ -118,6 +127,10 @@ public final class AdaptHook {
             Double prev = baseline.put(skill, now);
             if (prev != null) {
                 double diff = now - prev;
+                if (excludeOwnGrants && ownGrants != null) {
+                    double own = ownGrants.getOrDefault(skill, 0.0);
+                    diff = Math.max(0.0, diff - own);
+                }
                 // Only award sensible positive deltas (ignore negative resets or prestige/command anomalies)
                 if (diff > 0.05) {
                     deltas.put(skill, diff);
@@ -125,6 +138,12 @@ public final class AdaptHook {
             }
         }
         return deltas;
+    }
+
+    private static void recordOwnGrant(UUID uuid, String skillKey, double amount) {
+        if (uuid == null || skillKey == null || amount <= 0.0) return;
+        Map<String, Double> map = recentOwnGrants.computeIfAbsent(uuid, k -> new ConcurrentHashMap<>());
+        map.merge(skillKey.toLowerCase(Locale.ROOT), amount, Double::sum);
     }
 
     /**
@@ -187,6 +206,7 @@ public final class AdaptHook {
                             if (line != null) {
                                 Method giveMethod = line.getClass().getMethod("giveXP", notifierClass, double.class);
                                 giveMethod.invoke(line, notifier, amount);
+                                recordOwnGrant(player.getUniqueId(), skillName, amount);
                             }
                         } catch (Exception ignored) {}
                     }
@@ -194,10 +214,12 @@ public final class AdaptHook {
                     return true;
                 }
             } else {
-                Object line = getSkillLineMethod.invoke(adaptPlayer, skillTarget.toLowerCase());
+                String cleanTarget = skillTarget.toLowerCase(Locale.ROOT);
+                Object line = getSkillLineMethod.invoke(adaptPlayer, cleanTarget);
                 if (line != null) {
                     Method giveMethod = line.getClass().getMethod("giveXP", notifierClass, double.class);
                     giveMethod.invoke(line, notifier, amount);
+                    recordOwnGrant(player.getUniqueId(), cleanTarget, amount);
                     requestSaveMethod.invoke(adaptPlayer);
                     return true;
                 } else {

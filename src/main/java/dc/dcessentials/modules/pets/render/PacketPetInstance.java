@@ -59,6 +59,14 @@ public class PacketPetInstance {
     private Location labelLocation;
     private long tickCounter = 0;
 
+    // Stationary perch & hysteresis state (initialized before computeTargetLocation)
+    private double[] anchorXZ;
+    private float anchorYawDeg;
+    private boolean moving;
+    private int stillTicks;
+    private Location lastOwnerPos;
+    private Location lookTarget;
+
     private final Set<UUID> activeViewers = ConcurrentHashMap.newKeySet();
 
     public PacketPetInstance(Player owner, PetSpec spec, int level, ItemRarity rarity) {
@@ -73,8 +81,18 @@ public class PacketPetInstance {
         this.labelEntityUuid = UUID.randomUUID();
 
         this.headStack = HeadUtil.getCustomHead(spec.getHeadBase64());
+        Location ownerLoc = owner.getLocation();
+        this.lastOwnerPos = ownerLoc.clone();
+        this.anchorYawDeg = ownerLoc.getYaw();
+        this.moving = false;
+        this.stillTicks = 6;
+        this.anchorXZ = computeOffsetXZ(ownerLoc.getX(), ownerLoc.getZ(), this.anchorYawDeg);
         this.currentLocation = computeTargetLocation(owner, 0);
         this.labelLocation = this.currentLocation.clone().add(0, 0.48, 0);
+    }
+
+    public void setLookTarget(Location lookTarget) {
+        this.lookTarget = lookTarget != null ? lookTarget.clone() : null;
     }
 
     public PetSpec getSpec() { return spec; }
@@ -121,7 +139,7 @@ public class PacketPetInstance {
             currentLocation.setX(nx);
             currentLocation.setY(ny);
             currentLocation.setZ(nz);
-            currentLocation.setYaw(targetHead.getYaw());
+            currentLocation.setYaw(stepYawDegrees(currentLocation.getYaw(), targetHead.getYaw(), moving ? 28.0f : 15.0f));
             currentLocation.setPitch(targetHead.getPitch());
         }
 
@@ -200,24 +218,95 @@ public class PacketPetInstance {
         };
     }
 
-    private Location computeTargetLocation(Player owner, long tick) {
-        Location base = owner.getLocation();
-        float yawRad = (float) Math.toRadians(base.getYaw());
-
-        // Forward and right horizontal vectors from owner's body yaw
+    private double[] computeOffsetXZ(double baseX, double baseZ, float yawDeg) {
+        float yawRad = (float) Math.toRadians(yawDeg);
         double forwardX = -Math.sin(yawRad);
         double forwardZ = Math.cos(yawRad);
         double rightX = -forwardZ;
         double rightZ = forwardX;
-
-        double bob = Math.sin(tick * 0.18) * 0.11;
         double dx = (forwardX * spec.getOffsetForward()) + (rightX * spec.getOffsetRight());
         double dz = (forwardZ * spec.getOffsetForward()) + (rightZ * spec.getOffsetRight());
-        double dy = 1.05 + spec.getOffsetUp() + bob;
+        return new double[]{baseX + dx, baseZ + dz};
+    }
 
-        Location target = base.clone().add(dx, dy, dz);
-        target.setYaw(base.getYaw());
-        target.setPitch(0f);
+    private static float wrapDegrees(float deg) {
+        float d = deg % 360.0f;
+        if (d >= 180.0f) d -= 360.0f;
+        if (d < -180.0f) d += 360.0f;
+        return d;
+    }
+
+    private static float stepYawDegrees(float currentYaw, float targetYaw, float maxDeltaDeg) {
+        float diff = wrapDegrees(targetYaw - currentYaw);
+        if (Math.abs(diff) <= maxDeltaDeg) return targetYaw;
+        return wrapDegrees(currentYaw + Math.copySign(maxDeltaDeg, diff));
+    }
+
+    private Location computeTargetLocation(Player owner, long tick) {
+        Location base = owner.getLocation();
+        if (lastOwnerPos == null || !Objects.equals(lastOwnerPos.getWorld(), base.getWorld())) {
+            lastOwnerPos = base.clone();
+            anchorYawDeg = base.getYaw();
+            anchorXZ = computeOffsetXZ(base.getX(), base.getZ(), anchorYawDeg);
+            moving = false;
+            stillTicks = 6;
+        } else {
+            double moveDx = base.getX() - lastOwnerPos.getX();
+            double moveDz = base.getZ() - lastOwnerPos.getZ();
+            double horizMove = Math.hypot(moveDx, moveDz);
+            lastOwnerPos = base.clone();
+
+            if (horizMove > 0.06) {
+                moving = true;
+                stillTicks = 0;
+            } else if (horizMove < 0.03) {
+                stillTicks++;
+                if (stillTicks >= 6) {
+                    moving = false;
+                }
+            }
+
+            if (anchorXZ == null) {
+                anchorXZ = computeOffsetXZ(base.getX(), base.getZ(), anchorYawDeg);
+            }
+            double distToAnchor = Math.hypot(base.getX() - anchorXZ[0], base.getZ() - anchorXZ[1]);
+            if (moving || distToAnchor > 3.2) {
+                anchorYawDeg = stepYawDegrees(anchorYawDeg, base.getYaw(), 22.0f);
+                anchorXZ = computeOffsetXZ(base.getX(), base.getZ(), anchorYawDeg);
+            }
+        }
+
+        double bob = Math.sin(tick * 0.18) * 0.11;
+        double dy = 1.05 + spec.getOffsetUp() + bob;
+        Location target = new Location(base.getWorld(), anchorXZ[0], base.getY() + dy, anchorXZ[1]);
+
+        if (moving) {
+            target.setYaw(anchorYawDeg);
+            target.setPitch(0f);
+        } else {
+            // Stationary perch: smoothly gaze at combat lookTarget or owner's eyes within 3.0 blocks
+            Location gazeTarget = null;
+            if (lookTarget != null && Objects.equals(lookTarget.getWorld(), base.getWorld())
+                    && lookTarget.distanceSquared(target) <= 256.0) {
+                gazeTarget = lookTarget;
+            } else if (base.distanceSquared(target) <= 9.0 + dy * dy) {
+                gazeTarget = owner.getEyeLocation();
+            }
+
+            if (gazeTarget != null) {
+                double gx = gazeTarget.getX() - target.getX();
+                double gz = gazeTarget.getZ() - target.getZ();
+                if ((gx * gx + gz * gz) > 1e-4) {
+                    float desiredYaw = (float) Math.toDegrees(Math.atan2(-gx, gz));
+                    target.setYaw(desiredYaw);
+                } else {
+                    target.setYaw(anchorYawDeg);
+                }
+            } else {
+                target.setYaw(anchorYawDeg);
+            }
+            target.setPitch(0f);
+        }
         return target;
     }
 

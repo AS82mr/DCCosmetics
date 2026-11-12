@@ -12,7 +12,8 @@ public enum PetCategory {
     FISHING("Fishing", "&#4FA8D8", "≈"),
     ALCHEMY("Alchemy", "&#C47AD9", "⚗"),
     ENCHANTING("Enchanting", "&#6B8EFF", "✦"),
-    OMNI("Omni-Skill", "&#F5C242", "★");
+    OMNI("Omni-Skill", "&#F5C242", "★"),
+    UTILITY("Utility", "&#22D3EE", "⚛");
 
     private final String displayName;
     private final String color;

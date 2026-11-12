@@ -700,11 +700,21 @@ public class ProfileGUI implements DceGui {
         // 5. Configured Action Commands (Teleport, Trade, Auctions, Back, etc.)
         List<String> commands = (clickType.isLeftClick()) ? leftClickActions.get(slot) : rightClickActions.get(slot);
         if (commands != null) {
+            boolean refreshMenu = false;
             for (String cmd : commands) {
                 String formattedCmd = formatText(cmd);
                 if (formattedCmd.startsWith("[CLOSE]")) { clicker.closeInventory(); }
-                else if (formattedCmd.startsWith("[PLAYER] ")) { clicker.performCommand(formattedCmd.substring(9)); }
+                else if (formattedCmd.startsWith("[PLAYER] ")) {
+                    String pCmd = formattedCmd.substring(9);
+                    clicker.performCommand(pCmd);
+                    if (pCmd.toLowerCase().startsWith("tooltip")) {
+                        refreshMenu = true;
+                    }
+                }
                 else if (formattedCmd.startsWith("[CONSOLE] ")) { Bukkit.dispatchCommand(Bukkit.getConsoleSender(), formattedCmd.substring(10)); }
+            }
+            if (refreshMenu) {
+                build(config);
             }
         }
     }

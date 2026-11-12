@@ -155,14 +155,16 @@ public class PetManager implements Listener {
                 LivingEntity looked = combatDirector.tickTargetTracker(owner, data, spec);
                 if (looked != null) {
                     lookTargets.put(uuid, looked);
+                    entry.getValue().setLookTarget(looked.getEyeLocation());
                 } else {
                     lookTargets.remove(uuid);
+                    entry.getValue().setLookTarget(null);
                 }
             }
 
             if (doSkillsPoll) {
                 Map<String, Double> baseline = skillXpBaselines.computeIfAbsent(uuid, k -> new ConcurrentHashMap<>());
-                Map<String, Double> deltas = AdaptHook.pollSkillXpDeltas(owner, baseline);
+                Map<String, Double> deltas = AdaptHook.pollSkillXpDeltas(owner, baseline, petsConfig.isExcludeScrollBonusXp());
                 if (!deltas.isEmpty()) {
                     double xpBoostPct = getActivePerkValue(owner, PetPerkEffectType.PET_XP_BOOST);
                     double totalEarned = 0.0;

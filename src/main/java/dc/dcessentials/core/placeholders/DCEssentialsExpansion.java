@@ -111,6 +111,14 @@ public class DCEssentialsExpansion extends PlaceholderExpansion {
             case "stability":
                 return profile.getStability();
 
+            case "tooltip_mode": {
+                var itemMod = DCCosmetics.getInstance().getItemModule();
+                if (itemMod != null && itemMod.getTooltipModeService() != null) {
+                    return itemMod.getTooltipModeService().getPersistentMode(player.getUniqueId()).name();
+                }
+                return "COMPACT";
+            }
+
             case "keystone_efficiency":
             case "keystone_insulation":
                 return profile.getTier().getEfficiencyText();
