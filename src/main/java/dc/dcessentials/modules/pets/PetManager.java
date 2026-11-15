@@ -35,7 +35,10 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.event.player.PlayerFishEvent;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -71,6 +74,9 @@ public class PetManager implements Listener {
     private final Map<UUID, LivingEntity> lockedTargets = new ConcurrentHashMap<>();
     private final Map<UUID, LivingEntity> lookTargets = new ConcurrentHashMap<>();
     private final Map<UUID, Map<String, Double>> skillXpBaselines = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> bloodlustUntilMap = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> minerAegisCooldownMap = new ConcurrentHashMap<>();
+    private static final ThreadLocal<Boolean> POTION_EXTEND_GUARD = ThreadLocal.withInitial(() -> false);
     private BukkitTask tickerTask;
     private long tickCounter = 0L;
 
@@ -113,7 +119,9 @@ public class PetManager implements Listener {
             tickerTask.cancel();
             tickerTask = null;
         }
-        ModelEngineVfxBridge.cleanupAll();
+        try {
+            ModelEngineVfxBridge.cleanupAll();
+        } catch (Throwable ignored) {}
         for (Player p : Bukkit.getOnlinePlayers()) {
             removeSpeedPerkModifier(p);
         }
@@ -177,9 +185,13 @@ public class PetManager implements Listener {
                     }
                 }
             }
+        }
 
-            if (doAuraTick) {
-                tickPassivePerks(owner, data);
+        if (doAuraTick) {
+            for (Player online : Bukkit.getOnlinePlayers()) {
+                if (!online.isOnline()) continue;
+                PlayerPetData data = playerDataMap.get(online.getUniqueId());
+                tickPassivePerks(online, data);
             }
         }
     }
@@ -188,9 +200,11 @@ public class PetManager implements Listener {
         double regenAmount = getActivePerkValue(owner, PetPerkEffectType.ALLY_AURA_REGEN);
         if (regenAmount > 0.0) {
             healIfHurt(owner, regenAmount);
-            for (Entity e : owner.getWorld().getNearbyEntities(owner.getLocation(), 7.0, 4.5, 7.0)) {
-                if (e instanceof Player p && !p.equals(owner) && data.isAlly(p.getUniqueId())) {
-                    healIfHurt(p, regenAmount * 0.85);
+            if (data != null) {
+                for (Entity e : owner.getWorld().getNearbyEntities(owner.getLocation(), 7.0, 4.5, 7.0)) {
+                    if (e instanceof Player p && !p.equals(owner) && data.isAlly(p.getUniqueId())) {
+                        healIfHurt(p, regenAmount * 0.85);
+                    }
                 }
             }
         }
@@ -254,20 +268,59 @@ public class PetManager implements Listener {
 
     public double getActivePerkValue(Player player, PetPerkEffectType type) {
         if (player == null || type == null) return 0.0;
+        double total = 0.0;
+
         PlayerPetData data = playerDataMap.get(player.getUniqueId());
-        if (data == null || data.getActivePetId() == null) return 0.0;
+        if (data != null && data.getActivePetId() != null) {
+            PetSpec spec = petRegistry.getPet(data.getActivePetId());
+            if (spec != null) {
+                PlayerPetData.OwnedPetEntry entry = data.getPetEntry(spec.getId());
+                int level = entry != null ? entry.getLevel() : 1;
+                for (PetPerk perk : spec.getPerks()) {
+                    if (perk.getEffectType() == type && perk.isUnlockedAt(level)) {
+                        total += perk.getEffectiveValue(level, spec.getMaxLevel());
+                    }
+                }
+            }
+        }
+
+        var itemMod = plugin.getItemModule();
+        if (itemMod != null && itemMod.getStatAggregator() != null) {
+            total += itemMod.getStatAggregator().getEquipmentPerkValue(player, type);
+        }
+
+        return total;
+    }
+
+    public record PerkContribution(String perkName, PetPerkEffectType effectType, double value) {}
+
+    public record ActivePetDiagnosticInfo(
+            String petId,
+            String petName,
+            int level,
+            Map<ItemStat, Double> baseStats,
+            List<PerkContribution> unlockedPerks
+    ) {}
+
+    public ActivePetDiagnosticInfo getActivePetDiagnosticInfo(Player player) {
+        if (player == null) return null;
+        PlayerPetData data = playerDataMap.get(player.getUniqueId());
+        if (data == null || data.getActivePetId() == null) return null;
         PetSpec spec = petRegistry.getPet(data.getActivePetId());
-        if (spec == null) return 0.0;
+        if (spec == null) return null;
         PlayerPetData.OwnedPetEntry entry = data.getPetEntry(spec.getId());
         int level = entry != null ? entry.getLevel() : 1;
 
-        double total = 0.0;
+        EnumMap<ItemStat, Double> base = spec.getStatsAtLevel(level);
+        List<PerkContribution> perks = new ArrayList<>();
         for (PetPerk perk : spec.getPerks()) {
-            if (perk.getEffectType() == type && perk.isUnlockedAt(level)) {
-                total += perk.getEffectiveValue(level, spec.getMaxLevel());
+            if (!perk.isUnlockedAt(level)) continue;
+            double val = perk.getEffectiveValue(level, spec.getMaxLevel());
+            if (val > 0.0) {
+                perks.add(new PerkContribution(perk.getName(), perk.getEffectType(), val));
             }
         }
-        return total;
+        return new ActivePetDiagnosticInfo(spec.getId(), spec.getDisplayName(), level, base, perks);
     }
 
     public void summonPet(Player player, String petId, boolean silent) {
@@ -417,10 +470,84 @@ public class PetManager implements Listener {
 
     public double getEffectiveSkillPowerMultiplier(Player player) {
         double powerPct = getActivePerkValue(player, PetPerkEffectType.SKILL_POWER_BOOST);
+        double heatSurge = getActivePerkValue(player, PetPerkEffectType.KEYSTONE_LOW_HEAT_SURGE);
+        if (heatSurge > 0.0 && isKeystoneHeatLow(player)) {
+            powerPct += heatSurge;
+        }
         return 1.0 + (powerPct / 100.0);
     }
 
-    private void applySpeedPerkModifier(Player player) {
+    public boolean isKeystoneHeatLow(Player player) {
+        if (player == null) return false;
+        var teleMgr = plugin.getTeleportationManager();
+        if (teleMgr == null) return false;
+        var kp = teleMgr.getProfile(player);
+        return kp != null && kp.getHeat() < 30;
+    }
+
+    public record PerkStepBonus(String perkName, double pct, boolean multiplicative) {}
+
+    public List<PerkStepBonus> evaluateOffensivePerkBonuses(Player attacker, LivingEntity victim) {
+        List<PerkStepBonus> steps = new ArrayList<>();
+        if (attacker == null || victim == null) return steps;
+
+        double mobPct = getActivePerkValue(attacker, PetPerkEffectType.BONUS_MOB_DAMAGE);
+        if (mobPct > 0.0) {
+            steps.add(new PerkStepBonus("Mob DMG", mobPct, false));
+        }
+
+        var maxAttr = victim.getAttribute(Attribute.MAX_HEALTH);
+        boolean isBossOrElite = victim instanceof Boss
+                || victim.getScoreboardTags().contains("emperor_boss")
+                || (maxAttr != null && maxAttr.getValue() >= 100.0);
+        if (isBossOrElite) {
+            double bossPct = getActivePerkValue(attacker, PetPerkEffectType.BOSS_SLAYER_DAMAGE);
+            if (bossPct > 0.0) {
+                steps.add(new PerkStepBonus("Boss Slayer", bossPct, false));
+            }
+        }
+
+        double bloodlustPct = getActivePerkValue(attacker, PetPerkEffectType.BLOODLUST_FRENZY);
+        if (bloodlustPct > 0.0) {
+            boolean hasKillBuff = bloodlustUntilMap.getOrDefault(attacker.getUniqueId(), 0L) > System.currentTimeMillis();
+            double vMax = maxAttr != null ? maxAttr.getValue() : victim.getMaxHealth();
+            boolean victimWounded = vMax > 0 && (victim.getHealth() / vMax) <= 0.50;
+            if (hasKillBuff || victimWounded) {
+                steps.add(new PerkStepBonus(hasKillBuff ? "Bloodlust Frenzy" : "Bloodlust (<50% HP)", bloodlustPct, false));
+            }
+        }
+
+        double chillPct = getActivePerkValue(attacker, PetPerkEffectType.CHILL_STRIKE);
+        if (chillPct > 0.0) {
+            boolean wetOrStorm = attacker.isInWater() || attacker.getWorld().hasStorm()
+                    || victim.isInWater() || victim.hasPotionEffect(PotionEffectType.SLOWNESS);
+            if (wetOrStorm) {
+                steps.add(new PerkStepBonus("Permafrost Strike", chillPct, false));
+            }
+        }
+
+        double debuffPct = getActivePerkValue(attacker, PetPerkEffectType.DEBUFF_PUNISHER);
+        if (debuffPct > 0.0 && (hasAnyDebuff(victim) || hasAnyDebuff(attacker))) {
+            steps.add(new PerkStepBonus("Debuff Alchemist", debuffPct, false));
+        }
+
+        double arcanePct = getActivePerkValue(attacker, PetPerkEffectType.KEYSTONE_LOW_HEAT_SURGE);
+        if (arcanePct > 0.0 && isKeystoneHeatLow(attacker)) {
+            steps.add(new PerkStepBonus("Keystone Harmony", arcanePct, false));
+        }
+        return steps;
+    }
+
+    private static boolean hasAnyDebuff(LivingEntity e) {
+        if (e == null) return false;
+        return e.getFireTicks() > 0
+                || e.hasPotionEffect(PotionEffectType.POISON)
+                || e.hasPotionEffect(PotionEffectType.WITHER)
+                || e.hasPotionEffect(PotionEffectType.WEAKNESS)
+                || e.hasPotionEffect(PotionEffectType.SLOWNESS);
+    }
+
+    public void applySpeedPerkModifier(Player player) {
         if (player == null || !player.isOnline()) return;
         AttributeInstance attr = player.getAttribute(Attribute.MOVEMENT_SPEED);
         if (attr == null) return;
@@ -512,15 +639,17 @@ public class PetManager implements Listener {
 
         if (event.getDamager() instanceof Player attacker) {
             PlayerPetData data = playerDataMap.get(attacker.getUniqueId());
-            if (data != null && data.getActivePetId() != null && PetCombatDirector.isValidEnemy(attacker, victim, data)) {
-                double bonusPct = getActivePerkValue(attacker, PetPerkEffectType.BONUS_MOB_DAMAGE);
-                var maxAttr = victim.getAttribute(Attribute.MAX_HEALTH);
-                boolean isBossOrElite = victim instanceof Boss || (maxAttr != null && maxAttr.getValue() >= 100.0);
-                if (isBossOrElite) {
-                    bonusPct += getActivePerkValue(attacker, PetPerkEffectType.BOSS_SLAYER_DAMAGE);
+            if (PetCombatDirector.isValidEnemy(attacker, victim, data)) {
+                List<PerkStepBonus> perkBonuses = evaluateOffensivePerkBonuses(attacker, victim);
+                double totalPct = 0.0;
+                for (PerkStepBonus b : perkBonuses) {
+                    totalPct += b.pct();
                 }
-                if (bonusPct > 0.0) {
-                    event.setDamage(event.getDamage() * (1.0 + (bonusPct / 100.0)));
+                if (totalPct > 0.0) {
+                    event.setDamage(event.getDamage() * (1.0 + (totalPct / 100.0)));
+                }
+                if (getActivePerkValue(attacker, PetPerkEffectType.CHILL_STRIKE) > 0.0) {
+                    victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 60, 1, true, true));
                 }
             }
         }
@@ -530,12 +659,110 @@ public class PetManager implements Listener {
     public void onIncomingDamagePerk(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof Player owner)) return;
         PlayerPetData data = playerDataMap.get(owner.getUniqueId());
-        if (data == null || data.getActivePetId() == null) return;
+        PetSpec spec = (data != null && data.getActivePetId() != null)
+                ? petRegistry.getPet(data.getActivePetId())
+                : null;
 
+        // Sprint / Airborne Dodge (Foraging pets)
+        if (event instanceof EntityDamageByEntityEvent) {
+            double dodgePct = Math.min(45.0, getActivePerkValue(owner, PetPerkEffectType.SPRINT_DODGE));
+            if (dodgePct > 0.0 && (owner.isSprinting() || !owner.isOnGround())) {
+                if (java.util.concurrent.ThreadLocalRandom.current().nextDouble(100.0) < dodgePct) {
+                    event.setCancelled(true);
+                    owner.getWorld().spawnParticle(Particle.CLOUD, owner.getLocation().add(0, 1.0, 0), 8, 0.25, 0.25, 0.25, 0.04);
+                    owner.playSound(owner.getLocation(), Sound.ENTITY_PHANTOM_FLAP, 0.7f, 1.5f);
+                    owner.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 40, 1, true, false));
+                    return;
+                }
+            }
+        }
+
+        // Standard / Aquatic Damage Reduction
         double redPct = getActivePerkValue(owner, PetPerkEffectType.DAMAGE_REDUCTION);
         if (redPct > 0.0) {
+            if (spec != null && spec.getCategory() == PetCategory.FISHING
+                    && !owner.isInWater() && !owner.getWorld().hasStorm()) {
+                redPct *= 0.5;
+            }
             double clamped = Math.min(50.0, redPct);
             event.setDamage(event.getDamage() * (1.0 - (clamped / 100.0)));
+        }
+
+        // Subterranean Ward (Mining pets: full protection underground, 50% on surface)
+        double subWardPct = getActivePerkValue(owner, PetPerkEffectType.SUBTERRANEAN_WARD);
+        if (subWardPct > 0.0) {
+            boolean underground = owner.getLocation().getY() < 58.0 || owner.getLocation().getBlock().getLightFromSky() <= 4;
+            double eff = Math.min(50.0, underground ? subWardPct : subWardPct * 0.5);
+            event.setDamage(event.getDamage() * (1.0 - (eff / 100.0)));
+        }
+
+        // Thermal Combat Aura (Alchemy pets: Fire/Lava damage reduction + ignite melee attacker)
+        double thermalPct = getActivePerkValue(owner, PetPerkEffectType.THERMAL_COMBAT_AURA);
+        if (thermalPct > 0.0) {
+            EntityDamageEvent.DamageCause c = event.getCause();
+            if (c == EntityDamageEvent.DamageCause.FIRE || c == EntityDamageEvent.DamageCause.FIRE_TICK
+                    || c == EntityDamageEvent.DamageCause.LAVA || c == EntityDamageEvent.DamageCause.HOT_FLOOR) {
+                double clamped = Math.min(80.0, thermalPct);
+                event.setDamage(event.getDamage() * (1.0 - (clamped / 100.0)));
+            }
+            if (event instanceof EntityDamageByEntityEvent edbe && edbe.getDamager() instanceof LivingEntity atk) {
+                atk.setFireTicks(Math.max(atk.getFireTicks(), 60));
+            }
+        }
+
+        // Miner Aegis (Mining pets: underground / holding pickaxe grants temporary Absorption shield)
+        double minerAegisPct = getActivePerkValue(owner, PetPerkEffectType.MINER_AEGIS);
+        if (minerAegisPct > 0.0) {
+            Material held = owner.getInventory().getItemInMainHand().getType();
+            boolean inMine = owner.getLocation().getY() < 40.0 || held.name().endsWith("_PICKAXE");
+            if (inMine) {
+                long now = System.currentTimeMillis();
+                long cdUntil = minerAegisCooldownMap.getOrDefault(owner.getUniqueId(), 0L);
+                if (now >= cdUntil) {
+                    minerAegisCooldownMap.put(owner.getUniqueId(), now + 12_000L);
+                    double absorbHearts = Math.max(2.0, Math.min(8.0, minerAegisPct / 6.0));
+                    owner.setAbsorptionAmount(Math.min(12.0, owner.getAbsorptionAmount() + absorbHearts));
+                    owner.removePotionEffect(PotionEffectType.MINING_FATIGUE);
+                    owner.removePotionEffect(PotionEffectType.DARKNESS);
+                    owner.playSound(owner.getLocation(), Sound.BLOCK_AMETHYST_CLUSTER_HIT, 0.7f, 1.3f);
+                }
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onBeneficialPotionExtend(EntityPotionEffectEvent event) {
+        if (POTION_EXTEND_GUARD.get()) return;
+        if (!(event.getEntity() instanceof Player player)) return;
+        if (event.getCause() != EntityPotionEffectEvent.Cause.POTION_DRINK
+                && event.getCause() != EntityPotionEffectEvent.Cause.POTION_SPLASH
+                && event.getCause() != EntityPotionEffectEvent.Cause.AREA_EFFECT_CLOUD) {
+            return;
+        }
+        PotionEffect eff = event.getNewEffect();
+        if (eff == null || eff.getDuration() <= 40 || eff.getDuration() > 24_000) return;
+
+        double extendPct = getActivePerkValue(player, PetPerkEffectType.POTION_EXTENDER);
+        if (extendPct <= 0.0) return;
+
+        PotionEffectType type = eff.getType();
+        if (type == PotionEffectType.POISON || type == PotionEffectType.WITHER
+                || type == PotionEffectType.WEAKNESS || type == PotionEffectType.SLOWNESS
+                || type == PotionEffectType.HUNGER || type == PotionEffectType.BLINDNESS) {
+            return;
+        }
+
+        int newDuration = (int) Math.round(eff.getDuration() * (1.0 + (extendPct / 100.0)));
+        PotionEffect extended = new PotionEffect(type, newDuration, eff.getAmplifier(), eff.isAmbient(), eff.hasParticles(), eff.hasIcon());
+        POTION_EXTEND_GUARD.set(true);
+        try {
+            event.setCancelled(true);
+            player.addPotionEffect(extended);
+            if (java.util.concurrent.ThreadLocalRandom.current().nextDouble(100.0) < 35.0) {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 100, 0, true, false));
+            }
+        } finally {
+            POTION_EXTEND_GUARD.set(false);
         }
     }
 
@@ -547,10 +774,6 @@ public class PetManager implements Listener {
         // 1. Owner deals damage
         if (event.getDamager() instanceof Player owner) {
             PlayerPetData data = playerDataMap.get(owner.getUniqueId());
-            if (data == null || data.getActivePetId() == null) return;
-            PetSpec spec = petRegistry.getPet(data.getActivePetId());
-            if (spec == null) return;
-
             if (!PetCombatDirector.isValidEnemy(owner, victim, data)) return;
 
             lockedTargets.put(owner.getUniqueId(), victim);
@@ -559,6 +782,10 @@ public class PetManager implements Listener {
             if (vampPct > 0.0 && event.getFinalDamage() > 0.0) {
                 healIfHurt(owner, event.getFinalDamage() * (vampPct / 100.0));
             }
+
+            if (data == null || data.getActivePetId() == null) return;
+            PetSpec spec = petRegistry.getPet(data.getActivePetId());
+            if (spec == null) return;
 
             if (data.isAutoCastSkills() && spec.getActiveSkill() != null) {
                 PetSkillTrigger trig = spec.getActiveSkill().getTrigger();
@@ -633,9 +860,12 @@ public class PetManager implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onMobKillFallbackXp(EntityDeathEvent event) {
-        if (!petsConfig.isFallbackMobKillXp() || AdaptHook.isAvailable()) return;
         Player killer = event.getEntity().getKiller();
         if (killer == null) return;
+        if (getActivePerkValue(killer, PetPerkEffectType.BLOODLUST_FRENZY) > 0.0) {
+            bloodlustUntilMap.put(killer.getUniqueId(), System.currentTimeMillis() + 6000L);
+        }
+        if (!petsConfig.isFallbackMobKillXp() || AdaptHook.isAvailable()) return;
         double amt = petsConfig.getFallbackMobKillAmount();
         if (amt > 0.0) {
             addPetXp(killer, amt);
@@ -681,6 +911,8 @@ public class PetManager implements Listener {
         lookTargets.remove(uuid);
         skillCooldownMap.remove(uuid);
         skillXpBaselines.remove(uuid);
+        bloodlustUntilMap.remove(uuid);
+        minerAegisCooldownMap.remove(uuid);
         PlayerPetData data = playerDataMap.remove(uuid);
         if (data != null) {
             savePlayerAsync(data);

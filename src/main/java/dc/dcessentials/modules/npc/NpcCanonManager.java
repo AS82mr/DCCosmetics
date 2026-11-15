@@ -419,6 +419,93 @@ public class NpcCanonManager {
     /**
      * Spawns a configured Citizens NPC with traits, world skins, and overhead tags.
      */
+    public void configureHologramTag(NPC npc, String rawDisplayName, String worldName) {
+        if (npc == null) return;
+        npc.data().setPersistent(NPC.Metadata.NAMEPLATE_VISIBLE, false);
+        net.citizensnpcs.trait.HologramTrait holo = npc.getOrAddTrait(net.citizensnpcs.trait.HologramTrait.class);
+        holo.clear();
+        if (rawDisplayName == null || rawDisplayName.isEmpty()) {
+            return;
+        }
+        String lower = worldName != null ? worldName.toLowerCase() : "";
+        boolean isBw = lower.contains("bw") || lower.contains("void") || lower.contains("drain");
+        String line = isBw
+                ? dc.dcessentials.modules.npc.util.DragoncoteColor.stripToGrayscale(rawDisplayName)
+                : dc.dcessentials.modules.npc.util.DragoncoteColor.colorize(rawDisplayName);
+        holo.addLine(line);
+    }
+
+    public void applyProfileEngine(NPC npc, dc.dcessentials.modules.npc.model.NpcBehaviorProfile profile,
+                                   String tagId, String skinId, String fallbackName) {
+        if (npc == null || profile == null || !npc.isSpawned() || npc.getEntity() == null) return;
+        String wName = npc.getEntity().getWorld().getName().toLowerCase();
+        boolean isBw = wName.contains("bw") || wName.contains("void") || wName.contains("drain");
+
+        if (!profile.isModelEngine()) {
+            boolean hadModelEngine = false;
+            try {
+                com.ticxo.modelengine.api.model.ModeledEntity existing =
+                        com.ticxo.modelengine.api.ModelEngineAPI.getModeledEntity(npc.getEntity());
+                if (existing != null) {
+                    hadModelEngine = true;
+                    for (com.ticxo.modelengine.api.model.ActiveModel actModel : new ArrayList<>(existing.getModels().values())) {
+                        try { actModel.destroy(); } catch (Throwable ignored) {}
+                    }
+                    try { existing.getModels().clear(); } catch (Throwable ignored) {}
+                    try { existing.setBaseEntityVisible(true); } catch (Throwable ignored) {}
+                    existing.destroy();
+                    com.ticxo.modelengine.api.ModelEngineAPI.getAPI().getModelUpdaters().forceRemoveModeledEntity(existing);
+                }
+            } catch (Throwable ignored) {}
+            if (hadModelEngine && npc.isSpawned()) {
+                Location loc = (npc.getEntity() != null) ? npc.getEntity().getLocation() : npc.getStoredLocation();
+                if (loc != null) {
+                    npc.despawn();
+                    npc.spawn(loc);
+                }
+            }
+            if (npc.isSpawned() && npc.getEntity() != null) {
+                try { npc.getEntity().setInvisible(false); } catch (Throwable ignored) {}
+                if (npc.getEntity() instanceof org.bukkit.entity.LivingEntity le) {
+                    try { le.setInvisible(false); } catch (Throwable ignored) {}
+                }
+            }
+            DCCosmetics.getInstance().getSkinProcessor().applyProfileSkin(
+                    npc, wName, skinId, fallbackName, profile.getSkinRevision());
+            return;
+        }
+
+        String effectiveModelId = profile.resolveEffectiveModelId(isBw);
+        if (effectiveModelId == null || effectiveModelId.isEmpty()) return;
+        try {
+            com.ticxo.modelengine.api.model.ActiveModel activeModel =
+                    com.ticxo.modelengine.api.ModelEngineAPI.createActiveModel(effectiveModelId);
+            if (activeModel == null) {
+                DCCosmetics.getInstance().getLogger().warning("[DCNPC] ModelEngine blueprint missing: '" + effectiveModelId + "' for " + tagId + "; falling back to Citizens.");
+                return;
+            }
+            com.ticxo.modelengine.api.model.ModeledEntity existing =
+                    com.ticxo.modelengine.api.ModelEngineAPI.getModeledEntity(npc.getEntity());
+            if (existing != null) {
+                for (com.ticxo.modelengine.api.model.ActiveModel oldModel : new java.util.ArrayList<>(existing.getModels().values())) {
+                    try { oldModel.destroy(); } catch (Throwable ignored) {}
+                }
+                try { existing.getModels().clear(); } catch (Throwable ignored) {}
+                existing.destroy();
+                com.ticxo.modelengine.api.ModelEngineAPI.getAPI().getModelUpdaters().forceRemoveModeledEntity(existing);
+            }
+            com.ticxo.modelengine.api.model.ModeledEntity modeled =
+                    com.ticxo.modelengine.api.ModelEngineAPI.getOrCreateModeledEntity(npc.getEntity());
+            modeled.setBaseEntityVisible(false);
+            modeled.addModel(activeModel, true);
+            if (DCCosmetics.getInstance().getNpcBehaviorController() != null) {
+                DCCosmetics.getInstance().getNpcBehaviorController().applyInitialModelAnimation(npc, profile);
+            }
+        } catch (Throwable t) {
+            DCCosmetics.getInstance().getLogger().warning("[DCNPC] Failed applying ModelEngine model '" + effectiveModelId + "' to " + tagId + ": " + t.getMessage());
+        }
+    }
+
     public NPC spawnCitizensNpc(NpcCharacter c, Location loc, String mode) {
         NPC npc = CitizensAPI.getNPCRegistry().createNPC(EntityType.PLAYER, c.getShortName());
         npc.data().setPersistent("dcnpc_id", c.getId());
@@ -428,11 +515,9 @@ public class NpcCanonManager {
         // Configure LookClose
         npc.getOrAddTrait(LookClose.class).lookClose(true);
 
-        // Configure Skin Trait
-        npc.getOrAddTrait(SkinTrait.class).setSkinName(c.getSkin());
-
-        // Apply world-specific skin (monochromatic ITU-R BT.601 in spawn_bw)
-        DCCosmetics.getInstance().getSkinProcessor().applyWorldSkin(npc, loc.getWorld().getName(), c.getId());
+        // Apply world-specific skin directly WITHOUT triggering Mojang Knight/Steve async lookup overwrite
+        DCCosmetics.getInstance().getSkinProcessor().applyProfileSkin(
+                npc, loc.getWorld().getName(), c.getId(), c.getSkin(), c.getBehaviorProfile().getSkinRevision());
 
         // Configure single-line overhead hologram & hide vanilla nameplate
         configureNpcOverhead(npc, c, loc.getWorld().getName());
@@ -707,6 +792,10 @@ public class NpcCanonManager {
         if (npc == null || !npc.isSpawned() || c == null || npc.getEntity() == null) return;
         DCCosmetics.debugNpc("applyEngineMode: NPC #" + npc.getId() + " (" + npc.getName() + ") engine=" + c.getEngineType() + " model=" + c.getModelId());
 
+        if (npc != null && c != null) {
+            applyProfileEngine(npc, c.getBehaviorProfile(), c.getId(), c.getSkin(), c.getSkin());
+            return;
+        }
         if (c.getEngineType().equalsIgnoreCase("MODEL_ENGINE")) {
             try {
                 Class<?> apiClass = Class.forName("com.ticxo.modelengine.api.ModelEngineAPI");

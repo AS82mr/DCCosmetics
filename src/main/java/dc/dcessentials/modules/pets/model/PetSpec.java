@@ -120,7 +120,11 @@ public class PetSpec {
                 double rounded = Math.max(2.0, Math.round(val));
                 if (rounded > 0) map.put(stat, rounded);
             } else if (val > 0.0) {
-                map.put(stat, Math.round(val * 10.0) / 10.0);
+                if (clampedLvl >= maxLevel) {
+                    map.put(stat, (double) Math.round(val));
+                } else {
+                    map.put(stat, Math.round(val * 10.0) / 10.0);
+                }
             }
         }
         return map;

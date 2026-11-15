@@ -231,6 +231,9 @@ public class DCNpcCommand implements CommandExecutor, TabCompleter {
                     return true;
                 }
                 canonManager.fixNames(sender);
+                if (DCCosmetics.getInstance().getDecorationManager() != null) {
+                    DCCosmetics.getInstance().getDecorationManager().syncAllDecorations();
+                }
                 return true;
 
             // ==============================================================
@@ -566,34 +569,103 @@ public class DCNpcCommand implements CommandExecutor, TabCompleter {
                     return true;
                 }
                 if (args.length < 2) {
-                    DCMessage.sendHelp(sender, "Usage: /" + label + " skin <characterId> [local|url|playerName]");
+                    DCMessage.sendHelp(sender, "Usage: /" + label + " skin <charOrDecoId> [file|url|playerName] [citizens|model|all]");
                     return true;
                 }
-                String sCharId = args[1].toLowerCase();
-                NpcCharacter sChar = registry.getCharacter(sCharId);
-                if (sChar == null) {
-                    DCMessage.sendError(sender, "Character '" + sCharId + "' not found.");
+                String targetSkinKey = args[1].toLowerCase();
+                NpcCharacter sChar = registry.getCharacter(targetSkinKey);
+                dc.dcessentials.modules.npc.model.DecorationNpc sDeco = (sChar == null && DCCosmetics.getInstance().getDecorationManager() != null)
+                        ? DCCosmetics.getInstance().getDecorationManager().getDecoration(targetSkinKey)
+                        : null;
+                if (sChar == null && sDeco == null) {
+                    DCMessage.sendError(sender, "Character or Decoration NPC '" + targetSkinKey + "' not found.");
                     return true;
                 }
-                String skinSource = (args.length > 2) ? args[2] : "local";
-                DCMessage.sendInfo(sender, "Processing skin for " + sChar.getShortName() + " (source: " + skinSource + ")...");
-                DCCosmetics.getInstance().getSkinProcessor().processSkin(sCharId, skinSource).thenAccept(res -> {
+
+                String skinDirId = (sChar != null) ? sChar.getId() : sDeco.getSkinId();
+                dc.dcessentials.modules.npc.model.NpcBehaviorProfile targetProfile = (sChar != null)
+                        ? sChar.getBehaviorProfile()
+                        : sDeco.getProfile();
+                String targetFallback = (sChar != null) ? sChar.getSkin() : sDeco.getFallbackSkinName();
+                String targetDisplay = (sChar != null) ? sChar.getShortName() : sDeco.getId();
+
+                String skinSource = (args.length > 2) ? args[2] : "file";
+                String bakeScope = (args.length > 3) ? args[3].toLowerCase() : "all"; // citizens, model, all
+                boolean bakeCitizens = !bakeScope.equals("model");
+                boolean bakeModel = bakeScope.equals("model") || bakeScope.equals("all");
+
+                DCMessage.sendInfo(sender, "Processing skin for " + targetDisplay + " (source: " + skinSource + ", scope: " + bakeScope + ")...");
+                DCCosmetics.getInstance().getSkinProcessor().processSkin(skinDirId, skinSource).thenAccept(res -> {
                     Bukkit.getScheduler().runTask(DCCosmetics.getInstance(), () -> {
-                        if (res) {
+                        if (!res) {
+                            DCMessage.sendError(sender, "Failed to process skin. Ensure default.png exists in /plugins/DCEssentials/npcs/" + skinDirId + "/");
+                            return;
+                        }
+                        targetProfile.bumpSkinRevision();
+
+                        boolean modelBaked = false;
+                        if (bakeModel && targetProfile.isModelEngine()
+                                && DCCosmetics.getInstance().getSceneCatalog() != null
+                                && DCCosmetics.getInstance().getBbmodelSkinBaker() != null) {
+                            dc.dcessentials.modules.npc.scene.SceneCatalog.SceneModelInfo info =
+                                    DCCosmetics.getInstance().getSceneCatalog().getModel(targetProfile.getModelId());
+                            if (info != null && info.bbmodelFile != null) {
+                                java.io.File dir = DCCosmetics.getInstance().getSkinProcessor().getNpcDirectory(skinDirId);
+                                java.io.File png = new java.io.File(dir, "default.png");
+                                java.io.File bwPng = new java.io.File(dir, "spawn_bw.png");
+                                dc.dcessentials.modules.npc.skin.BbmodelSkinBaker.BakeResult bakeRes =
+                                        DCCosmetics.getInstance().getBbmodelSkinBaker().bakeSkinIntoBbmodel(
+                                                info.bbmodelFile, targetSkinKey, png, bwPng.exists() ? bwPng : null, info.modelId);
+                                if (bakeRes.success) {
+                                    targetProfile.setBakedModelId(bakeRes.coloredModelId);
+                                    targetProfile.setBakedModelBwId(bakeRes.bwModelId);
+                                    DCCosmetics.getInstance().getBbmodelSkinBaker().reloadModelEngineAsync();
+                                    modelBaked = true;
+                                }
+                            }
+                        }
+
+                        if (sChar != null) {
+                            registry.saveCustomStages(DCCosmetics.getInstance().getDataFolder());
+                        } else if (DCCosmetics.getInstance().getDecorationManager() != null) {
+                            DCCosmetics.getInstance().getDecorationManager().save();
+                        }
+
+                        Runnable applyRunnable = () -> {
                             int updated = 0;
-                            if (CitizensAPI.getPlugin() != null) {
+                            if (CitizensAPI.getPlugin() != null && CitizensAPI.hasImplementation()) {
                                 for (NPC npc : CitizensAPI.getNPCRegistry()) {
-                                    String canId = canonManager.resolveCanonId(npc);
-                                    if (canId != null && canId.equalsIgnoreCase(sCharId)) {
-                                        String wName = (npc.isSpawned() && npc.getEntity() != null) ? npc.getEntity().getWorld().getName() : null;
-                                        DCCosmetics.getInstance().getSkinProcessor().applyWorldSkin(npc, wName, sCharId);
+                                    boolean match = false;
+                                    if (sChar != null) {
+                                        String canId = canonManager.resolveCanonId(npc);
+                                        match = canId != null && canId.equalsIgnoreCase(sChar.getId());
+                                    } else if (npc.data().has("dcnpc_deco_id")) {
+                                        match = npc.data().get("dcnpc_deco_id").toString().equalsIgnoreCase(sDeco.getId());
+                                    }
+                                    if (match && npc.isSpawned() && npc.getEntity() != null) {
+                                        String wName = npc.getEntity().getWorld().getName();
+                                        if (bakeCitizens) {
+                                            DCCosmetics.getInstance().getSkinProcessor().applyProfileSkin(
+                                                    npc, wName, skinDirId, targetFallback, targetProfile.getSkinRevision());
+                                        }
+                                        canonManager.applyProfileEngine(npc, targetProfile, targetSkinKey, skinDirId, targetFallback);
                                         updated++;
                                     }
                                 }
                             }
-                            DCMessage.sendGeneral(sender, "Applied skin to " + updated + " instance(s) of " + sChar.getShortName() + ".");
+                            DCMessage.sendGeneral(sender, "Applied baked skin (rev #" + targetProfile.getSkinRevision() + ") to " + updated + " instance(s) of " + targetDisplay + ".");
+                        };
+
+                        if (modelBaked) {
+                            DCMessage.sendInfo(sender, "Baked custom .bbmodel (" + targetProfile.getBakedModelId() + " & _bw). Reloading ModelEngine...");
+                            Bukkit.getScheduler().runTaskLater(DCCosmetics.getInstance(), () -> {
+                                if (DCCosmetics.getInstance().getSceneCatalog() != null) {
+                                    DCCosmetics.getInstance().getSceneCatalog().reload();
+                                }
+                                applyRunnable.run();
+                            }, 45L);
                         } else {
-                            DCMessage.sendError(sender, "Failed to process skin. Ensure default.png exists in /plugins/DCEssentials/npcs/" + sCharId + "/");
+                            applyRunnable.run();
                         }
                     });
                 });
@@ -899,6 +971,27 @@ public class DCNpcCommand implements CommandExecutor, TabCompleter {
                 }
                 return true;
 
+            case "deco":
+            case "decoration":
+            case "decorations":
+                if (!hasAdminPerm(sender)) {
+                    DCMessage.sendError(sender, "You do not have permission to manage Decoration NPCs.");
+                    return true;
+                }
+                return handleDecoCommand(sender, label, args);
+
+            case "path":
+            case "patrol":
+                if (!(sender instanceof Player pPath)) {
+                    DCMessage.sendError(sender, "Only in-game players can record patrol paths.");
+                    return true;
+                }
+                if (!hasAdminPerm(sender)) {
+                    DCMessage.sendError(sender, "You do not have permission to configure patrol paths.");
+                    return true;
+                }
+                return handlePathCommand(pPath, label, args);
+
             case "reload":
                 if (!hasAdminPerm(sender)) {
                     DCMessage.sendError(sender, "You do not have permission to execute this command.");
@@ -908,7 +1001,12 @@ public class DCNpcCommand implements CommandExecutor, TabCompleter {
                 canonManager.loadLocations();
                 registry.initializeDefaults();
                 registry.loadCustomStages(DCCosmetics.getInstance().getDataFolder());
-                DCMessage.sendGeneral(sender, "Reloaded districts, canonical anchors, custom stages, and character registry successfully.");
+                if (DCCosmetics.getInstance().getSceneCatalog() != null) DCCosmetics.getInstance().getSceneCatalog().reload();
+                if (DCCosmetics.getInstance().getDecorationManager() != null) {
+                    DCCosmetics.getInstance().getDecorationManager().load();
+                    DCCosmetics.getInstance().getDecorationManager().syncAllDecorations();
+                }
+                DCMessage.sendGeneral(sender, "Reloaded districts, anchors, custom stages, Scenes catalog & Decoration NPCs.");
                 return true;
 
             case "gui":
@@ -952,6 +1050,158 @@ public class DCNpcCommand implements CommandExecutor, TabCompleter {
         }
     }
 
+    private boolean handleDecoCommand(CommandSender sender, String label, String[] args) {
+        dc.dcessentials.modules.npc.scene.DecorationManager dm = DCCosmetics.getInstance().getDecorationManager();
+        if (dm == null) {
+            DCMessage.sendError(sender, "DecorationManager is not initialized.");
+            return true;
+        }
+        String sub = (args.length >= 2) ? args[1].toLowerCase() : "gui";
+        switch (sub) {
+            case "gui":
+            case "list":
+            case "menu":
+                if (sender instanceof Player p && DCCosmetics.getInstance().getDecorationListGUI() != null) {
+                    DCCosmetics.getInstance().getDecorationListGUI().open(p);
+                } else {
+                    DCMessage.sendGeneral(sender, "Decoration NPCs (" + dm.getAllDecorations().size() + "): "
+                            + dm.getAllDecorations().stream().map(dc.dcessentials.modules.npc.model.DecorationNpc::getId).collect(Collectors.joining(", ")));
+                }
+                return true;
+            case "create":
+                if (!(sender instanceof Player pCreate)) {
+                    DCMessage.sendError(sender, "Only players can create a Decoration NPC in-world.");
+                    return true;
+                }
+                String rawId = (args.length >= 3) ? args[2] : ("deco_" + (dm.getAllDecorations().size() + 1));
+                String disp = (args.length >= 4) ? String.join(" ", Arrays.copyOfRange(args, 3, args.length)) : ("<#E2F6A8>" + rawId);
+                dc.dcessentials.modules.npc.model.DecorationNpc created = dm.createDecoration(rawId, disp, pCreate.getLocation());
+                DCMessage.sendGeneral(sender, "Created Decoration NPC §f" + created.getId() + " §7at your location.");
+                if (DCCosmetics.getInstance().getDecorationEditorGUI() != null) {
+                    DCCosmetics.getInstance().getDecorationEditorGUI().open(pCreate, created.getId());
+                }
+                return true;
+            case "edit":
+                if (!(sender instanceof Player pEdit) || args.length < 3) {
+                    DCMessage.sendHelp(sender, "Usage: /" + label + " deco edit <id>");
+                    return true;
+                }
+                if (DCCosmetics.getInstance().getDecorationEditorGUI() != null) {
+                    DCCosmetics.getInstance().getDecorationEditorGUI().open(pEdit, args[2]);
+                }
+                return true;
+            case "delete":
+            case "remove":
+                if (args.length < 3) {
+                    DCMessage.sendHelp(sender, "Usage: /" + label + " deco delete <id>");
+                    return true;
+                }
+                if (dm.deleteDecoration(args[2])) {
+                    if (DCCosmetics.getInstance().getNpcBehaviorController() != null) {
+                        DCCosmetics.getInstance().getNpcBehaviorController().resetStatesForTag(args[2], true);
+                    }
+                    DCMessage.sendWarning(sender, "Deleted Decoration NPC '" + args[2] + "'.");
+                } else {
+                    DCMessage.sendError(sender, "Decoration NPC '" + args[2] + "' not found.");
+                }
+                return true;
+            case "rename":
+                if (args.length < 4) {
+                    DCMessage.sendHelp(sender, "Usage: /" + label + " deco rename <id> <newDisplayName...>");
+                    return true;
+                }
+                dc.dcessentials.modules.npc.model.DecorationNpc dRen = dm.getDecoration(args[2]);
+                if (dRen == null) {
+                    DCMessage.sendError(sender, "Decoration NPC not found: " + args[2]);
+                    return true;
+                }
+                dRen.setDisplayName(String.join(" ", Arrays.copyOfRange(args, 3, args.length)));
+                dm.save();
+                dm.syncDecorationInstances(dRen);
+                DCMessage.sendGeneral(sender, "Updated display name of " + dRen.getId() + ".");
+                return true;
+            case "quote":
+                if (args.length < 4) {
+                    DCMessage.sendHelp(sender, "Usage: /" + label + " deco quote <id> <quoteText...>");
+                    return true;
+                }
+                dc.dcessentials.modules.npc.model.DecorationNpc dQ = dm.getDecoration(args[2]);
+                if (dQ == null) {
+                    DCMessage.sendError(sender, "Decoration NPC not found: " + args[2]);
+                    return true;
+                }
+                dQ.getAmbientLines().add(String.join(" ", Arrays.copyOfRange(args, 3, args.length)));
+                dm.save();
+                DCMessage.sendGeneral(sender, "Added ambient quote #" + dQ.getAmbientLines().size() + " to " + dQ.getId() + ".");
+                return true;
+            case "clearquotes":
+                if (args.length < 3) {
+                    DCMessage.sendHelp(sender, "Usage: /" + label + " deco clearquotes <id>");
+                    return true;
+                }
+                dc.dcessentials.modules.npc.model.DecorationNpc dCQ = dm.getDecoration(args[2]);
+                if (dCQ == null) {
+                    DCMessage.sendError(sender, "Decoration NPC not found: " + args[2]);
+                    return true;
+                }
+                dCQ.getAmbientLines().clear();
+                dm.save();
+                DCMessage.sendWarning(sender, "Cleared ambient quotes for " + dCQ.getId() + ".");
+                return true;
+            case "sync":
+                dm.syncAllDecorations();
+                DCMessage.sendGeneral(sender, "Synchronized all Decoration NPCs across active worlds.");
+                return true;
+            default:
+                DCMessage.sendHelp(sender, "/" + label + " deco <gui|create|edit|delete|rename|quote|clearquotes|sync>");
+                return true;
+        }
+    }
+
+    private boolean handlePathCommand(Player player, String label, String[] args) {
+        dc.dcessentials.modules.npc.behavior.NpcBehaviorController bc = DCCosmetics.getInstance().getNpcBehaviorController();
+        if (bc == null) {
+            DCMessage.sendError(player, "Behavior controller is not initialized.");
+            return true;
+        }
+        String sub = (args.length >= 2) ? args[1].toLowerCase() : "help";
+        switch (sub) {
+            case "start":
+                if (args.length < 3) {
+                    DCMessage.sendHelp(player, "Usage: /" + label + " path start <charOrDecoId>");
+                    return true;
+                }
+                String target = args[2].toLowerCase();
+                NpcCharacter c = registry.getCharacter(target);
+                if (c != null) {
+                    bc.startRecording(player, "CHAR", c.getId(), canonManager.getLiveLocation(c.getId()));
+                    return true;
+                }
+                dc.dcessentials.modules.npc.scene.DecorationManager dm = DCCosmetics.getInstance().getDecorationManager();
+                dc.dcessentials.modules.npc.model.DecorationNpc deco = (dm != null) ? dm.getDecoration(target) : null;
+                if (deco != null) {
+                    bc.startRecording(player, "DECO", deco.getId(), deco.getAnchorLocation());
+                    return true;
+                }
+                DCMessage.sendError(player, "No storyline or decoration NPC found with id '" + target + "'.");
+                return true;
+            case "save":
+                if (!bc.saveRecording(player)) {
+                    DCMessage.sendWarning(player, "No active patrol recording with >= 2 waypoints.");
+                }
+                return true;
+            case "undo":
+                bc.undoRecordedWaypoint(player);
+                return true;
+            case "cancel":
+                bc.cancelRecording(player);
+                return true;
+            default:
+                DCMessage.sendHelp(player, "/" + label + " path <start <id>|save|undo|cancel>");
+                return true;
+        }
+    }
+
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         boolean isAdmin = hasAdminPerm(sender);
@@ -960,7 +1210,7 @@ public class DCNpcCommand implements CommandExecutor, TabCompleter {
             List<String> subs = new ArrayList<>();
             if (isAdmin) {
                 subs.addAll(Arrays.asList(
-                    "help", "list", "status", "setup", "canon", "purge", "fixnames", "refresh", "scene", "wand", "editor", "edit", "track", "waypoint",
+                    "help", "list", "status", "setup", "canon", "purge", "fixnames", "refresh", "scene", "deco", "path", "wand", "editor", "edit", "track", "waypoint",
                     "warp", "warpmenu", "tp", "loc", "spawn", "remove", "despawn", "talk", "claim",
                     "stages", "setreward", "setcmd", "setitem", "settitle", "setobj", "setdialogue", "setcomp",
                     "stage", "reset", "timeline", "gui", "admin", "skin", "audit", "reload"
@@ -1006,6 +1256,25 @@ public class DCNpcCommand implements CommandExecutor, TabCompleter {
                 case "tp":
                 case "loc":
                 case "skin":
+                    List<String> skinIds = registry.getAllCharacters().stream().map(NpcCharacter::getId).collect(Collectors.toList());
+                    if (DCCosmetics.getInstance().getDecorationManager() != null) {
+                        for (dc.dcessentials.modules.npc.model.DecorationNpc d : DCCosmetics.getInstance().getDecorationManager().getAllDecorations()) {
+                            skinIds.add(d.getId());
+                        }
+                    }
+                    return skinIds.stream().filter(id -> id.startsWith(args[1].toLowerCase())).collect(Collectors.toList());
+
+                case "deco":
+                case "decoration":
+                case "decorations":
+                    return Arrays.asList("gui", "list", "create", "edit", "delete", "rename", "quote", "clearquotes", "sync").stream()
+                            .filter(s -> s.startsWith(args[1].toLowerCase())).collect(Collectors.toList());
+
+                case "path":
+                case "patrol":
+                    return Arrays.asList("start", "save", "undo", "cancel").stream()
+                            .filter(s -> s.startsWith(args[1].toLowerCase())).collect(Collectors.toList());
+
                 case "claim":
                 case "stages":
                 case "chapters":

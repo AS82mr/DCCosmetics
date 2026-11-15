@@ -172,13 +172,63 @@ public class KeystoneDetector {
     }
 
     public static boolean hasOverloadStabilizer(ItemStack item) {
+        return hasPhaseVentAnchor(item);
+    }
+
+    public static boolean hasPhaseVentAnchor(ItemStack item) {
         for (ScrollModel sm : resolveSocketedScrollModels(item)) {
             if ("KEYSTONE_ANCHOR".equalsIgnoreCase(sm.getMechanic("type", ""))) {
-                Boolean b = sm.getMechanic("stabilize_at_overload", Boolean.FALSE);
-                if (Boolean.TRUE.equals(b)) return true;
+                Number vent = sm.getMechanic("phase_vent_heat_reduction", 0);
+                Boolean legacy = sm.getMechanic("stabilize_at_overload", Boolean.FALSE);
+                if ((vent != null && vent.intValue() > 0) || Boolean.TRUE.equals(legacy)) {
+                    return true;
+                }
             }
         }
         return false;
+    }
+
+    public static int getPhaseVentHeatReduction(ItemStack item) {
+        int maxVent = 0;
+        for (ScrollModel sm : resolveSocketedScrollModels(item)) {
+            if ("KEYSTONE_ANCHOR".equalsIgnoreCase(sm.getMechanic("type", ""))) {
+                Number vent = sm.getMechanic("phase_vent_heat_reduction", 0);
+                if (vent != null && vent.intValue() > maxVent) {
+                    maxVent = vent.intValue();
+                } else if (Boolean.TRUE.equals(sm.getMechanic("stabilize_at_overload", Boolean.FALSE)) && maxVent < 35) {
+                    maxVent = 35;
+                }
+            }
+        }
+        return maxVent;
+    }
+
+    public static int getPhaseVentCooldownSeconds(ItemStack item) {
+        int cd = 180;
+        for (ScrollModel sm : resolveSocketedScrollModels(item)) {
+            if ("KEYSTONE_ANCHOR".equalsIgnoreCase(sm.getMechanic("type", ""))) {
+                Number n = sm.getMechanic("phase_vent_cooldown_seconds", 0);
+                if (n != null && n.intValue() > 0) {
+                    cd = Math.min(cd, n.intValue());
+                }
+            }
+        }
+        return cd;
+    }
+
+    public static int getOverloadClearBelow(ItemStack item, int defaultClearBelow) {
+        int eff = defaultClearBelow;
+        for (ScrollModel sm : resolveSocketedScrollModels(item)) {
+            if ("KEYSTONE_ANCHOR".equalsIgnoreCase(sm.getMechanic("type", ""))) {
+                Number n = sm.getMechanic("overload_clear_below", 0);
+                if (n != null && n.intValue() > eff) {
+                    eff = Math.min(95, n.intValue());
+                } else if (Boolean.TRUE.equals(sm.getMechanic("stabilize_at_overload", Boolean.FALSE)) && eff < 75) {
+                    eff = 75;
+                }
+            }
+        }
+        return eff;
     }
 
     public static int getTpaRefundPct(ItemStack item) {
@@ -244,6 +294,10 @@ public class KeystoneDetector {
 
     public static KeystoneTier detectTier(ItemStack item) {
         return tierOf(item);
+    }
+
+    public static boolean isKeystone(ItemStack item) {
+        return tierOf(item) != KeystoneTier.NONE;
     }
 
     public static boolean isEnergyCube(ItemStack item) {

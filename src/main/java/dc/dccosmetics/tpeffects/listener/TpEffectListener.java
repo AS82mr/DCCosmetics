@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 public final class TpEffectListener implements Listener {
 
     private static final StackWalker STACK_WALKER = StackWalker.getInstance();
+    private static volatile TpEffectListener instance;
 
     private final DCCosmetics plugin;
     private final TpEffectManager manager;
@@ -46,6 +47,36 @@ public final class TpEffectListener implements Listener {
     public TpEffectListener(DCCosmetics plugin, TpEffectManager manager) {
         this.plugin = plugin;
         this.manager = manager;
+        instance = this;
+    }
+
+    /**
+     * Shared check used by TeleportGate / TeleportationManager so Keystone energy & heat
+     * ignore internal CinematicTeleportEngine camera hops, short hops, and combat/item abilities.
+     */
+    public static boolean isSuppressedOrShortHop(Player player, TeleportCause cause, Location from, Location to) {
+        TpEffectListener inst = instance;
+        if (inst == null || player == null) return false;
+        if (player.hasMetadata("in_wardrobe") || player.hasMetadata("no_tpeffect")) return true;
+        if (inst.manager.getCinematicEngine().isBusy(player)) return true;
+        if (inst.manager.isTemporarilySuppressed(player)) return true;
+        if (from == null || to == null || from.getWorld() == null || to.getWorld() == null) return true;
+
+        TpEffectConfig cfg = inst.manager.getConfig();
+        if (cfg.isCauseIgnored(cause)) return true;
+
+        boolean sameWorld = from.getWorld().equals(to.getWorld());
+        double distSq = sameWorld ? from.distanceSquared(to) : -1.0;
+        if (sameWorld) {
+            double minDist = (cause == TeleportCause.COMMAND)
+                    ? cfg.getMinDistanceCommand()
+                    : cfg.getMinDistanceNonCommand();
+            if (distSq < (minDist * minDist)) {
+                return true;
+            }
+        }
+
+        return inst.detectAbilitySuppressionReason(player, cause, sameWorld, distSq, cfg) != null;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -123,6 +154,9 @@ public final class TpEffectListener implements Listener {
                 event.setCancelled(true);
                 final Location fromCopy = from.clone();
                 final Location toCopy = to.clone();
+                if (plugin.getTeleportationManager() != null) {
+                    plugin.getTeleportationManager().handleTeleport(player, fromCopy, toCopy, cause);
+                }
                 manager.getCinematicEngine().markPending(player.getUniqueId());
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     if (player.isOnline()) {

@@ -113,14 +113,19 @@ public class PetSkillSpec {
     }
 
     public List<String> formatDescriptionLines(int level, int maxLevel, double cdMult, double powerMult) {
-        double effPower = Math.round(getEffectivePower(level, maxLevel) * powerMult * 10.0) / 10.0;
-        double effCdSec = Math.round((getEffectiveCooldownMs(level, maxLevel) * cdMult) / 100.0) / 10.0;
+        boolean isMax = level >= maxLevel;
+        double rawEffPower = getEffectivePower(level, maxLevel) * powerMult;
+        double effPower = isMax ? Math.round(rawEffPower) : (Math.round(rawEffPower * 10.0) / 10.0);
+        double rawCdSec = (getEffectiveCooldownMs(level, maxLevel) * cdMult) / 1000.0;
+        double effCdSec = Math.round(rawCdSec * 10.0) / 10.0;
         String pwrStr = formatNum(effPower);
         String cdStr = formatNum(effCdSec);
-        String rngStr = formatNum(range);
+        String rngStr = formatNum(isMax ? Math.round(range) : range);
         String threshStr = String.valueOf(Math.round(activationThreshold * 100.0));
-        String halfPwrStr = formatNum(Math.round(effPower * 0.55 * 10.0) / 10.0);
-        String healStr = formatNum(Math.round(Math.max(4.0, effPower * 0.35) * 10.0) / 10.0);
+        double halfVal = effPower * 0.55;
+        double healVal = Math.max(4.0, effPower * 0.35);
+        String halfPwrStr = formatNum(isMax ? Math.round(halfVal) : (Math.round(halfVal * 10.0) / 10.0));
+        String healStr = formatNum(isMax ? Math.round(healVal) : (Math.round(healVal * 10.0) / 10.0));
 
         List<String> out = new ArrayList<>(descriptionLines.size());
         for (String line : descriptionLines) {

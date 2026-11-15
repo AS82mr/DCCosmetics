@@ -56,10 +56,12 @@ public class KeystonePersistence {
         }
         db.loadKeystoneSnapshot(uuid, opt -> {
             KeystoneProfile current = manager.getProfile(uuid);
-            if (opt.isPresent()) {
-                current.applySnapshot(opt.get());
-            } else {
-                current.setLoaded(true);
+            if (!(current.isLoaded() && current.isDirty())) {
+                if (opt.isPresent()) {
+                    current.applySnapshot(opt.get());
+                } else {
+                    current.setLoaded(true);
+                }
             }
             if (afterApplyMainThread != null) {
                 afterApplyMainThread.accept(current);

@@ -187,28 +187,49 @@ public class PetCombatDirector {
         }
     }
 
+    // =========================================================================
+    // TEMPORARY SIMPLE PARTICLE VFX (ModelEngine / Big Screen VFX Placeholder)
+    // =========================================================================
+    // TODO [PET-VFX-PLACEHOLDER]: All ModelEngine VFX blueprints and large multi-ring/explosion
+    // screen-filling particle bursts have been replaced by a single clean particle line until proper
+    // finalized VFX assets are integrated. Restore spawnModelVfx / blueprint calls below when ready.
     private void spawnModelVfx(PetSkillSpec skill, Location loc, double scale, int durationTicks, String fallbackModel, String fallbackAnim) {
-        if (config != null && !config.isModelEngineVfxEnabled()) return;
-        int dur = durationTicks > 0 ? durationTicks : (config != null ? config.getDefaultVfxDurationTicks() : 70);
-        ModelEngineVfxBridge.VfxHandle handle = null;
-        if (skill.getVfxModelId() != null && !skill.getVfxModelId().isBlank()) {
-            handle = ModelEngineVfxBridge.spawnEffect(skill.getVfxModelId(), loc, skill.getVfxAnimation(), scale, dur);
-        }
-        if (handle == null && fallbackModel != null && !fallbackModel.isBlank()) {
-            ModelEngineVfxBridge.spawnEffect(fallbackModel, loc, fallbackAnim, scale, dur);
+        /*
+         * Disabled until proper ModelEngine VFX blueprints are finalized:
+         * if (config != null && !config.isModelEngineVfxEnabled()) return;
+         * int dur = durationTicks > 0 ? durationTicks : (config != null ? config.getDefaultVfxDurationTicks() : 70);
+         * ModelEngineVfxBridge.VfxHandle handle = null;
+         * if (skill.getVfxModelId() != null && !skill.getVfxModelId().isBlank()) {
+         *     handle = ModelEngineVfxBridge.spawnEffect(skill.getVfxModelId(), loc, skill.getVfxAnimation(), scale, dur);
+         * }
+         * if (handle == null && fallbackModel != null && !fallbackModel.isBlank()) {
+         *     ModelEngineVfxBridge.spawnEffect(fallbackModel, loc, fallbackAnim, scale, dur);
+         * }
+         */
+    }
+
+    /**
+     * Draws a clean, compact single line of colored dust particles (replaces heavy skill explosions/clouds).
+     */
+    private void drawSimpleSingleLineVfx(Location from, Location to, Color dustColor) {
+        if (from == null || to == null || from.getWorld() == null || !from.getWorld().equals(to.getWorld())) return;
+        World world = from.getWorld();
+        Particle.DustOptions dust = new Particle.DustOptions(dustColor != null ? dustColor : Color.fromRGB(255, 255, 255), 0.75f);
+        final int steps = 12;
+        for (int i = 0; i <= steps; i++) {
+            double t = (double) i / steps;
+            Location point = interpolateLocation(from, to, t);
+            world.spawnParticle(Particle.DUST, point, 1, 0, 0, 0, 0, dust);
         }
     }
 
     private void runSparkCinder(Player owner, PlayerPetData data, Location origin, LivingEntity target, double power) {
         if (target == null || target.isDead()) return;
-        origin.getWorld().playSound(origin, Sound.ENTITY_BLAZE_SHOOT, 0.7f, 1.45f);
-        launchHomingBeam(origin, target, Particle.FLAME, Color.fromRGB(255, 145, 40), () -> {
-            if (target.isDead()) return;
-            target.setFireTicks(Math.max(target.getFireTicks(), 60));
-            applyPetDamage(owner, data, target, power);
-            target.getWorld().spawnParticle(Particle.LAVA, target.getLocation().add(0, 0.8, 0), 10, 0.35, 0.35, 0.35, 0.04);
-            target.getWorld().playSound(target.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 0.45f, 1.7f);
-        });
+        origin.getWorld().playSound(origin, Sound.ENTITY_BLAZE_SHOOT, 0.6f, 1.45f);
+        // TODO [PET-VFX-PLACEHOLDER]: Swap single line for proper Fireball / Ember VFX model on target hit
+        drawSimpleSingleLineVfx(origin, target.getEyeLocation(), Color.fromRGB(255, 145, 40));
+        target.setFireTicks(Math.max(target.getFireTicks(), 60));
+        applyPetDamage(owner, data, target, power);
     }
 
     private void runStrikerBurst(Player owner, PlayerPetData data, Location origin, LivingEntity target, double power) {
@@ -224,8 +245,9 @@ public class PetCombatDirector {
                 }
                 Location from = origin.clone().add(0, 0.1, 0);
                 Location to = target.getEyeLocation().clone().add(0, -0.35, 0);
-                drawParticleLine(from, to, Particle.CRIT, Color.fromRGB(56, 189, 248), 14);
-                from.getWorld().playSound(from, Sound.ENTITY_ARROW_SHOOT, 0.75f, 1.55f + (shots * 0.1f));
+                // TODO [PET-VFX-PLACEHOLDER]: Replace single cyan dash line with proper Striker tracer VFX
+                drawSimpleSingleLineVfx(from, to, Color.fromRGB(56, 189, 248));
+                from.getWorld().playSound(from, Sound.ENTITY_ARROW_SHOOT, 0.65f, 1.55f + (shots * 0.1f));
                 target.setNoDamageTicks(0);
                 applyPetDamage(owner, data, target, perShot);
                 shots++;
@@ -235,10 +257,9 @@ public class PetCombatDirector {
 
     private void runEmberStream(Player owner, PlayerPetData data, Location origin, LivingEntity target, double power) {
         Location center = target != null && !target.isDead() ? target.getLocation() : origin.clone().add(owner.getLocation().getDirection().multiply(4));
-        origin.getWorld().playSound(origin, Sound.ITEM_FIRECHARGE_USE, 0.9f, 0.95f);
-        drawParticleLine(origin, center.clone().add(0, 1.0, 0), Particle.FLAME, Color.fromRGB(251, 146, 60), 22);
-        spawnParticleRing(center.clone().add(0, 0.3, 0), 3.6, 26, Particle.FLAME);
-        spawnParticleRing(center.clone().add(0, 0.6, 0), 2.2, 16, Particle.SWEEP_ATTACK);
+        origin.getWorld().playSound(origin, Sound.ITEM_FIRECHARGE_USE, 0.7f, 0.95f);
+        // TODO [PET-VFX-PLACEHOLDER]: Replace single line with proper Flame Sweep / Ember Stream VFX
+        drawSimpleSingleLineVfx(origin, center.clone().add(0, 0.9, 0), Color.fromRGB(251, 146, 60));
 
         for (LivingEntity victim : getValidAoeTargets(owner, data, center, 4.2, target)) {
             victim.setFireTicks(Math.max(victim.getFireTicks(), 90));
@@ -253,22 +274,24 @@ public class PetCombatDirector {
         double healAmount = Math.max(4.0, power * 0.35);
         double blastPower = Math.max(8.0, power * 0.55);
 
-        world.playSound(center, Sound.BLOCK_BEACON_ACTIVATE, 0.85f, 1.35f);
+        world.playSound(center, Sound.BLOCK_BEACON_ACTIVATE, 0.7f, 1.35f);
         healLiving(owner, healAmount);
         owner.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 80, 1, false, false, true));
+
+        // TODO [PET-VFX-PLACEHOLDER]: Replace simple vertical pulse line with proper Healing Aura VFX
+        drawSimpleSingleLineVfx(center.clone().add(0, 0.2, 0), center.clone().add(0, 2.2, 0), Color.fromRGB(52, 211, 153));
 
         for (Entity e : center.getWorld().getNearbyEntities(center, 6.5, 4.5, 6.5)) {
             if (e instanceof Player p && !p.equals(owner) && data.isAlly(p.getUniqueId())) {
                 healLiving(p, healAmount);
                 p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 60, 0, false, false, true));
+                drawSimpleSingleLineVfx(center.clone().add(0, 1.1, 0), p.getLocation().add(0, 1.1, 0), Color.fromRGB(52, 211, 153));
             } else if (e instanceof LivingEntity le && isValidAoeCandidate(owner, data, le, null)) {
                 Vector push = le.getLocation().toVector().subtract(center.toVector()).setY(0.38).normalize().multiply(0.85);
                 le.setVelocity(push);
                 applyPetDamage(owner, data, le, blastPower);
             }
         }
-        spawnParticleRing(center.clone().add(0, 0.5, 0), 3.0, 28, Particle.HAPPY_VILLAGER);
-        spawnParticleRing(center.clone().add(0, 1.1, 0), 4.5, 28, Particle.END_ROD);
     }
 
     private void runSalvoBarrage(Player owner, PlayerPetData data, Location origin, LivingEntity target, double power) {
@@ -283,15 +306,13 @@ public class PetCombatDirector {
                     return;
                 }
                 Location dest = !target.isDead() ? target.getLocation().add(0, 0.8, 0) : owner.getLocation();
-                origin.getWorld().playSound(origin, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 0.8f, 1.25f);
-                launchArcingProjectile(origin.clone().add((count - 1) * 0.5, 0.4, 0), dest, () -> {
-                    dest.getWorld().spawnParticle(Particle.EXPLOSION, dest, 1);
-                    dest.getWorld().playSound(dest, Sound.ENTITY_GENERIC_EXPLODE, 0.65f, 1.3f);
-                    for (LivingEntity v : getValidAoeTargets(owner, data, dest, 3.6, target)) {
-                        v.setNoDamageTicks(0);
-                        applyPetDamage(owner, data, v, perMissile);
-                    }
-                });
+                origin.getWorld().playSound(origin, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 0.7f, 1.25f);
+                // TODO [PET-VFX-PLACEHOLDER]: Replace simple single line with proper Salvo Missile Model / Impact VFX
+                drawSimpleSingleLineVfx(origin.clone().add((count - 1) * 0.4, 0.2, 0), dest, Color.fromRGB(248, 113, 113));
+                for (LivingEntity v : getValidAoeTargets(owner, data, dest, 3.6, target)) {
+                    v.setNoDamageTicks(0);
+                    applyPetDamage(owner, data, v, perMissile);
+                }
                 count++;
             }
         }.runTaskTimer(DCCosmetics.getInstance(), 0L, 4L);
@@ -302,28 +323,14 @@ public class PetCombatDirector {
         World world = center.getWorld();
         if (world == null) return;
 
-        world.playSound(center, Sound.ITEM_SHIELD_BLOCK, 1.0f, 0.8f);
+        world.playSound(center, Sound.ITEM_SHIELD_BLOCK, 0.85f, 0.8f);
         owner.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 60, 1, false, false, true));
         owner.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 100, 1, false, false, true));
 
-        ModelEngineVfxBridge.VfxHandle dome = ModelEngineVfxBridge.spawnEffect("drone_shieldvfx", center, "shield", 1.15, 55);
-        if (dome != null) {
-            new BukkitRunnable() {
-                int ticks = 0;
-                @Override
-                public void run() {
-                    if (!owner.isOnline() || ticks >= 50) {
-                        dome.destroy();
-                        cancel();
-                        return;
-                    }
-                    dome.teleport(owner.getLocation());
-                    ticks += 2;
-                }
-            }.runTaskTimer(DCCosmetics.getInstance(), 2L, 2L);
-        }
+        // TODO [PET-VFX-PLACEHOLDER]: Previously spawned ModelEngine "drone_shieldvfx" dome here.
+        // Replaced with simple single vertical shield line until a properly scaled shield VFX blueprint is ready.
+        drawSimpleSingleLineVfx(center.clone().add(0, 0.2, 0), center.clone().add(0, 2.2, 0), Color.fromRGB(96, 165, 250));
 
-        spawnParticleRing(center.clone().add(0, 1.0, 0), 3.4, 30, Particle.ELECTRIC_SPARK);
         for (LivingEntity v : getValidAoeTargets(owner, data, center, 5.2, null)) {
             Vector push = v.getLocation().toVector().subtract(center.toVector()).setY(0.45).normalize().multiply(1.15);
             v.setVelocity(push);
@@ -334,7 +341,8 @@ public class PetCombatDirector {
     private void runZephyrTempest(Player owner, PlayerPetData data, PetSkillSpec skill, Location origin, LivingEntity target, double power) {
         Location center = target != null && !target.isDead() ? target.getLocation().clone() : origin.clone().add(owner.getLocation().getDirection().multiply(5));
         owner.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 80, 1, false, false, true));
-        spawnModelVfx(skill, center, 1.15, 115, "nocsy_drakonin_tornado", "idle");
+        // TODO [PET-VFX-PLACEHOLDER]: Previously spawned "nocsy_drakonin_tornado" ModelEngine VFX here.
+        drawSimpleSingleLineVfx(origin, center.clone().add(0, 1.0, 0), Color.fromRGB(125, 211, 252));
 
         double perTick = power / 4.0;
         new BukkitRunnable() {
@@ -346,8 +354,7 @@ public class PetCombatDirector {
                     return;
                 }
                 Location eye = center.clone().add(0, 0.25 + (step * 0.45), 0);
-                eye.getWorld().playSound(eye, Sound.ENTITY_PHANTOM_FLAP, 0.9f, 0.65f + (step * 0.2f));
-                spawnParticleRing(eye, 3.8 - (step * 0.4), 26, Particle.CLOUD);
+                eye.getWorld().playSound(eye, Sound.ENTITY_PHANTOM_FLAP, 0.7f, 0.65f + (step * 0.2f));
                 for (LivingEntity v : getValidAoeTargets(owner, data, center, 5.5, target)) {
                     v.setNoDamageTicks(0);
                     applyPetDamage(owner, data, v, perTick);
@@ -366,9 +373,10 @@ public class PetCombatDirector {
     private void runTerraRupture(Player owner, PlayerPetData data, PetSkillSpec skill, Location origin, LivingEntity target, double power) {
         Location impact = target != null && !target.isDead() ? target.getLocation().clone() : origin.clone().add(owner.getLocation().getDirection().multiply(5));
         impact.setYaw(owner.getLocation().getYaw());
-        spawnModelVfx(skill, impact, 1.15, 95, "vfx_earthquake_rupture_1", "skill");
-
+        // TODO [PET-VFX-PLACEHOLDER]: Previously spawned "vfx_earthquake_rupture_1" ModelEngine VFX & stone bursts here.
         Location start = owner.getLocation().clone().add(0, 0.3, 0);
+        drawSimpleSingleLineVfx(start, impact.clone().add(0, 0.3, 0), Color.fromRGB(161, 98, 7));
+
         Vector dir = impact.toVector().subtract(start.toVector()).setY(0).normalize();
         if (dir.lengthSquared() < 0.01) dir = owner.getLocation().getDirection().setY(0).normalize();
         Vector finalDir = dir;
@@ -382,10 +390,9 @@ public class PetCombatDirector {
                     return;
                 }
                 Location point = impact.clone().add(finalDir.clone().multiply((seg - 2) * 1.4));
-                point.getWorld().playSound(point, Sound.BLOCK_BASALT_BREAK, 1.0f, 0.6f);
-                point.getWorld().spawnParticle(Particle.BLOCK, point.clone().add(0, 0.6, 0), 22, 0.7, 0.5, 0.7, 0.15, Material.STONE.createBlockData());
+                point.getWorld().playSound(point, Sound.BLOCK_BASALT_BREAK, 0.8f, 0.6f);
                 if (seg == 4) {
-                    point.getWorld().playSound(impact, Sound.ENTITY_IRON_GOLEM_ATTACK, 1.0f, 0.75f);
+                    point.getWorld().playSound(impact, Sound.ENTITY_IRON_GOLEM_ATTACK, 0.85f, 0.75f);
                     for (LivingEntity v : getValidAoeTargets(owner, data, impact, 5.0, target)) {
                         v.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 90, 3, false, true, true));
                         v.setVelocity(new Vector(0, 0.65, 0));
@@ -400,7 +407,7 @@ public class PetCombatDirector {
     private void runVerdantBloom(Player owner, PlayerPetData data, PetSkillSpec skill, Location origin, LivingEntity target, double power) {
         Location dest = target != null && !target.isDead() ? target.getLocation().clone() : origin.clone().add(owner.getLocation().getDirection().multiply(6));
         dest.setYaw(owner.getLocation().getYaw());
-        spawnModelVfx(skill, dest, 1.15, 85, "nocsy_drakonin_roots", "spawn");
+        // TODO [PET-VFX-PLACEHOLDER]: Previously spawned "nocsy_drakonin_roots" ModelEngine VFX here.
 
         double perPulse = power / 3.0;
         new BukkitRunnable() {
@@ -412,9 +419,8 @@ public class PetCombatDirector {
                     return;
                 }
                 Location targetLoc = !dest.getChunk().isLoaded() ? origin : (target != null && !target.isDead() ? target.getEyeLocation() : dest.clone().add(0, 1.0, 0));
-                drawParticleLine(origin, targetLoc, Particle.HAPPY_VILLAGER, Color.fromRGB(52, 211, 153), 24);
-                targetLoc.getWorld().playSound(targetLoc, Sound.BLOCK_AZALEA_LEAVES_BREAK, 0.9f, 1.2f);
-                spawnParticleRing(targetLoc.clone().add(0, -0.6, 0), 3.6, 22, Particle.SPORE_BLOSSOM_AIR);
+                drawSimpleSingleLineVfx(origin, targetLoc, Color.fromRGB(52, 211, 153));
+                targetLoc.getWorld().playSound(targetLoc, Sound.BLOCK_AZALEA_LEAVES_BREAK, 0.75f, 1.2f);
 
                 for (LivingEntity v : getValidAoeTargets(owner, data, targetLoc, 4.4, target)) {
                     v.setNoDamageTicks(0);
@@ -430,12 +436,9 @@ public class PetCombatDirector {
     private void runGlaciesPermafrost(Player owner, PlayerPetData data, PetSkillSpec skill, LivingEntity target, double power) {
         if (target == null || target.isDead()) return;
         Location center = target.getLocation().clone();
-        spawnModelVfx(skill, center, 1.15, 80, "", "");
-        center.getWorld().playSound(center, Sound.BLOCK_GLASS_BREAK, 1.0f, 0.65f);
-        center.getWorld().playSound(center, Sound.ENTITY_PLAYER_HURT_FREEZE, 1.0f, 1.1f);
-        center.getWorld().spawnParticle(Particle.SNOWFLAKE, center.clone().add(0, 1.0, 0), 40, 1.8, 1.0, 1.8, 0.06);
-        center.getWorld().spawnParticle(Particle.BLOCK, center.clone().add(0, 0.8, 0), 28, 1.4, 0.8, 1.4, 0.12, Material.BLUE_ICE.createBlockData());
-        spawnParticleRing(center.clone().add(0, 0.4, 0), 4.8, 32, Particle.END_ROD);
+        // TODO [PET-VFX-PLACEHOLDER]: Previously spawned large snowflake/blue_ice bursts & ModelEngine VFX here.
+        drawSimpleSingleLineVfx(owner.getEyeLocation(), center.clone().add(0, 1.0, 0), Color.fromRGB(147, 197, 253));
+        center.getWorld().playSound(center, Sound.BLOCK_GLASS_BREAK, 0.85f, 0.65f);
 
         for (LivingEntity v : getValidAoeTargets(owner, data, center, 5.2, target)) {
             v.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 90, 4, false, true, true));
@@ -447,7 +450,7 @@ public class PetCombatDirector {
     private void runPyreCataclysm(Player owner, PlayerPetData data, PetSkillSpec skill, Location origin, LivingEntity target, double power) {
         if (target == null || target.isDead()) return;
         Location vfxLoc = target.getLocation().clone();
-        spawnModelVfx(skill, vfxLoc, 1.2, 80, "nocsy_drakonin_firespell", "idle");
+        // TODO [PET-VFX-PLACEHOLDER]: Previously spawned "nocsy_drakonin_firespell" ModelEngine VFX & EXPLOSION bursts here.
 
         double perVolley = power / 3.0;
         new BukkitRunnable() {
@@ -459,17 +462,13 @@ public class PetCombatDirector {
                     return;
                 }
                 Location dest = !target.isDead() ? target.getLocation().add(0, 0.9, 0) : vfxLoc.clone().add(0, 0.9, 0);
-                origin.getWorld().playSound(origin, Sound.ENTITY_BLAZE_SHOOT, 0.9f, 0.85f + (wave * 0.15f));
-                launchHomingBeam(origin, target, Particle.FLAME, Color.fromRGB(249, 115, 22), () -> {
-                    dest.getWorld().spawnParticle(Particle.EXPLOSION, dest, 1);
-                    dest.getWorld().spawnParticle(Particle.LAVA, dest, 14, 0.9, 0.5, 0.9, 0.05);
-                    dest.getWorld().playSound(dest, Sound.ENTITY_GENERIC_EXPLODE, 0.7f, 1.1f);
-                    for (LivingEntity v : getValidAoeTargets(owner, data, dest, 4.2, target)) {
-                        v.setNoDamageTicks(0);
-                        v.setFireTicks(Math.max(v.getFireTicks(), 100));
-                        applyPetDamage(owner, data, v, perVolley);
-                    }
-                });
+                origin.getWorld().playSound(origin, Sound.ENTITY_BLAZE_SHOOT, 0.7f, 0.85f + (wave * 0.15f));
+                drawSimpleSingleLineVfx(origin, dest, Color.fromRGB(249, 115, 22));
+                for (LivingEntity v : getValidAoeTargets(owner, data, dest, 4.2, target)) {
+                    v.setNoDamageTicks(0);
+                    v.setFireTicks(Math.max(v.getFireTicks(), 100));
+                    applyPetDamage(owner, data, v, perVolley);
+                }
                 wave++;
             }
         }.runTaskTimer(DCCosmetics.getInstance(), 0L, 6L);
@@ -478,11 +477,9 @@ public class PetCombatDirector {
     private void runUmbraEclipse(Player owner, PlayerPetData data, PetSkillSpec skill, LivingEntity target, double power) {
         if (target == null || target.isDead()) return;
         Location center = target.getLocation().clone();
-        spawnModelVfx(skill, center, 1.2, 80, "nocsy_drakonin_shadowspell", "idle");
-
-        center.getWorld().playSound(center, Sound.ENTITY_WITHER_SHOOT, 0.85f, 0.65f);
-        spawnParticleRing(center.clone().add(0, 0.5, 0), 4.6, 32, Particle.WITCH);
-        spawnParticleRing(center.clone().add(0, 1.3, 0), 3.0, 22, Particle.DRAGON_BREATH);
+        // TODO [PET-VFX-PLACEHOLDER]: Previously spawned "nocsy_drakonin_shadowspell" ModelEngine VFX & dragon breath rings here.
+        drawSimpleSingleLineVfx(owner.getEyeLocation(), center.clone().add(0, 1.0, 0), Color.fromRGB(168, 85, 247));
+        center.getWorld().playSound(center, Sound.ENTITY_WITHER_SHOOT, 0.7f, 0.65f);
 
         double perTick = power / 2.0;
         new BukkitRunnable() {
@@ -510,7 +507,7 @@ public class PetCombatDirector {
 
     private void runSolisZenith(Player owner, PlayerPetData data, PetSkillSpec skill, LivingEntity target, double power) {
         Location center = target != null && !target.isDead() ? target.getLocation().clone() : owner.getLocation().clone().add(owner.getLocation().getDirection().multiply(5));
-        spawnModelVfx(skill, center, 1.2, 100, "", "");
+        // TODO [PET-VFX-PLACEHOLDER]: Previously spawned ModelEngine VFX & multi-beam sky strikes here.
 
         double healAmount = Math.max(5.0, power * 0.35);
         healLiving(owner, healAmount);
@@ -531,19 +528,16 @@ public class PetCombatDirector {
                     return;
                 }
                 if (strike < 8) {
-                    double angle = (Math.PI * 2.0 * strike) / 8.0;
-                    Location impact = center.clone().add(Math.cos(angle) * 2.2, 0.2, Math.sin(angle) * 2.2);
-                    Location sky = impact.clone().add(0, 6.5, 0);
-                    drawParticleLine(sky, impact, Particle.END_ROD, Color.fromRGB(253, 224, 71), 14);
-                    impact.getWorld().playSound(impact, Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.85f, 1.2f + (strike * 0.06f));
+                    Location impact = center.clone().add(0, 0.4, 0);
+                    drawSimpleSingleLineVfx(impact.clone().add(0, 4.0, 0), impact, Color.fromRGB(253, 224, 71));
+                    impact.getWorld().playSound(impact, Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.7f, 1.2f + (strike * 0.06f));
                     for (LivingEntity v : getValidAoeTargets(owner, data, impact, 3.8, target)) {
                         v.setNoDamageTicks(0);
                         applyPetDamage(owner, data, v, rainTickDamage);
                     }
                     strike++;
                 } else {
-                    center.getWorld().playSound(center, Sound.ENTITY_PLAYER_LEVELUP, 0.9f, 1.35f);
-                    spawnParticleRing(center.clone().add(0, 0.8, 0), 5.2, 34, Particle.END_ROD);
+                    center.getWorld().playSound(center, Sound.ENTITY_PLAYER_LEVELUP, 0.75f, 1.35f);
                     for (LivingEntity v : getValidAoeTargets(owner, data, center, 5.5, target)) {
                         v.setNoDamageTicks(0);
                         applyPetDamage(owner, data, v, finalZenithDamage);
@@ -557,7 +551,7 @@ public class PetCombatDirector {
     private void runAstralSupernova(Player owner, PlayerPetData data, PetSkillSpec skill, Location origin, LivingEntity target, double power) {
         if (target == null || target.isDead()) return;
         Location anchor = target.getLocation().clone();
-        spawnModelVfx(skill, anchor, 1.2, 95, "", "");
+        // TODO [PET-VFX-PLACEHOLDER]: Previously spawned ModelEngine VFX & EXPLOSION/WITCH rings here.
 
         List<LivingEntity> hopTargets = getValidAoeTargets(owner, data, anchor, 7.0, target);
         if (hopTargets.isEmpty()) hopTargets.add(target);
@@ -577,8 +571,8 @@ public class PetCombatDirector {
                     LivingEntity cur = hopTargets.get(hop % hopTargets.size());
                     if (!cur.isDead() && cur.isValid()) {
                         Location dest = cur.getEyeLocation();
-                        drawParticleLine(prev, dest, Particle.WITCH, Color.fromRGB(192, 132, 252), 18);
-                        dest.getWorld().playSound(dest, Sound.ENTITY_ENDERMAN_TELEPORT, 0.8f, 1.4f + (hop * 0.1f));
+                        drawSimpleSingleLineVfx(prev, dest, Color.fromRGB(192, 132, 252));
+                        dest.getWorld().playSound(dest, Sound.ENTITY_ENDERMAN_TELEPORT, 0.7f, 1.4f + (hop * 0.1f));
                         cur.setNoDamageTicks(0);
                         applyPetDamage(owner, data, cur, hopDmg);
                         prev = dest;
@@ -586,8 +580,7 @@ public class PetCombatDirector {
                     hop++;
                 } else {
                     Location explodeAt = !target.isDead() ? target.getLocation() : anchor;
-                    explodeAt.getWorld().playSound(explodeAt, Sound.ENTITY_GENERIC_EXPLODE, 0.95f, 0.7f);
-                    spawnParticleRing(explodeAt.clone().add(0, 1.0, 0), 5.6, 36, Particle.WITCH);
+                    drawSimpleSingleLineVfx(origin, explodeAt.clone().add(0, 1.0, 0), Color.fromRGB(192, 132, 252));
                     for (LivingEntity v : getValidAoeTargets(owner, data, explodeAt, 5.8, target)) {
                         v.setNoDamageTicks(0);
                         applyPetDamage(owner, data, v, novaDmg);
@@ -601,14 +594,10 @@ public class PetCombatDirector {
     private void runCrimsonDominion(Player owner, PlayerPetData data, PetSkillSpec skill, Location origin, LivingEntity target, double power) {
         if (target == null || target.isDead()) return;
         Location center = target.getLocation().clone();
-        spawnModelVfx(skill, center, 1.35, 85, "nocsy_drakonin_firespell", "idle");
-
-        center.getWorld().playSound(center, Sound.ENTITY_ENDER_DRAGON_GROWL, 0.9f, 1.25f);
-        center.getWorld().playSound(center, Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 0.65f, 1.4f);
-        center.getWorld().strikeLightningEffect(center);
-
-        spawnParticleRing(center.clone().add(0, 0.4, 0), 3.0, 26, Particle.DRAGON_BREATH);
-        spawnParticleRing(center.clone().add(0, 1.0, 0), 5.2, 34, Particle.FLAME);
+        // TODO [PET-VFX-PLACEHOLDER]: Previously spawned "nocsy_drakonin_firespell" ModelEngine VFX,
+        // strikeLightningEffect, and multi-layer DRAGON_BREATH / FLAME rings here.
+        drawSimpleSingleLineVfx(origin, center.clone().add(0, 1.0, 0), Color.fromRGB(220, 38, 38));
+        center.getWorld().playSound(center, Sound.ENTITY_ENDER_DRAGON_GROWL, 0.75f, 1.25f);
 
         for (LivingEntity v : getValidAoeTargets(owner, data, center, 6.2, target)) {
             v.setNoDamageTicks(0);

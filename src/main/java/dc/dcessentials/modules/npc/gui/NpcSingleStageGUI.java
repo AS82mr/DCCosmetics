@@ -306,6 +306,7 @@ public class NpcSingleStageGUI implements Listener {
                         (event.getClick() == ClickType.SHIFT_RIGHT) ? -2500.0 :
                                 (event.getClick() == ClickType.LEFT) ? 500.0 : -500.0;
                 stage.setCashReward(Math.max(0.0, current + delta));
+                registry.saveCustomStages(DCCosmetics.getInstance().getDataFolder());
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 0.9f, 1.2f);
                 open(player, session.charId, session.stageNum);
                 break;
@@ -314,6 +315,7 @@ public class NpcSingleStageGUI implements Listener {
                 String curBeh = stage.getCompletionBehavior();
                 String nextBeh = curBeh.equals("STAY") ? "POOF" : curBeh.equals("POOF") ? "WALK" : "STAY";
                 stage.setCompletionBehavior(nextBeh);
+                registry.saveCustomStages(DCCosmetics.getInstance().getDataFolder());
                 DCMessage.sendGeneral(player, "Completion behavior set to: " + nextBeh);
                 player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.8f, 1.2f);
                 open(player, session.charId, session.stageNum);

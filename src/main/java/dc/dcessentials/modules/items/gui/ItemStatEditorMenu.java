@@ -149,8 +149,10 @@ public class ItemStatEditorMenu implements Listener {
         lore.add("&7Stat Cap: &f" + capDisplay);
         lore.add("&8" + stat.getBrief());
         lore.add("&f");
-        for (String line : stat.getDescription().split("\n")) {
-            lore.add("&7" + line);
+        for (String paragraph : stat.getDescription().split("\n")) {
+            for (String wrapped : wrapDescriptionLine(paragraph, 42)) {
+                lore.add("&7" + wrapped);
+            }
         }
         lore.add("&f");
         if (stat == ItemStat.RESONANCE) {
@@ -169,6 +171,59 @@ public class ItemStatEditorMenu implements Listener {
             stack.setItemMeta(meta);
         }
         return stack;
+    }
+
+    private List<String> wrapDescriptionLine(String text, int maxVisibleChars) {
+        List<String> lines = new ArrayList<>();
+        if (text == null || text.isEmpty()) {
+            lines.add("");
+            return lines;
+        }
+        String[] words = text.split(" ");
+        StringBuilder current = new StringBuilder();
+        int currentVisible = 0;
+        String lastColor = "&7";
+        for (String word : words) {
+            int wordVisible = stripFormattingLength(word);
+            if (currentVisible > 0 && currentVisible + 1 + wordVisible > maxVisibleChars) {
+                lines.add(current.toString());
+                current = new StringBuilder(lastColor).append(word);
+                currentVisible = wordVisible;
+            } else {
+                if (current.length() > 0) {
+                    current.append(" ");
+                    currentVisible += 1;
+                }
+                current.append(word);
+                currentVisible += wordVisible;
+            }
+            String extracted = extractLastFormatting(word);
+            if (!extracted.isEmpty()) {
+                lastColor = extracted;
+            }
+        }
+        if (current.length() > 0) {
+            lines.add(current.toString());
+        }
+        return lines;
+    }
+
+    private int stripFormattingLength(String s) {
+        return s.replaceAll("<#[0-9a-fA-F]{6}>", "")
+                .replaceAll("&#[0-9a-fA-F]{6}", "")
+                .replaceAll("&[0-9a-fk-orA-FK-OR]", "")
+                .length();
+    }
+
+    private String extractLastFormatting(String s) {
+        java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("(<#[0-9a-fA-F]{6}>|&#[0-9a-fA-F]{6}|&[0-9a-fk-orA-FK-OR])+")
+                .matcher(s);
+        String found = "";
+        while (m.find()) {
+            found = m.group();
+        }
+        return found;
     }
 
     public static Material getStatIcon(ItemStat stat) {

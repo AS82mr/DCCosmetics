@@ -79,10 +79,37 @@ public final class KeystoneLoreTokens {
      * Resolves {ks:*} tokens on an ItemStack in-place (used on display clones in ProfileGUI / KeystoneMenu,
      * or in degraded mode when ProtocolLib packet rewriting is unavailable).
      */
+    public static void bakeIntoItem(ItemStack stack, Player viewer, KeystoneProfile profile) {
+        applyToStack(stack, viewer, profile, dc.dcessentials.modules.items.tooltip.TooltipMode.COMPACT);
+    }
+
+    public static void bakeIntoItem(ItemStack stack, Player viewer, KeystoneProfile profile,
+                                    dc.dcessentials.modules.items.tooltip.TooltipMode mode) {
+        applyToStack(stack, viewer, profile, mode);
+    }
+
     public static void applyToStack(ItemStack stack, Player viewer, KeystoneProfile profile) {
+        applyToStack(stack, viewer, profile, dc.dcessentials.modules.items.tooltip.TooltipMode.COMPACT);
+    }
+
+    public static void applyToStack(ItemStack stack, Player viewer, KeystoneProfile profile,
+                                    dc.dcessentials.modules.items.tooltip.TooltipMode mode) {
         if (stack == null || stack.getType().isAir() || !stack.hasItemMeta()) return;
         KeystoneTier itemTier = KeystoneDetector.tierOf(stack);
         if (itemTier == KeystoneTier.NONE) return;
+
+        // Re-render base lore from master DCEItem template first so previously baked lore can still update
+        var plugin = DCCosmetics.getInstance();
+        var itemMod = plugin != null ? plugin.getItemModule() : null;
+        if (itemMod != null && itemMod.getItemRegistry() != null) {
+            String itemId = itemMod.getItemRegistry().getItemId(stack);
+            var master = itemId != null ? itemMod.getItemRegistry().getItem(itemId) : null;
+            if (master != null) {
+                dc.dcessentials.modules.items.tooltip.TooltipRenderer.renderItem(
+                        master, stack, itemMod.getScrollRegistry(),
+                        mode != null ? mode : dc.dcessentials.modules.items.tooltip.TooltipMode.COMPACT);
+            }
+        }
 
         ItemMeta meta = stack.getItemMeta();
         if (meta == null || !meta.hasLore()) return;
@@ -160,8 +187,23 @@ public final class KeystoneLoreTokens {
                 menu.refresh();
             }
 
-            if (carriesPhysicalKeystone(player)) {
-                player.updateInventory();
+            // Only bake into player inventory slots when cursor is empty to prevent HashedStack cursor desync
+            if (player.getItemOnCursor().getType().isAir() && carriesPhysicalKeystone(player)) {
+                var teleMgr = plugin.getTeleportationManager();
+                KeystoneProfile kProfile = teleMgr != null ? teleMgr.getProfile(player.getUniqueId()) : null;
+                ItemStack[] contents = player.getInventory().getContents();
+                boolean modified = false;
+                for (int i = 0; i < contents.length; i++) {
+                    ItemStack st = contents[i];
+                    if (st != null && !st.getType().isAir() && KeystoneDetector.isKeystone(st)) {
+                        applyToStack(st, player, kProfile);
+                        player.getInventory().setItem(i, st);
+                        modified = true;
+                    }
+                }
+                if (modified) {
+                    player.updateInventory();
+                }
             }
         }, 10L);
 

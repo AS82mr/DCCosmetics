@@ -156,9 +156,9 @@ public class KeystoneMenu implements DceGui {
         } else {
             attuneIcon = createItem(tierMat, "&#0098FF&lKeystone Attunement: " + tier.getDisplayName(), slot11Lore);
         }
-        inventory.setItem(11, attuneIcon);
+        inventory.setItem(10, attuneIcon);
 
-        // Slot 13: Energy Bar
+        // Slots 12, 13, 14: 3-Digit Player Head Energy Reserve [Hundreds] [Tens] [Ones]
         int energyPct = effectiveMax > 0 ? (int) Math.min(100, Math.round((energy * 100.0) / effectiveMax)) : 0;
         String energyBar = KeystoneLoreTokens.formatProgressBar(energy, effectiveMax, "&a");
         List<String> energyLore = new ArrayList<>();
@@ -172,12 +172,20 @@ public class KeystoneMenu implements DceGui {
         energyLore.add("&f");
         energyLore.add("&7Full teleports (&f/home&7, &f/tpa&7) draw &b1–3 🗲");
         energyLore.add("&7or crack charges into your Microcharge buffer.");
-        inventory.setItem(13, createItem(Material.SEA_LANTERN, "&#38BDF8&lTesseract Energy Reserve", energyLore));
 
-        // Slot 14: Microcharge Bar [■■■■■■■■■□] 925/1000 mC
+        int clampedDisplayEnergy = Math.max(0, Math.min(999, energy));
+        int hundredsDigit = (clampedDisplayEnergy / 100) % 10;
+        int tensDigit = (clampedDisplayEnergy / 10) % 10;
+        int onesDigit = clampedDisplayEnergy % 10;
+        String energyTitle = "&#38BDF8&lTesseract Energy: &f" + energy + " &7/ &f" + effectiveMax + " &#38BDF8🗲";
+        inventory.setItem(12, createDigitHead(hundredsDigit, energyTitle + " &8[Hundreds]", energyLore));
+        inventory.setItem(13, createDigitHead(tensDigit, energyTitle + " &8[Tens]", energyLore));
+        inventory.setItem(14, createDigitHead(onesDigit, energyTitle + " &8[Ones]", energyLore));
+
+        // Slot 15: Microcharge Bar [■■■■■■■■■□] 925/1000 mC
         String microBar = KeystoneLoreTokens.formatMicroBar(micro);
         String exactStr = String.format(Locale.US, "%d.%03d", energy, micro);
-        inventory.setItem(14, createItem(
+        inventory.setItem(15, createItem(
                 Material.PRISMARINE_CRYSTALS,
                 "&#06B6D4&lMicrocharge Buffer",
                 Arrays.asList(
@@ -187,12 +195,13 @@ public class KeystoneMenu implements DceGui {
                         "&7Exact Reserve: &f" + exactStr + " &#38BDF8🗲",
                         "&f",
                         "&71 Tesseract Charge = &#38BDF81,000 Microcharges (mC)&7.",
-                        "&7Active item abilities (&dVoid Bounce&7, &bSonic Boom&7)",
+                        "&7Active item abilities (&dVoid Bounce&7, &bEtherwarp&7, &bSonic Boom&7)",
                         "&7drain from this buffer before cracking a new charge."
                 )
         ));
 
-        // Slot 15: Heat / Stability (+Overload Banner)
+        // Slot 16: Heat / Stability (+Overload Banner & Phase-Vent status)
+        int effClearBelow = teleMgr.getEffectiveOverloadClearBelow(player);
         String heatBar = KeystoneLoreTokens.formatProgressBar(heat, 100, heat >= 80 ? "&c" : (heat >= 50 ? "&6" : "&e"));
         List<String> heatLore = new ArrayList<>();
         heatLore.add("&8Spatial Thermodynamics");
@@ -200,11 +209,19 @@ public class KeystoneMenu implements DceGui {
         heatLore.add("&7Timeline Heat: &c" + heat + " &7/ &c100 🔥");
         heatLore.add("&7Thermal Load: &8[" + heatBar + "&8]");
         heatLore.add("&7Stability: " + profile.getStability());
+        if (KeystoneDetector.hasPhaseVentAnchor(equippedKeystone)) {
+            long cdMs = Math.max(10L, KeystoneDetector.getPhaseVentCooldownSeconds(equippedKeystone)) * 1000L;
+            long remMs = cdMs - (System.currentTimeMillis() - profile.getLastPhaseVent());
+            String status = remMs <= 0L
+                    ? "&aReady (-" + KeystoneDetector.getPhaseVentHeatReduction(equippedKeystone) + " Heat)"
+                    : "&eCooldown: " + ((remMs + 999L) / 1000L) + "s";
+            heatLore.add("&7Phase-Vent Anchor: " + status);
+        }
         if (overloaded) {
             heatLore.add("&f");
             heatLore.add("&#EF4444&l⚠ MATRIX OVERLOADED ⚠");
             heatLore.add("&cCharged warps and abilities are locked!");
-            heatLore.add("&7Cool down to &f≤ 50 🔥 &7(water, powder snow,");
+            heatLore.add("&7Cool down to &f≤ " + effClearBelow + " 🔥 &7(water, powder snow,");
             heatLore.add("&7or passive dissipation) to clear Overload.");
         } else if (heat >= 80) {
             heatLore.add("&f");
@@ -216,7 +233,7 @@ public class KeystoneMenu implements DceGui {
         heatLore.add(profile.hasNewbieShield()
                 ? "&a✦ Temporal Shield: &fActive (0 Heat jumps)"
                 : "&7Immersion in water or powder snow cools heat rapidly.");
-        inventory.setItem(15, createItem(
+        inventory.setItem(16, createItem(
                 overloaded ? Material.REDSTONE_BLOCK : (heat >= 80 ? Material.MAGMA_BLOCK : Material.CAMPFIRE),
                 overloaded ? "&#EF4444&l⚠ TIMELINE OVERLOAD ⚠" : "&#FBBF24&lTimeline Heat & Stability",
                 heatLore
@@ -402,26 +419,61 @@ public class KeystoneMenu implements DceGui {
             ));
         }
 
-        // Slot 40: TP Effects (/tpeffect)
+        // Slot 40: TP Effects (/dm open tpcolor)
         inventory.setItem(40, createItem(
                 Material.ENDER_EYE,
                 "&#A855F7&lTeleportation Visual Effects",
                 Arrays.asList(
                         "&8Spatial Arrival & Departure Cosmetics",
                         "&f",
-                        "&7Customize your teleportation particles",
+                        "&7Customize your teleportation colors, particles,",
                         "&7and 3D voxel arrival animations.",
+                        "&7Preview effects live inside &d/wardrobe&7!",
                         "&f",
-                        "&#A855F7▶ &eClick to open Teleport Effects (/tpeffect)"
+                        "&#A855F7▶ &eClick to open Teleportation Colors (/dm open tpcolor)"
                 )
         ));
 
-        // Slot 49: Close
+        // Slot 49: Back to Profile
         inventory.setItem(49, createItem(
-                Material.BARRIER,
-                "&#EF4444&lClose Matrix",
-                Collections.singletonList("&7Click to close the Keystone menu.")
+                Material.ARROW,
+                "&#38BDF8&l← Back to Profile",
+                Collections.singletonList("&7Click to return to your Player Profile (/profile).")
         ));
+    }
+
+    private static final String[] DIGIT_TEXTURES = new String[]{
+            "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvN2ExMzI5NTZiY2JmOTUyMTNhNTIxYWE5MzQ1NmQ0YTE1Yzc5Y2YxNzM2ZWNiYWJmZTgxZTVmNWU0NCJ9fX0=",
+            "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNzM0N2I3YTVhNmJiNjQxOWQzM2ViNDYxMDI2NTBjYzkxYmZkYzE1OWQ4ZmYxZjU1OTk2ZDRmMGFkNWJjNzU4In19fQ==",
+            "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMjBiYTQxMmFhNzZhOGUxMTlhZTNlY2EwNzE0MjhmM2Q5ZTIwNDJiNDk1MmJkODMzNThkNjI5NmU4MTJiZTgifX19",
+            "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzZkYmZkZmFjMTVlMjg0YzJlYzAyZTM4OTExYjRlYzVkODE1YmZiMWU1ZWVlNTIyZDU1N2FmMzVkODQwZGMifX19",
+            "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYTdhYzUzMjMzYWU4NDJhZWJiMzhjMTNiZWNjZTdjOTFmOGQ1ZjY3OTc2MzMyY2UxYmE4OGRjMGU2ODJmOGQ0In19fQ==",
+            "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMmE2NzE0NGIzMjNhZDRkY2ViZmQxYzZhNjMwNzQzYzcwMmM0ZGE0NTUyMjg5YTkyNDIxZWFmYzRjMmQ0YjQzIn19fQ==",
+            "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDEyYWFiNDAxZDY5YTVmMGM1Y2FkY2IzYzFkMTM3YjEwNzk0YzQzYjA1OGY5MzYzMGI4MTQ1YjgzNDk3YTQwIn19fQ==",
+            "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDRlMjgyNGVlZDI1M2FjOTMyY2E4MWRmN2VmYzUxMDZiZDQ2NWMzNDlhMThiZGU2OTk2MzhjMWYxNDZmNTQifX19",
+            "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjQ1ODhkOGVmZDk5NTExYjhkMmNhMzk1NjQ4ZDMyMmZhOGNkYzk4ZDQyYmQ3OWUzYzBkNjEwM2M5NDhlNjgifX19",
+            "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvN2MyYTUxYzRkZjc4MjliMDViYWM5YjM4YTk5YzcyNzNiMWEzYjFkNDZiZmIyYTljNjVlNjE3NDBiZjYyNDRhYyJ9fX0="
+    };
+
+    private static ItemStack createDigitHead(int digit, String name, List<String> lore) {
+        int idx = Math.max(0, Math.min(9, digit));
+        ItemStack head = dc.dccosmetics.util.HeadUtil.getCustomHead(DIGIT_TEXTURES[idx]);
+        if (head == null) {
+            return createItem(Material.SEA_LANTERN, name, lore);
+        }
+        ItemMeta meta = head.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ColorUtil.colorize(name));
+            if (lore != null) {
+                List<String> colored = new ArrayList<>(lore.size());
+                for (String l : lore) {
+                    colored.add(ColorUtil.colorize(l));
+                }
+                meta.setLore(colored);
+            }
+            head.setItemMeta(meta);
+        }
+        return head;
     }
 
     private static ItemStack getEquippedKeystone(Player player) {
@@ -553,6 +605,7 @@ public class KeystoneMenu implements DceGui {
 
             if (slot == 49) {
                 player.closeInventory();
+                player.performCommand("profile");
                 return;
             }
 
@@ -571,7 +624,11 @@ public class KeystoneMenu implements DceGui {
 
             if (slot == 40) {
                 player.closeInventory();
-                player.performCommand("tpeffect");
+                if (Bukkit.getPluginManager().isPluginEnabled("DeluxeMenus")) {
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "dm open tpcolor " + player.getName());
+                } else {
+                    player.performCommand("tpeffect");
+                }
                 return;
             }
 

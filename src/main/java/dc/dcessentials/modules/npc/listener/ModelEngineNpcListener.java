@@ -53,6 +53,21 @@ public class ModelEngineNpcListener implements Listener {
         NPC npc = CitizensAPI.getNPCRegistry().getNPC(entity);
         if (npc == null) return;
 
+        if (npc.data().has("dcnpc_deco_id")) {
+            String decoId = npc.data().get("dcnpc_deco_id").toString();
+            if (setupWand.isEditorWand(player.getInventory().getItemInMainHand())
+                    && player.hasPermission("dccosmetics.admin")
+                    && dc.dccosmetics.DCCosmetics.getInstance().getDecorationEditorGUI() != null) {
+                setupWand.recordEntityInteract(player.getUniqueId());
+                dc.dccosmetics.DCCosmetics.getInstance().getDecorationEditorGUI().open(player, decoId);
+                return;
+            }
+            if (dc.dccosmetics.DCCosmetics.getInstance().getDecorationManager() != null) {
+                dc.dccosmetics.DCCosmetics.getInstance().getDecorationManager().triggerAmbientDialogue(player, decoId);
+            }
+            return;
+        }
+
         String charId = matchCharId(npc);
         if (charId == null) return;
 

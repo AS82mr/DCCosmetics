@@ -31,7 +31,7 @@ public class KeystoneCommand implements CommandExecutor {
             if (sender instanceof Player player) {
                 openKeystoneDeluxeMenu(player);
             } else {
-                DCMessage.sendHelp(sender, "Usage from console: &#FFFFFF/keystone <clearheat|charge|tier|heat|microcharge> ...");
+                DCMessage.sendHelp(sender, "Usage from console: &#FFFFFF/tesseract <charge|set|take|remove|reset|clearheat|tier|heat|microcharge> ...");
             }
             return true;
         }
@@ -148,13 +148,117 @@ public class KeystoneCommand implements CommandExecutor {
                 int amt = Integer.parseInt(args[2]);
                 KeystoneProfile profile = teleManager.getProfile(target);
                 int effectiveMax = teleManager.getEnergyService().getEffectiveMaxEnergy(target, profile);
-                profile.addCharges(amt, effectiveMax);
+                if (amt >= 0) {
+                    profile.addCharges(amt, effectiveMax);
+                    if (amt > 0 && profile.getHeat() > 0 && profile.getTotalMicro() > 0) {
+                        profile.setHeat(0, teleManager.getOverloadClearBelow());
+                        profile.setOverloaded(false);
+                        DCMessage.sendInfo(target, "Active Tesseract infusion cooled Timeline Heat to &#FFFFFF0/100 🔥&#BAE6FD.");
+                    }
+                    DCMessage.sendGeneral(sender, "Added &#FFFFFF" + amt + " &#0CBF93energy to &#FFFFFF" + target.getName() + " &#0CBF93(Total: &#FFFFFF" + profile.getEnergy() + "/" + effectiveMax + " 🗲&#0CBF93).");
+                    DCMessage.sendGeneral(target, "Matrix charged with &#FFFFFF+" + amt + " &#38BDF8Tesseract Energy 🗲&#0CBF93.");
+                } else {
+                    int removed = profile.removeCharges(-amt);
+                    DCMessage.sendGeneral(sender, "Removed &#FFFFFF" + removed + " &#0CBF93energy from &#FFFFFF" + target.getName() + " &#0CBF93(Total: &#FFFFFF" + profile.getEnergy() + "/" + effectiveMax + " 🗲&#0CBF93).");
+                    DCMessage.sendGeneral(target, "Matrix drained by &#FFFFFF-" + removed + " &#38BDF8Tesseract Energy 🗲&#0CBF93.");
+                }
                 teleManager.getPersistence().saveNow(profile);
-                DCMessage.sendGeneral(sender, "Added &#FFFFFF" + amt + " &#0CBF93energy to &#FFFFFF" + target.getName() + " &#0CBF93(Total: &#FFFFFF" + profile.getEnergy() + "/" + effectiveMax + " 🗲&#0CBF93).");
-                DCMessage.sendGeneral(target, "Matrix charged with &#FFFFFF+" + amt + " &#38BDF8Tesseract Energy 🗲&#0CBF93.");
+                dc.dcessentials.modules.teleportation.KeystoneLoreTokens.scheduleInventoryRefresh(target);
             } catch (NumberFormatException e) {
                 DCMessage.sendError(sender, "Invalid energy amount.");
             }
+            return true;
+        }
+
+        if (sub.equals("set") || sub.equals("setenergy")) {
+            if (!sender.hasPermission("dragoncote.admin")) {
+                DCMessage.sendError(sender, "You do not have permission to execute this command.");
+                return true;
+            }
+            if (args.length < 3) {
+                DCMessage.sendHelp(sender, "Usage: &#FFFFFF/" + label + " set <player> <amount>");
+                return true;
+            }
+            Player target = Bukkit.getPlayer(args[1]);
+            if (target == null) {
+                DCMessage.sendError(sender, "Player not found.");
+                return true;
+            }
+            try {
+                int amt = Math.max(0, Integer.parseInt(args[2]));
+                KeystoneProfile profile = teleManager.getProfile(target);
+                int effectiveMax = teleManager.getEnergyService().getEffectiveMaxEnergy(target, profile);
+                int cap = Math.max(effectiveMax, KeystoneProfile.ABSOLUTE_MAX_ENERGY);
+                int clamped = Math.min(amt, cap);
+                profile.setEnergy(clamped);
+                if (clamped == 0) {
+                    profile.setMicro(0);
+                } else if (profile.getHeat() > 0 && profile.getTotalMicro() > 0) {
+                    profile.setHeat(0, teleManager.getOverloadClearBelow());
+                    profile.setOverloaded(false);
+                }
+                teleManager.getPersistence().saveNow(profile);
+                dc.dcessentials.modules.teleportation.KeystoneLoreTokens.scheduleInventoryRefresh(target);
+                DCMessage.sendGeneral(sender, "Set &#FFFFFF" + target.getName() + "'s &#0CBF93Tesseract Energy to &#FFFFFF" + profile.getEnergy() + "/" + effectiveMax + " 🗲&#0CBF93.");
+                DCMessage.sendGeneral(target, "Your Tesseract Energy was set to &#FFFFFF" + profile.getEnergy() + " &#38BDF8🗲&#0CBF93.");
+            } catch (NumberFormatException e) {
+                DCMessage.sendError(sender, "Invalid energy amount.");
+            }
+            return true;
+        }
+
+        if (sub.equals("take") || sub.equals("remove") || sub.equals("sub")) {
+            if (!sender.hasPermission("dragoncote.admin")) {
+                DCMessage.sendError(sender, "You do not have permission to execute this command.");
+                return true;
+            }
+            if (args.length < 3) {
+                DCMessage.sendHelp(sender, "Usage: &#FFFFFF/" + label + " take <player> <amount>");
+                return true;
+            }
+            Player target = Bukkit.getPlayer(args[1]);
+            if (target == null) {
+                DCMessage.sendError(sender, "Player not found.");
+                return true;
+            }
+            try {
+                int amt = Math.max(0, Integer.parseInt(args[2]));
+                KeystoneProfile profile = teleManager.getProfile(target);
+                int effectiveMax = teleManager.getEnergyService().getEffectiveMaxEnergy(target, profile);
+                int removed = profile.removeCharges(amt);
+                if (profile.getEnergy() == 0 && amt > removed) {
+                    profile.setMicro(0);
+                }
+                teleManager.getPersistence().saveNow(profile);
+                dc.dcessentials.modules.teleportation.KeystoneLoreTokens.scheduleInventoryRefresh(target);
+                DCMessage.sendGeneral(sender, "Removed &#FFFFFF" + removed + " &#0CBF93energy from &#FFFFFF" + target.getName() + " &#0CBF93(Total: &#FFFFFF" + profile.getEnergy() + "/" + effectiveMax + " 🗲&#0CBF93).");
+                DCMessage.sendGeneral(target, "Matrix drained by &#FFFFFF-" + removed + " &#38BDF8Tesseract Energy 🗲&#0CBF93.");
+            } catch (NumberFormatException e) {
+                DCMessage.sendError(sender, "Invalid energy amount.");
+            }
+            return true;
+        }
+
+        if (sub.equals("reset")) {
+            if (!sender.hasPermission("dragoncote.admin")) {
+                DCMessage.sendError(sender, "You do not have permission to execute this command.");
+                return true;
+            }
+            Player target = sender instanceof Player p ? p : null;
+            if (args.length >= 2) {
+                target = Bukkit.getPlayer(args[1]);
+            }
+            if (target == null) {
+                DCMessage.sendError(sender, "Player not found.");
+                return true;
+            }
+            KeystoneProfile profile = teleManager.getProfile(target);
+            profile.setEnergy(0);
+            profile.setMicro(0);
+            teleManager.getPersistence().saveNow(profile);
+            dc.dcessentials.modules.teleportation.KeystoneLoreTokens.scheduleInventoryRefresh(target);
+            DCMessage.sendGeneral(sender, "Reset &#FFFFFF" + target.getName() + "'s &#0CBF93Tesseract Energy to &#FFFFFF0 🗲 (0 mC)&#0CBF93.");
+            DCMessage.sendGeneral(target, "Your Tesseract Energy was reset to &#FFFFFF0 &#38BDF8🗲&#0CBF93.");
             return true;
         }
 
@@ -209,7 +313,7 @@ public class KeystoneCommand implements CommandExecutor {
                 return true;
             }
             SpendResult res = teleManager.getEnergyService().spend(player, kind, baseCost);
-            player.sendMessage(ColorUtil.colorize("&8[&bKeystoneDebug&8] &7allowed=&f" + res.allowed()
+            player.sendMessage(ColorUtil.colorize("&8[&bKeystoneDebug&8] &7allowed=&f" + res.authorized()
                     + " &7effCost=&b" + res.effectiveCostMicro() + "mC"
                     + " &7cracked=&e" + res.chargesCracked()
                     + " &7mPaid=&a" + res.microPaid()
@@ -270,7 +374,7 @@ public class KeystoneCommand implements CommandExecutor {
                 ItemStack equipped = playerProfile.getEquipment("keystone");
                 if (equipped != null && !equipped.getType().isAir()) {
                     if (KeystoneDetector.isLegacy(equipped)) {
-                        equipped = LegacyKeystoneConverter.convert(equipped);
+                        equipped = LegacyKeystoneConverter.convert(equipped).orElse(equipped);
                         playerProfile.setEquipment("keystone", equipped);
                         DCCosmetics.getInstance().getProfileManager().saveProfile(player);
                     }
@@ -291,7 +395,7 @@ public class KeystoneCommand implements CommandExecutor {
                 ItemStack it = contents[slot];
                 if (it == null || it.getType().isAir()) continue;
                 if (KeystoneDetector.isLegacy(it)) {
-                    it = LegacyKeystoneConverter.convert(it);
+                    it = LegacyKeystoneConverter.convert(it).orElse(it);
                     player.getInventory().setItem(slot, it);
                 }
                 KeystoneTier detected = KeystoneDetector.tierOf(it);
@@ -310,6 +414,11 @@ public class KeystoneCommand implements CommandExecutor {
                     }
                     profile.setTier(detected);
                     tier = detected;
+                    if (profile.getHeat() > 0 && profile.getTotalMicro() > 0) {
+                        profile.setHeat(0, teleManager.getOverloadClearBelow());
+                        profile.setOverloaded(false);
+                        DCMessage.sendInfo(player, "Parked Tesseract matrix reactivated — &#10B981Temporal Heat reset to 0 🔥&#BAE6FD.");
+                    }
                     teleManager.getPersistence().saveNow(profile);
                     DCMessage.sendGeneral(player, "Automatically equipped your " + detected.getDisplayName() + " &#0CBF93from inventory into your &#38BDF8/profile&#0CBF93!");
                     break;

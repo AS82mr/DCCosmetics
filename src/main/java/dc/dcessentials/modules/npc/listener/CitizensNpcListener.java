@@ -52,7 +52,25 @@ public class CitizensNpcListener implements Listener {
     @EventHandler(priority = EventPriority.NORMAL)
     public void onNPCRightClick(NPCRightClickEvent event) {
         Player player = event.getClicker();
-        String charId = matchCharId(event.getNPC());
+        NPC npc = event.getNPC();
+
+        // Check Out-of-Storyline Decoration NPC first
+        if (npc.data().has("dcnpc_deco_id")) {
+            String decoId = npc.data().get("dcnpc_deco_id").toString();
+            if (setupWand.isEditorWand(player.getInventory().getItemInMainHand())
+                    && player.hasPermission("dccosmetics.admin")
+                    && DCCosmetics.getInstance().getDecorationEditorGUI() != null) {
+                setupWand.recordEntityInteract(player.getUniqueId());
+                DCCosmetics.getInstance().getDecorationEditorGUI().open(player, decoId);
+                return;
+            }
+            if (DCCosmetics.getInstance().getDecorationManager() != null) {
+                DCCosmetics.getInstance().getDecorationManager().triggerAmbientDialogue(player, decoId);
+            }
+            return;
+        }
+
+        String charId = matchCharId(npc);
         if (charId == null) return;
 
         if (setupWand != null && setupWand.isEditorWand(player.getInventory().getItemInMainHand())) {
@@ -71,7 +89,15 @@ public class CitizensNpcListener implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void onNPCLeftClick(NPCLeftClickEvent event) {
-        String charId = matchCharId(event.getNPC());
+        NPC npc = event.getNPC();
+        if (npc.data().has("dcnpc_deco_id")) {
+            if (DCCosmetics.getInstance().getDecorationManager() != null) {
+                DCCosmetics.getInstance().getDecorationManager().triggerAmbientDialogue(
+                        event.getClicker(), npc.data().get("dcnpc_deco_id").toString());
+            }
+            return;
+        }
+        String charId = matchCharId(npc);
         if (charId != null) {
             dialogueEngine.interact(event.getClicker(), charId);
         }
@@ -98,28 +124,44 @@ public class CitizensNpcListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onNPCSpawn(net.citizensnpcs.api.event.NPCSpawnEvent event) {
         NPC npc = event.getNPC();
-        String charId = matchCharId(npc);
-        if (charId == null) return;
-
-        NpcCharacter c = registry.getCharacter(charId);
-        if (c == null || event.getLocation() == null || event.getLocation().getWorld() == null) return;
+        if (npc.data().has("temp_walker")) return;
+        if (event.getLocation() == null || event.getLocation().getWorld() == null) return;
+        String worldName = event.getLocation().getWorld().getName();
 
         long now = System.currentTimeMillis();
         Long last = lastSpawnProcessed.get(npc.getId());
-        if (last != null && (now - last) < 30000L) {
+        if (last != null && (now - last) < 500L) {
             return;
         }
         lastSpawnProcessed.put(npc.getId(), now);
 
-        String worldName = event.getLocation().getWorld().getName();
+        // Decoration NPC spawn refresh
+        if (npc.data().has("dcnpc_deco_id") && DCCosmetics.getInstance().getDecorationManager() != null) {
+            String decoId = npc.data().get("dcnpc_deco_id").toString();
+            dc.dcessentials.modules.npc.model.DecorationNpc deco = DCCosmetics.getInstance().getDecorationManager().getDecoration(decoId);
+            if (deco != null) {
+                Bukkit.getScheduler().runTaskLater(DCCosmetics.getInstance(), () -> {
+                    if (npc.isSpawned() && npc.getEntity() != null) {
+                        DCCosmetics.getInstance().getDecorationManager().applyDecorationVisuals(npc, deco, worldName);
+                    }
+                }, 1L);
+            }
+            return;
+        }
+
+        String charId = matchCharId(npc);
+        if (charId == null) return;
+
+        NpcCharacter c = registry.getCharacter(charId);
+        if (c == null) return;
+
         DCCosmetics.debugNpc("onNPCSpawn triggered: NPC #" + npc.getId() + " (" + npc.getName() + ") charId=" + charId + " world=" + worldName);
         Bukkit.getScheduler().runTaskLater(DCCosmetics.getInstance(), () -> {
             if (!npc.isSpawned() || npc.getEntity() == null) return;
-            DCCosmetics.getInstance().getSkinProcessor().applyWorldSkin(npc, worldName, c.getId());
+            DCCosmetics.getInstance().getSkinProcessor().applyProfileSkin(
+                    npc, worldName, c.getId(), c.getSkin(), c.getBehaviorProfile().getSkinRevision());
             DCCosmetics.getInstance().getNpcCanonManager().configureNpcOverhead(npc, c, worldName);
-            if (c.getEngineType().equalsIgnoreCase("MODEL_ENGINE")) {
-                DCCosmetics.getInstance().getNpcCanonManager().applyEngineMode(npc, c);
-            }
+            DCCosmetics.getInstance().getNpcCanonManager().applyEngineMode(npc, c);
         }, 1L);
     }
 
@@ -143,13 +185,22 @@ public class CitizensNpcListener implements Listener {
             if (CitizensAPI.getPlugin() != null && CitizensAPI.hasImplementation() && CitizensAPI.getNPCRegistry() != null) {
                 for (NPC npc : CitizensAPI.getNPCRegistry()) {
                     if (npc.isSpawned() && npc.getEntity() != null && npc.getEntity().getWorld().equals(toWorld)) {
-                        String charId = matchCharId(npc);
-                        NpcCharacter c = (charId != null) ? registry.getCharacter(charId) : null;
-                        if (c != null) {
-                            DCCosmetics.getInstance().getNpcCanonManager().configureNpcOverhead(npc, c, toWorld.getName());
-                            DCCosmetics.getInstance().getSkinProcessor().applyWorldSkin(npc, toWorld.getName(), c.getId());
-                            if (c.getEngineType().equalsIgnoreCase("MODEL_ENGINE")) {
-                                DCCosmetics.getInstance().getNpcCanonManager().applyEngineMode(npc, c);
+                        if (npc.data().has("dcnpc_deco_id") && DCCosmetics.getInstance().getDecorationManager() != null) {
+                            dc.dcessentials.modules.npc.model.DecorationNpc deco =
+                                    DCCosmetics.getInstance().getDecorationManager().getDecoration(npc.data().get("dcnpc_deco_id").toString());
+                            if (deco != null) {
+                                DCCosmetics.getInstance().getDecorationManager().applyDecorationVisuals(npc, deco, toWorld.getName());
+                            }
+                        } else {
+                            String charId = matchCharId(npc);
+                            NpcCharacter c = (charId != null) ? registry.getCharacter(charId) : null;
+                            if (c != null) {
+                                DCCosmetics.getInstance().getNpcCanonManager().configureNpcOverhead(npc, c, toWorld.getName());
+                                DCCosmetics.getInstance().getSkinProcessor().applyProfileSkin(
+                                        npc, toWorld.getName(), c.getId(), c.getSkin(), c.getBehaviorProfile().getSkinRevision());
+                                if (c.getEngineType().equalsIgnoreCase("MODEL_ENGINE")) {
+                                    DCCosmetics.getInstance().getNpcCanonManager().applyEngineMode(npc, c);
+                                }
                             }
                         }
 

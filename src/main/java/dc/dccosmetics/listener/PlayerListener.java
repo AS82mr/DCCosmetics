@@ -56,8 +56,7 @@ public class PlayerListener implements Listener {
     public void onPlayerChangeWorld(PlayerChangedWorldEvent event) {
         Player player = event.getPlayer();
         DCCosmetics.getInstance().getWaypointManager().clearWaypoint(player);
-        DCCosmetics.getInstance().getProfileManager().unloadProfile(player);
-        DCCosmetics.getInstance().getProfileManager().loadProfile(player);
+        DCCosmetics.getInstance().getProfileManager().refreshWorldCosmetics(player);
     }
 
     private boolean isCompatible(String slot, Material mat) {

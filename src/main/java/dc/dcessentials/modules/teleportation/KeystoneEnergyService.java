@@ -1,10 +1,13 @@
 package dc.dcessentials.modules.teleportation;
 
 import dc.dccosmetics.DCCosmetics;
+import dc.dcessentials.core.util.DCMessage;
 import dc.dcessentials.modules.items.model.ItemStat;
 import dc.dcessentials.modules.items.stats.PlayerStatSnapshot;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -104,6 +107,19 @@ public class KeystoneEnergyService {
         return spend(player, kind, baseCostMicro, player != null ? player.getLocation() : null);
     }
 
+    public int effectiveWarpCost(Player player, KeystoneProfile profile, int baseCostMicro) {
+        if (baseCostMicro <= 0) return 0;
+        int microPerCharge = Math.max(1, manager.getMicroPerCharge());
+        int baseCharges = Math.max(1, (int) Math.round((double) baseCostMicro / microPerCharge));
+        int tierPct = (profile != null && profile.getTier() != null) ? profile.getTier().getCostReductionPct() : 0;
+        double conduit = getConduitStat(player);
+        int scrollPct = KeystoneDetector.getScrollCostReductionPct(manager.getEquippedKeystoneItem(player));
+
+        double totalReductionPct = Math.min(manager.getCostReductionCapPct(), tierPct + conduit + scrollPct);
+        int effCharges = Math.max(1, (int) Math.round(baseCharges * (1.0 - (totalReductionPct / 100.0))));
+        return effCharges * microPerCharge;
+    }
+
     public SpendResult spend(Player player, SpendKind kind, int baseCostMicro, Location to) {
         KeystoneProfile profile = manager.getProfile(player);
 
@@ -126,11 +142,13 @@ public class KeystoneEnergyService {
                         profile.getEnergy(), profile.getMicro(), profile.getHeat(), profile.isOverloaded()
                 );
             }
-            int effCost = effectiveCost(player, profile, baseCostMicro);
+            int effCost = effectiveWarpCost(player, profile, baseCostMicro);
             return profile.spendMicro(effCost, 0, 0.0, manager.getOverloadClearBelow());
         }
 
-        int effCost = effectiveCost(player, profile, baseCostMicro);
+        int effCost = kind == SpendKind.WARP
+                ? effectiveWarpCost(player, profile, baseCostMicro)
+                : effectiveCost(player, profile, baseCostMicro);
         double heatMult = computeHeatMultiplier(player, to);
 
         int overdrawHeatBase;
@@ -153,26 +171,43 @@ public class KeystoneEnergyService {
             }
         }
 
-        SpendResult res = profile.spendMicro(effCost, overdrawHeatBase, heatMult, manager.getOverloadClearBelow());
+        int effClearBelow = manager.getEffectiveOverloadClearBelow(player);
+        SpendResult res = profile.spendMicro(effCost, overdrawHeatBase, heatMult, effClearBelow);
 
-        // Mastery Anchor scroll: stabilize at 99 heat so overload never triggers
+        // Mastery Anchor scroll: 1 Emergency Phase-Vent per 3m (-35 Heat on hitting 100) + lower Overload clear threshold
         ItemStack equipped = manager.getEquippedKeystoneItem(player);
-        if (profile.getHeat() >= 100 && KeystoneDetector.hasOverloadStabilizer(equipped)) {
-            profile.setHeat(99, manager.getOverloadClearBelow());
-            profile.setOverloaded(false);
-            res = new SpendResult(
-                    res.authorized(),
-                    res.effectiveCostMicro(),
-                    res.chargesCracked(),
-                    res.microPaid(),
-                    res.microShortfall(),
-                    res.overdraw(),
-                    res.heatAdded(),
-                    profile.getEnergy(),
-                    profile.getMicro(),
-                    profile.getHeat(),
-                    profile.isOverloaded()
-            );
+        if (profile.getHeat() >= 100 && KeystoneDetector.hasPhaseVentAnchor(equipped)) {
+            long now = System.currentTimeMillis();
+            long cooldownMs = Math.max(10L, KeystoneDetector.getPhaseVentCooldownSeconds(equipped)) * 1000L;
+            long lastVent = profile.getLastPhaseVent();
+            if (now - lastVent >= cooldownMs) {
+                profile.setLastPhaseVent(now);
+                int ventAmount = Math.max(10, KeystoneDetector.getPhaseVentHeatReduction(equipped));
+                profile.reduceHeat(ventAmount, effClearBelow);
+                profile.setOverloaded(false);
+                res = new SpendResult(
+                        res.authorized(),
+                        res.effectiveCostMicro(),
+                        res.chargesCracked(),
+                        res.microPaid(),
+                        res.microShortfall(),
+                        res.overdraw(),
+                        res.heatAdded(),
+                        profile.getEnergy(),
+                        profile.getMicro(),
+                        profile.getHeat(),
+                        profile.isOverloaded()
+                );
+                if (player != null && player.isOnline()) {
+                    player.playSound(player.getLocation(), Sound.BLOCK_BEACON_DEACTIVATE, 1.0f, 1.4f);
+                    player.spawnParticle(Particle.SOUL_FIRE_FLAME, player.getLocation().add(0, 1.0, 0), 28, 0.5, 0.6, 0.5, 0.08);
+                    DCMessage.sendInfo(player, "&#EF4444✦ Singularity Phase-Vent triggered! &#BAE6FDPurged &#FFFFFF-"
+                            + ventAmount + " Heat &#BAE6FD(Heat: &#FFFFFF" + profile.getHeat() + "/100🔥&#BAE6FD | 3m cooldown).");
+                }
+            } else if (player != null && player.isOnline()) {
+                long remSec = Math.max(1L, (cooldownMs - (now - lastVent) + 999L) / 1000L);
+                DCMessage.sendWarning(player, "Singularity Phase-Vent on cooldown (&#FFFFFF" + remSec + "s&#FDE047) — Matrix OVERLOADED!");
+            }
         }
 
         if (profile.getHeat() >= 100 && player != null) {
@@ -191,6 +226,20 @@ public class KeystoneEnergyService {
         KeystoneProfile profile = manager.getProfile(player);
         profile.refundMicro(microAmount, getEffectiveMaxEnergy(player, profile));
         KeystoneLoreTokens.scheduleInventoryRefresh(player);
+    }
+
+    public boolean isInstabilitySuppressed(Player player) {
+        if (player == null) return false;
+        ItemStack equipped = manager.getEquippedKeystoneItem(player);
+        return KeystoneDetector.hasInstabilitySuppression(equipped);
+    }
+
+    public int grantMicro(Player player, int microAmount) {
+        if (player == null || microAmount <= 0) return 0;
+        KeystoneProfile profile = manager.getProfile(player);
+        if (profile == null || profile.getTier() == KeystoneTier.NONE) return 0;
+        refundMicro(player, microAmount);
+        return microAmount;
     }
 
     public int countEnergyCubesInInventory(Player player) {

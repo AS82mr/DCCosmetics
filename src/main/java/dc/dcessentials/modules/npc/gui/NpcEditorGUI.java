@@ -40,6 +40,7 @@ public class NpcEditorGUI implements Listener {
     private NpcTrackerGUI trackerGUI;
     private NpcEngineSelectorGUI engineSelectorGUI;
     private WarpMenuGUI warpMenuGUI;
+    private SkinBakeGUI skinBakeGUI;
 
     private final Map<UUID, String> viewingCharId = new HashMap<>();
 
@@ -63,6 +64,10 @@ public class NpcEditorGUI implements Listener {
 
     public void setWarpMenuGUI(WarpMenuGUI warpMenuGUI) {
         this.warpMenuGUI = warpMenuGUI;
+    }
+
+    public void setSkinBakeGUI(SkinBakeGUI skinBakeGUI) {
+        this.skinBakeGUI = skinBakeGUI;
     }
 
     public void open(Player player, String charId) {
@@ -196,8 +201,8 @@ public class NpcEditorGUI implements Listener {
             }
 
             lore.add("§f");
-            lore.add("§a▶ Left-Click: §fRefresh skin for active NPC in this world");
-            lore.add("§6▶ Right-Click: §fSet skin from URL, Player, or Local Folder");
+            lore.add("§a▶ Left-Click: §fOpen Skin & .bbmodel Baker GUI");
+            lore.add("§6▶ Right-Click: §fQuick refresh skin in this world");
             skMeta.setLore(lore);
             skinItem.setItemMeta(skMeta);
         }
@@ -390,9 +395,20 @@ public class NpcEditorGUI implements Listener {
             return;
         }
 
-        // Slot 23: Skin Configuration & Reload
+        // Slot 23: Skin Configuration, .bbmodel Baker & Reload
         if (slot == 23) {
             if (event.isRightClick()) {
+                NPC npc = zoneManager.findCitizensNpc(c.getId(), player.getWorld().getName());
+                if (npc != null && npc.isSpawned()) {
+                    DCCosmetics.getInstance().getSkinProcessor().applyProfileSkin(
+                            npc, player.getWorld().getName(), c.getId(), c.getSkin(), c.getBehaviorProfile().getSkinRevision());
+                    canonManager.applyProfileEngine(npc, c.getBehaviorProfile(), c.getId(), c.getSkin(), c.getSkin());
+                    player.playSound(player.getLocation(), Sound.ITEM_ARMOR_EQUIP_LEATHER, 1.0f, 1.4f);
+                    player.sendMessage(DragoncoteColor.PREFIX_INFO + "Refreshed skin for §f" + c.getShortName() + "§7 in §b" + player.getWorld().getName());
+                }
+            } else if (skinBakeGUI != null) {
+                skinBakeGUI.openChar(player, charId);
+            } else {
                 player.closeInventory();
                 player.sendMessage("§8==================================================");
                 player.sendMessage(DragoncoteColor.PREFIX_INFO + "SKIN CONFIGURATION FOR: §f" + c.getShortName());
@@ -402,13 +418,6 @@ public class NpcEditorGUI implements Listener {
                 player.sendMessage("§7Folder: §eplugins/DCEssentials/npcs/" + charId + "/default.png");
                 player.sendMessage("§8==================================================");
                 player.playSound(player.getLocation(), Sound.ITEM_BOOK_PAGE_TURN, 1.0f, 1.2f);
-            } else {
-                NPC npc = zoneManager.findCitizensNpc(c.getId(), player.getWorld().getName());
-                if (npc != null && npc.isSpawned()) {
-                    DCCosmetics.getInstance().getSkinProcessor().applyWorldSkin(npc, player.getWorld().getName(), c.getId());
-                    player.playSound(player.getLocation(), Sound.ITEM_ARMOR_EQUIP_LEATHER, 1.0f, 1.4f);
-                    player.sendMessage(DragoncoteColor.PREFIX_INFO + "Refreshed skin for §f" + c.getShortName() + "§7 in §b" + player.getWorld().getName());
-                }
             }
             return;
         }
@@ -448,6 +457,7 @@ public class NpcEditorGUI implements Listener {
             else if ("WALK_PATROL_PATH".equalsIgnoreCase(current)) next = "POOF_DESPAWN";
             else next = "STAY_IN_WORLD";
             c.setCompletionBehavior(next);
+            registry.saveCustomStages(DCCosmetics.getInstance().getDataFolder());
             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.5f);
             player.sendMessage(DragoncoteColor.PREFIX_INFO + "Updated completion behavior for §f" + c.getShortName() + " §7to: §e" + next);
             open(player, charId);

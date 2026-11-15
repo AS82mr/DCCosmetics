@@ -119,6 +119,13 @@ public final class DCCosmetics extends JavaPlugin {
     private dc.dcessentials.modules.npc.gui.NpcEngineSelectorGUI npcEngineSelectorGUI;
     private dc.dcessentials.modules.npc.gui.WarpMenuGUI warpMenuGUI;
     private dc.dcessentials.modules.npc.gui.MissionRewardGUI missionRewardGUI;
+    private dc.dcessentials.modules.npc.scene.SceneCatalog sceneCatalog;
+    private dc.dcessentials.modules.npc.skin.BbmodelSkinBaker bbmodelSkinBaker;
+    private dc.dcessentials.modules.npc.behavior.NpcBehaviorController npcBehaviorController;
+    private dc.dcessentials.modules.npc.scene.DecorationManager decorationManager;
+    private dc.dcessentials.modules.npc.gui.SkinBakeGUI skinBakeGUI;
+    private dc.dcessentials.modules.npc.gui.DecorationListGUI decorationListGUI;
+    private dc.dcessentials.modules.npc.gui.DecorationEditorGUI decorationEditorGUI;
 
     // Dragoncote Server Events & World Cycle System
     private dc.dcessentials.modules.event.EventManager eventManager;
@@ -136,6 +143,9 @@ public final class DCCosmetics extends JavaPlugin {
 
     // Dragoncote Teleportation Effects & 3D Voxel Camera Module
     private dc.dccosmetics.tpeffects.TpEffectManager tpEffectManager;
+
+    // TEMPORARY Model & Texturepack Curator Module (safe to remove after cleanup)
+    private dc.dcessentials.modules.curator.CuratorManager curatorManager;
 
     @Override
     public void onEnable() {
@@ -364,13 +374,16 @@ public final class DCCosmetics extends JavaPlugin {
             registerDynamicCommand("glow", glowCmd, glowCmd, java.util.Arrays.asList("glows", "glowing", "dcglow"));
         }
 
-        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            dc.dcessentials.core.placeholders.DCEssentialsExpansion mainExp = new dc.dcessentials.core.placeholders.DCEssentialsExpansion();
-            mainExp.register();
-            new dc.dcessentials.core.placeholders.DceExpansion(mainExp).register();
-            new dc.dcessentials.core.placeholders.TvaExpansion().register();
-            getLogger().info("[DCEssentials] Hooked into PlaceholderAPI (dragoncote, dce, tva) successfully.");
-        }
+        registerPlaceholderExpansions();
+        Bukkit.getScheduler().runTask(this, this::registerPlaceholderExpansions);
+        getServer().getPluginManager().registerEvents(new org.bukkit.event.Listener() {
+            @org.bukkit.event.EventHandler
+            public void onPluginEnable(org.bukkit.event.server.PluginEnableEvent event) {
+                if ("PlaceholderAPI".equalsIgnoreCase(event.getPlugin().getName())) {
+                    registerPlaceholderExpansions();
+                }
+            }
+        }, this);
 
         // Dragoncote Multi-World NPC, District & Setup Wand Engine
         this.skinProcessor = new SkinProcessor();
@@ -393,20 +406,57 @@ public final class DCCosmetics extends JavaPlugin {
         this.missionRewardGUI = new dc.dcessentials.modules.npc.gui.MissionRewardGUI(this.npcRegistry, this.npcDialogueEngine, this.npcZoneManager);
         this.npcDialogueEngine.setMissionRewardGUI(this.missionRewardGUI);
 
+        // Dynamic Scenes Catalog, .bbmodel Skin Baker, Behavior/Patrol Engine & Decoration DCNPCs
+        this.sceneCatalog = new dc.dcessentials.modules.npc.scene.SceneCatalog();
+        this.sceneCatalog.reload();
+        this.bbmodelSkinBaker = new dc.dcessentials.modules.npc.skin.BbmodelSkinBaker();
+        this.npcBehaviorController = new dc.dcessentials.modules.npc.behavior.NpcBehaviorController(this.npcRegistry, this.sceneCatalog);
+        this.decorationManager = new dc.dcessentials.modules.npc.scene.DecorationManager();
+        this.decorationManager.setManagers(this.npcCanonManager, this.skinProcessor, this.npcBehaviorController);
+        this.npcBehaviorController.setDecorationManager(this.decorationManager);
+        this.decorationManager.load();
+        this.skinBakeGUI = new dc.dcessentials.modules.npc.gui.SkinBakeGUI(
+                this.npcRegistry, this.skinProcessor, this.bbmodelSkinBaker, this.sceneCatalog, this.npcZoneManager, this.npcCanonManager);
+        this.decorationListGUI = new dc.dcessentials.modules.npc.gui.DecorationListGUI(this.decorationManager);
+        this.decorationEditorGUI = new dc.dcessentials.modules.npc.gui.DecorationEditorGUI(this.decorationManager);
+
         // Cross-wiring GUI references
         this.npcTrackerGUI.setManagers(this.npcCanonManager, this.npcEditorGUI);
+        this.npcTrackerGUI.setDecorationListGUI(this.decorationListGUI);
         this.npcEditorGUI.setStageEditorGUI(this.npcStageEditorGUI);
         this.npcEditorGUI.setTrackerGUI(this.npcTrackerGUI);
         this.npcEditorGUI.setEngineSelectorGUI(this.npcEngineSelectorGUI);
         this.npcEditorGUI.setWarpMenuGUI(this.warpMenuGUI);
+        this.npcEditorGUI.setSkinBakeGUI(this.skinBakeGUI);
         this.npcStageEditorGUI.setNpcEditorGUI(this.npcEditorGUI);
         this.npcStageEditorGUI.setSingleStageGUI(this.npcSingleStageGUI);
         this.npcSingleStageGUI.setStageListGUI(this.npcStageEditorGUI);
         this.npcSingleStageGUI.setWarpMenuGUI(this.warpMenuGUI);
         this.npcEngineSelectorGUI.setNpcEditorGUI(this.npcEditorGUI);
+        this.npcEngineSelectorGUI.setSceneCatalog(this.sceneCatalog);
+        this.npcEngineSelectorGUI.setBehaviorController(this.npcBehaviorController);
+        this.npcEngineSelectorGUI.setDecorationManager(this.decorationManager);
+        this.npcEngineSelectorGUI.setDecorationEditorGUI(this.decorationEditorGUI);
+        this.npcEngineSelectorGUI.setCanonManager(this.npcCanonManager);
+        this.npcEngineSelectorGUI.setZoneManager(this.npcZoneManager);
+        this.skinBakeGUI.setDecorationManager(this.decorationManager);
+        this.skinBakeGUI.setNpcEditorGUI(this.npcEditorGUI);
+        this.skinBakeGUI.setDecorationEditorGUI(this.decorationEditorGUI);
+        this.decorationListGUI.setDecorationEditorGUI(this.decorationEditorGUI);
+        this.decorationListGUI.setTrackerGUI(this.npcTrackerGUI);
+        this.decorationEditorGUI.setDecorationListGUI(this.decorationListGUI);
+        this.decorationEditorGUI.setEngineSelectorGUI(this.npcEngineSelectorGUI);
+        this.decorationEditorGUI.setSkinBakeGUI(this.skinBakeGUI);
+        this.decorationEditorGUI.setBehaviorController(this.npcBehaviorController);
         this.warpMenuGUI.setTrackerGUI(this.npcTrackerGUI);
         this.warpMenuGUI.setNpcEditorGUI(this.npcEditorGUI);
         this.warpMenuGUI.setSingleStageGUI(this.npcSingleStageGUI);
+
+        this.npcBehaviorController.start();
+        Bukkit.getScheduler().runTaskLater(this, () -> {
+            if (this.sceneCatalog != null) this.sceneCatalog.reload();
+            if (this.decorationManager != null) this.decorationManager.syncAllDecorations();
+        }, 60L);
 
         this.npcSetupWand = new NpcSetupWand(this.npcZoneManager, this.npcRegistry, this.npcTrackerGUI, this.npcCanonManager, this.sceneManager, this.npcEditorGUI, this.sceneEditorGUI);
 
@@ -420,6 +470,9 @@ public final class DCCosmetics extends JavaPlugin {
         getServer().getPluginManager().registerEvents(this.warpMenuGUI, this);
         getServer().getPluginManager().registerEvents(this.missionRewardGUI, this);
         getServer().getPluginManager().registerEvents(this.sceneManager, this);
+        getServer().getPluginManager().registerEvents(this.skinBakeGUI, this);
+        getServer().getPluginManager().registerEvents(this.decorationListGUI, this);
+        getServer().getPluginManager().registerEvents(this.decorationEditorGUI, this);
         if (Bukkit.getPluginManager().getPlugin("Citizens") != null) {
             getServer().getPluginManager().registerEvents(new CitizensNpcListener(this.npcRegistry, this.npcDialogueEngine, this.npcSetupWand, this.npcEditorGUI), this);
             getLogger().info("[DCEssentials] Registered Citizens interaction listener.");
@@ -562,6 +615,10 @@ public final class DCCosmetics extends JavaPlugin {
         registerDynamicCommand("emperortest", this.emperorCommand, this.emperorCommand,
                 java.util.Arrays.asList("emperorscale", "emperorheal", "emperoractive", "emperordeath"));
 
+        // TEMPORARY Model & Texturepack Curator Module (replaces vfx_preview_wand.sk)
+        this.curatorManager = new dc.dcessentials.modules.curator.CuratorManager(this);
+        this.curatorManager.start();
+
         getLogger().info("DCEssentials (v2.0) successfully enabled!");
         getLogger().info("----------------------------------------");
     }
@@ -607,6 +664,11 @@ public final class DCCosmetics extends JavaPlugin {
         if (this.npcZoneManager != null) this.npcZoneManager.loadConfig();
         if (this.npcCanonManager != null) this.npcCanonManager.loadLocations();
         if (this.sceneManager != null) this.sceneManager.loadScenes();
+        if (this.sceneCatalog != null) this.sceneCatalog.reload();
+        if (this.decorationManager != null) {
+            this.decorationManager.load();
+            this.decorationManager.syncAllDecorations();
+        }
         if (this.wardrobeManager != null) {
             this.wardrobeManager.loadConfig();
             if (this.wardrobeManager.getRoom() != null) this.wardrobeManager.getRoom().load();
@@ -625,6 +687,9 @@ public final class DCCosmetics extends JavaPlugin {
 
         if (this.tpEffectManager != null) {
             this.tpEffectManager.shutdown();
+        }
+        if (this.npcBehaviorController != null) {
+            this.npcBehaviorController.stop();
         }
         CinematicTeleportController.getInstance().cleanupAll();
         if (this.wardrobeManager != null) {
@@ -662,6 +727,9 @@ public final class DCCosmetics extends JavaPlugin {
         }
         if (emperorTabHook != null) {
             emperorTabHook.shutdown();
+        }
+        if (curatorManager != null) {
+            curatorManager.shutdown();
         }
 
         Bukkit.getScheduler().cancelTasks(this);
@@ -847,6 +915,13 @@ public final class DCCosmetics extends JavaPlugin {
     public dc.dcessentials.modules.npc.gui.NpcStageEditorGUI getNpcStageEditorGUI() { return npcStageEditorGUI; }
     public dc.dcessentials.modules.npc.gui.WarpMenuGUI getWarpMenuGUI() { return warpMenuGUI; }
     public dc.dcessentials.modules.npc.gui.MissionRewardGUI getMissionRewardGUI() { return missionRewardGUI; }
+    public dc.dcessentials.modules.npc.scene.SceneCatalog getSceneCatalog() { return sceneCatalog; }
+    public dc.dcessentials.modules.npc.skin.BbmodelSkinBaker getBbmodelSkinBaker() { return bbmodelSkinBaker; }
+    public dc.dcessentials.modules.npc.behavior.NpcBehaviorController getNpcBehaviorController() { return npcBehaviorController; }
+    public dc.dcessentials.modules.npc.scene.DecorationManager getDecorationManager() { return decorationManager; }
+    public dc.dcessentials.modules.npc.gui.SkinBakeGUI getSkinBakeGUI() { return skinBakeGUI; }
+    public dc.dcessentials.modules.npc.gui.DecorationListGUI getDecorationListGUI() { return decorationListGUI; }
+    public dc.dcessentials.modules.npc.gui.DecorationEditorGUI getDecorationEditorGUI() { return decorationEditorGUI; }
 
     public void registerDynamicCommand(String name, org.bukkit.command.CommandExecutor executor, org.bukkit.command.TabCompleter completer, java.util.List<String> aliases) {
         try {
@@ -876,6 +951,23 @@ public final class DCCosmetics extends JavaPlugin {
     public dc.dcessentials.modules.boss.EmperorTabHook getEmperorTabHook() { return emperorTabHook; }
     public dc.dcessentials.modules.boss.EmperorCommand getEmperorCommand() { return emperorCommand; }
     public dc.dccosmetics.tpeffects.TpEffectManager getTpEffectManager() { return tpEffectManager; }
+    public dc.dcessentials.modules.curator.CuratorManager getCuratorManager() { return curatorManager; }
+
+    public void registerPlaceholderExpansions() {
+        var papi = Bukkit.getPluginManager().getPlugin("PlaceholderAPI");
+        if (papi == null || !papi.isEnabled()) return;
+        try {
+            dc.dcessentials.core.placeholders.DCEssentialsExpansion mainExp = new dc.dcessentials.core.placeholders.DCEssentialsExpansion();
+            boolean r1 = mainExp.register();
+            boolean r2 = new dc.dcessentials.core.placeholders.DceExpansion(mainExp).register();
+            boolean r3 = new dc.dcessentials.core.placeholders.TvaExpansion().register();
+            if (r1 || r2 || r3) {
+                getLogger().info("[DCEssentials] Hooked into PlaceholderAPI (dragoncote, dce, tva) successfully.");
+            }
+        } catch (Throwable t) {
+            getLogger().warning("[DCEssentials] PlaceholderAPI hook warning: " + t.getMessage());
+        }
+    }
 
     public boolean isDcNpcDebugEnabled() {
         java.util.List<String> list = getConfig().getStringList("debug-mode");

@@ -29,13 +29,25 @@ public class TeleportGate {
             case NETHER_PORTAL,
                  END_PORTAL,
                  END_GATEWAY,
-                 CHORUS_FRUIT,
+                 CONSUMABLE_EFFECT,
                  ENDER_PEARL,
                  DISMOUNT,
                  SPECTATE,
                  EXIT_BED -> true;
             default -> false;
         };
+    }
+
+    public boolean isExemptOrSuppressedTransit(Player player, TeleportCause cause, Location from, Location to) {
+        if (player == null || !player.isOnline()) return true;
+        if (DCCosmetics.getInstance().getWardrobeManager() != null
+                && DCCosmetics.getInstance().getWardrobeManager().isInWardrobe(player)) {
+            return true;
+        }
+        if (isExemptCause(cause)) {
+            return true;
+        }
+        return dc.dccosmetics.tpeffects.listener.TpEffectListener.isSuppressedOrShortHop(player, cause, from, to);
     }
 
     /**
@@ -45,31 +57,20 @@ public class TeleportGate {
     public boolean preCheck(Player player, TeleportCause cause, Location from, Location to) {
         if (player == null || !player.isOnline()) return true;
 
-        // 1. Wardrobe immunity
-        if (DCCosmetics.getInstance().getWardrobeManager() != null
-                && DCCosmetics.getInstance().getWardrobeManager().isInWardrobe(player)) {
-            return true;
-        }
-
-        // 2. Peek active command context
+        // 1. Peek active command context: Free commands (/spawn, /warp, /pwarp, /back) remain usable even while overloaded
         TeleportContext ctx = manager.peekContext(player);
         if (ctx != null && ctx.type() == TeleportContext.Type.FREE_COMMAND) {
-            // X6: Free commands (/spawn, /warp, /pwarp, /back) remain usable even while overloaded
             return true;
         }
 
-        // 3. Environmental & unarmed plugin causes are exempt
-        if (isExemptCause(cause)) {
-            return true;
-        }
-        if ((cause == TeleportCause.PLUGIN || cause == TeleportCause.UNKNOWN)
-                && (ctx == null || ctx.type() != TeleportContext.Type.CHARGED_COMMAND)) {
+        // 2. Environmental, wardrobe, cinematic camera, short-hop, and ability teleports are exempt
+        if (isExemptOrSuppressedTransit(player, cause, from, to)) {
             return true;
         }
 
         KeystoneProfile profile = manager.getProfile(player);
 
-        // 4. Unloaded profile handling: <= 5s after join -> warps allowed free & logged; > 5s -> default-load
+        // 3. Unloaded profile handling: <= 5s after join -> warps allowed free & logged; > 5s -> default-load
         if (!profile.isLoaded()) {
             long ageMs = System.currentTimeMillis() - profile.getCreatedAtMs();
             if (ageMs > 5000L) {
@@ -80,13 +81,14 @@ public class TeleportGate {
             }
         }
 
-        // 5. Overload lock (Heat >= 100 until cooled <= overload-clear-below)
+        // 4. Overload lock (Heat >= 100 until cooled <= effective overload-clear-below)
+        int effClearBelow = manager.getEffectiveOverloadClearBelow(player);
         if (profile.isOverloaded()) {
             manager.consumeContext(player);
             player.playSound(player.getLocation(), Sound.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1.0f, 0.5f);
             DCMessage.sendError(player, "Keystone Matrix OVERLOADED (&#FFFFFF" + profile.getHeat()
-                    + "/100 🔥&#EF4444)! Cool your Heat to &#FFFFFF≤" + manager.getOverloadClearBelow()
-                    + " &#EF4444before warping (free warps like &#FFFFFF/spawn &#EF4444still work).");
+                    + "/100 🔥&#EF4444)! Cool your Heat to &#FFFFFF≤" + effClearBelow
+                    + " &#EF4444before warping (free warps like &#FFFFFF/spawn &#EF4444& &#FFFFFF/warp &#EF4444still work).");
             return false;
         }
 
@@ -94,8 +96,8 @@ public class TeleportGate {
     }
 
     /**
-     * Authorizes active item abilities (e.g. Void Warper Bounce / Sonic Boom).
-     * Unloaded <= 5s -> denied; > 5s -> default-loads. Overloaded -> denied.
+     * Authorizes active item abilities (e.g. Void Warper Bounce / Sonic Boom / Etherwarp).
+     * Unloaded <= 5s -> denied; > 5s -> default-loads. Overloaded -> denied until cooled <= clear threshold.
      */
     public boolean authorizeAbility(Player player) {
         if (player == null || !player.isOnline()) return false;
@@ -110,11 +112,12 @@ public class TeleportGate {
             profile.setLoaded(true);
         }
 
+        int effClearBelow = manager.getEffectiveOverloadClearBelow(player);
         if (profile.isOverloaded()) {
             player.playSound(player.getLocation(), Sound.BLOCK_RESPAWN_ANCHOR_DEPLETE, 0.9f, 0.5f);
             DCMessage.sendError(player, "Keystone Matrix OVERLOADED (&#FFFFFF" + profile.getHeat()
                     + "/100 🔥&#EF4444)! Abilities are locked until Heat cools to &#FFFFFF≤"
-                    + manager.getOverloadClearBelow() + "&#EF4444.");
+                    + effClearBelow + "&#EF4444.");
             return false;
         }
         return true;

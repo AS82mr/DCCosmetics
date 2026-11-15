@@ -65,7 +65,7 @@ public class ScrollDragListener implements Listener {
 
         // Convert legacy Keystone before applying scroll
         if (KeystoneDetector.isLegacy(clicked)) {
-            clicked = LegacyKeystoneConverter.convert(clicked);
+            clicked = LegacyKeystoneConverter.convert(clicked).orElse(clicked);
             event.setCurrentItem(clicked);
         }
 
@@ -185,9 +185,9 @@ public class ScrollDragListener implements Listener {
 
         if (mod != null && mod.getItemRegistry().isDCEItem(clicked)) {
             String dceId = mod.getItemRegistry().getItemId(clicked);
-            var dceItem = mod.getItemRegistry().getItem(dceId);
-            if (dceItem != null) {
-                dc.dcessentials.modules.items.tooltip.TooltipRenderer.renderItem(dceItem, clicked, scrollRegistry);
+            var resolvedItem = mod.getItemRegistry().getItem(dceId);
+            if (resolvedItem != null) {
+                dc.dcessentials.modules.items.tooltip.TooltipRenderer.renderItem(resolvedItem, clicked, scrollRegistry);
             }
         }
 
@@ -211,20 +211,30 @@ public class ScrollDragListener implements Listener {
             return scrollRegistry.getScrollId(cursor);
         }
 
-        // 2. Legacy Skript Lore Compatibility Bridge
+        // Never mistake non-scroll DCE items (weapons/armor/keystones/pets) for legacy Skript scrolls
+        var mod = DCCosmetics.getInstance().getItemModule();
+        if (mod != null && mod.getItemRegistry() != null && mod.getItemRegistry().isDCEItem(cursor)) {
+            return null;
+        }
+
+        // 2. Legacy Skript Lore Compatibility Bridge (strict scroll markers only, never bare percentage strings)
         ItemMeta meta = cursor.getItemMeta();
         if (meta != null && meta.hasLore()) {
+            String nameStr = meta.hasDisplayName() ? org.bukkit.ChatColor.stripColor(meta.getDisplayName()) : "";
             String loreStr = String.join(" ", meta.getLore());
-            if (loreStr.contains("ᴄʜʀᴏɴᴏ-ᴅɪꜱʀᴜᴘᴛɪᴏɴ ᴍᴀᴛʀɪx") || loreStr.contains("Chrono-Slip")) {
+            if (loreStr.contains("ᴄʜʀᴏɴᴏ-ᴅɪꜱʀᴜᴘᴛɪᴏɴ ᴍᴀᴛʀɪx") || nameStr.contains("Chrono-Slip")) {
                 return "chrono_slip";
             }
-            if (loreStr.contains("ꜱᴏᴠᴇʀᴇɪɢɴ ʙᴀɴᴇ ɪɪɪ") || loreStr.contains("+35%")) {
+            if (loreStr.contains("ꜱᴏᴠᴇʀᴇɪɢɴ ʙᴀɴᴇ ɪɪɪ")
+                    || (nameStr.contains("EMPEROR SLAYER") && nameStr.contains("+35%"))) {
                 return "slayer_mythic";
             }
-            if (loreStr.contains("ꜱᴏᴠᴇʀᴇɪɢɴ ʙᴀɴᴇ ɪɪ") || loreStr.contains("+20%")) {
+            if (loreStr.contains("ꜱᴏᴠᴇʀᴇɪɢɴ ʙᴀɴᴇ ɪɪ")
+                    || (nameStr.contains("EMPEROR SLAYER") && nameStr.contains("+20%"))) {
                 return "slayer_epic";
             }
-            if (loreStr.contains("ꜱᴏᴠᴇʀᴇɪɢɴ ʙᴀɴᴇ ɪ") || loreStr.contains("+15%")) {
+            if (loreStr.contains("ꜱᴏᴠᴇʀᴇɪɢɴ ʙᴀɴᴇ ɪ")
+                    || (nameStr.contains("EMPEROR SLAYER") && nameStr.contains("+15%"))) {
                 return "slayer_rare";
             }
         }

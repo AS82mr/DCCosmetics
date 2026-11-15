@@ -245,6 +245,22 @@ public class NpcSetupWand implements Listener {
         if (event.getHand() != EquipmentSlot.HAND) return;
 
         Player player = event.getPlayer();
+
+        // Active Patrol Waypoint Recorder works regardless of held item (or with any wand)
+        dc.dcessentials.modules.npc.behavior.NpcBehaviorController behavior = DCCosmetics.getInstance().getNpcBehaviorController();
+        if (behavior != null && behavior.isRecording(player.getUniqueId())) {
+            event.setCancelled(true);
+            Action act = event.getAction();
+            if (player.isSneaking() && (act == Action.RIGHT_CLICK_AIR || act == Action.RIGHT_CLICK_BLOCK)) {
+                behavior.saveRecording(player);
+            } else if (act == Action.LEFT_CLICK_AIR || act == Action.LEFT_CLICK_BLOCK) {
+                behavior.undoRecordedWaypoint(player);
+            } else if (act == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock() != null) {
+                behavior.addRecordedWaypoint(player, event.getClickedBlock().getLocation().add(0.5, 1.0, 0.5));
+            }
+            return;
+        }
+
         ItemStack held = player.getInventory().getItemInMainHand();
         boolean isSetup = isWand(held);
         boolean isEditor = isEditorWand(held);
@@ -437,9 +453,13 @@ public class NpcSetupWand implements Listener {
         recordEntityInteract(player.getUniqueId());
         Entity clicked = event.getRightClicked();
 
-        // 1. Check if Citizens NPC
+        // 1. Check if Citizens NPC (Decoration NPC first, then Storyline Character)
         if (CitizensAPI.getPlugin() != null && CitizensAPI.getNPCRegistry().isNPC(clicked)) {
             NPC npc = CitizensAPI.getNPCRegistry().getNPC(clicked);
+            if (npc.data().has("dcnpc_deco_id") && DCCosmetics.getInstance().getDecorationEditorGUI() != null) {
+                DCCosmetics.getInstance().getDecorationEditorGUI().open(player, npc.data().get("dcnpc_deco_id").toString());
+                return;
+            }
             String charId = matchCharId(npc);
             if (charId != null) {
                 npcEditorGUI.open(player, charId);

@@ -52,7 +52,7 @@ public class PetsConfig {
 
     // Starter & Menu
     private boolean starterEnabled = true;
-    private String starterPetId = "spark";
+    private String starterPetId = "emberling";
     private boolean starterAutoSummon = false;
     private boolean hideLockedForPlayers = true;
 
@@ -67,7 +67,8 @@ public class PetsConfig {
     private String trackerAllyColorFrom = "#8EE6EC";
     private String trackerAllyColorTo = "#EAFD47";
     private boolean trackerOutOfRangeRing = true;
-    private boolean modelEngineVfxEnabled = true;
+    // TODO [PET-VFX-PLACEHOLDER]: ModelEngine VFX disabled by default until custom VFX blueprints are finalized.
+    private boolean modelEngineVfxEnabled = false;
     private int defaultVfxDurationTicks = 70;
     private boolean cooldownNotifyActionBar = false;
 
@@ -207,7 +208,7 @@ public class PetsConfig {
         }
 
         starterEnabled = config.getBoolean("starter.enabled", true);
-        starterPetId = config.getString("starter.pet-id", "spark").trim().toLowerCase(Locale.ROOT);
+        starterPetId = config.getString("starter.pet-id", "emberling").trim().toLowerCase(Locale.ROOT);
         starterAutoSummon = config.getBoolean("starter.auto-summon", false);
         hideLockedForPlayers = config.getBoolean("menu.hide-locked-for-players", true);
 
@@ -221,7 +222,7 @@ public class PetsConfig {
         trackerAllyColorFrom = config.getString("combat.target-tracker.ally-color-from", "#8EE6EC");
         trackerAllyColorTo = config.getString("combat.target-tracker.ally-color-to", "#EAFD47");
         trackerOutOfRangeRing = config.getBoolean("combat.target-tracker.out-of-range-ring", true);
-        modelEngineVfxEnabled = config.getBoolean("combat.vfx.model-engine-enabled", true);
+        modelEngineVfxEnabled = config.getBoolean("combat.vfx.model-engine-enabled", false);
         defaultVfxDurationTicks = Math.max(10, config.getInt("combat.vfx.duration-ticks", 70));
         cooldownNotifyActionBar = config.getBoolean("combat.cooldown-notify-actionbar", false);
     }
@@ -334,7 +335,7 @@ public class PetsConfig {
         }
 
         yml.set("starter.enabled", true);
-        yml.set("starter.pet-id", "spark");
+        yml.set("starter.pet-id", "emberling");
         yml.set("starter.auto-summon", false);
         yml.set("menu.hide-locked-for-players", true);
 

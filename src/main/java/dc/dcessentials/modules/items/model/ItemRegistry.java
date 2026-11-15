@@ -5,6 +5,8 @@ import dc.dcessentials.modules.items.hook.ExecutableItemsHook;
 import dc.dcessentials.modules.items.scroll.ScrollRegistry;
 import dc.dcessentials.modules.items.scroll.ScrollType;
 import dc.dcessentials.modules.items.tooltip.TooltipRenderer;
+import dc.dcessentials.modules.items.tracker.ItemTrackerManager;
+import dc.dcessentials.modules.pets.model.PetPerkEffectType;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
@@ -278,6 +280,29 @@ public class ItemRegistry {
 
             if (id.startsWith("default_")) {
                 item.getStats().clear(); // Guarantee default vanilla baseline has 0 stats
+            }
+
+            // Individual Perks
+            List<ItemPerk> loadedPerks = parsePerkList(config.getMapList("perks"));
+            if (!loadedPerks.isEmpty()) {
+                item.setPerks(loadedPerks);
+            }
+
+            // Armor Set ID & Set Bonus
+            if (config.contains("set_id")) {
+                item.setSetId(config.getString("set_id"));
+            }
+            ConfigurationSection setBonusSec = config.getConfigurationSection("set_bonus");
+            if (setBonusSec != null) {
+                String effSetId = setBonusSec.getString("set_id", item.getSetId());
+                if (effSetId == null || effSetId.isBlank()) effSetId = id;
+                if (item.getSetId() == null) item.setSetId(effSetId);
+                String setName = setBonusSec.getString("name", effSetId);
+                int reqPieces = Math.max(2, setBonusSec.getInt("required", 4));
+                List<ItemPerk> setPerks = parsePerkList(setBonusSec.getMapList("perks"));
+                if (!setPerks.isEmpty()) {
+                    item.setSetBonus(new ItemSetBonus(effSetId, setName, reqPieces, setPerks));
+                }
             }
 
             putItemSync(id, item, "file:" + file.getPath(), false);
@@ -718,6 +743,18 @@ public class ItemRegistry {
         }
         config.set("sockets", sockets);
 
+        if (!item.getPerks().isEmpty()) {
+            config.set("perks", serializePerkList(item.getPerks()));
+        }
+        if (item.getSetId() != null && !item.getSetId().isBlank()) {
+            config.set("set_id", item.getSetId());
+        }
+        if (item.getSetBonus() != null && !item.getSetBonus().perks().isEmpty()) {
+            config.set("set_bonus.name", item.getSetBonus().setName());
+            config.set("set_bonus.required", item.getSetBonus().requiredPieces());
+            config.set("set_bonus.perks", serializePerkList(item.getSetBonus().perks()));
+        }
+
         try {
             config.save(itemFile);
         } catch (IOException e) {
@@ -888,12 +925,20 @@ public class ItemRegistry {
             PersistentDataContainer pdc = meta.getPersistentDataContainer();
             pdc.set(ITEM_ID_KEY, PersistentDataType.STRING, dceItem.getId());
             pdc.set(VERSION_KEY, PersistentDataType.INTEGER, dceItem.getVersion());
-            pdc.set(UUID_KEY, PersistentDataType.STRING, UUID.randomUUID().toString());
+            if (!isStackableCategory(dceItem.getCategory())) {
+                pdc.set(UUID_KEY, PersistentDataType.STRING, UUID.randomUUID().toString());
+            }
             pdc.set(CATEGORY_KEY, PersistentDataType.STRING, dceItem.getCategory().name());
             pdc.set(RARITY_KEY, PersistentDataType.STRING, dceItem.getRarity().name());
 
             if (dceItem.getEquipmentSlot() != null) {
                 pdc.set(EQUIPMENT_SLOT_KEY, PersistentDataType.STRING, dceItem.getEquipmentSlot());
+            }
+
+            if (dceItem.getHeadTexture() != null && !dceItem.getHeadTexture().isEmpty()) {
+                pdc.set(new NamespacedKey(DCCosmetics.getInstance(), "dce_head_tex"),
+                        PersistentDataType.STRING,
+                        Integer.toHexString(dceItem.getHeadTexture().hashCode()));
             }
 
             stack.setItemMeta(meta);
@@ -937,6 +982,67 @@ public class ItemRegistry {
         return v != null ? v : 0;
     }
 
+    public static boolean isStackableCategory(ItemCategory cat) {
+        return cat == ItemCategory.ITEM
+                || cat == ItemCategory.INGREDIENT
+                || cat == ItemCategory.VOUCHER
+                || cat == ItemCategory.SCROLL
+                || cat == ItemCategory.COSMETIC_SCROLL;
+    }
+
+    public boolean isStackableItem(ItemStack item) {
+        String id = getItemId(item);
+        DCEItem dce = id != null ? getItem(id) : null;
+        if (dce != null) {
+            return isStackableCategory(dce.getCategory());
+        }
+        if (item != null && item.hasItemMeta()) {
+            String catName = item.getItemMeta().getPersistentDataContainer().get(CATEGORY_KEY, PersistentDataType.STRING);
+            if (catName != null) {
+                return isStackableCategory(ItemCategory.fromString(catName));
+            }
+        }
+        return false;
+    }
+
+    private static List<ItemPerk> parsePerkList(List<Map<?, ?>> rawList) {
+        List<ItemPerk> list = new ArrayList<>();
+        if (rawList == null) return list;
+        for (Map<?, ?> map : rawList) {
+            if (map == null) continue;
+            Object effObj = map.get("effect");
+            if (effObj == null) effObj = map.get("type");
+            PetPerkEffectType effect = PetPerkEffectType.fromString(effObj != null ? String.valueOf(effObj) : null);
+            if (effect == PetPerkEffectType.NONE) continue;
+            String name = map.get("name") != null ? String.valueOf(map.get("name")) : effect.name();
+            double value = 0.0;
+            Object valObj = map.get("value");
+            if (valObj instanceof Number n) {
+                value = n.doubleValue();
+            } else if (valObj != null) {
+                try { value = Double.parseDouble(String.valueOf(valObj)); } catch (NumberFormatException ignored) {}
+            }
+            String desc = map.get("description") != null ? String.valueOf(map.get("description")) : "";
+            list.add(new ItemPerk(name, effect, value, desc));
+        }
+        return list;
+    }
+
+    private static List<Map<String, Object>> serializePerkList(List<ItemPerk> perks) {
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (ItemPerk p : perks) {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("name", p.name());
+            m.put("effect", p.effectType().name());
+            m.put("value", p.value());
+            if (p.description() != null && !p.description().isEmpty()) {
+                m.put("description", p.description());
+            }
+            out.add(m);
+        }
+        return out;
+    }
+
     /**
      * Zero-Reset Live-Sync Engine:
      * Seamlessly upgrades player item to latest definition while 100% preserving:
@@ -952,11 +1058,42 @@ public class ItemRegistry {
         if (master == null) return false;
 
         int currentVer = getItemVersion(item);
-        if (currentVer >= master.getVersion()) return false; // Already up to date
+        NamespacedKey headTexKey = new NamespacedKey(DCCosmetics.getInstance(), "dce_head_tex");
+        String expectedTexHash = (master.getMaterial() == Material.PLAYER_HEAD
+                && master.getHeadTexture() != null
+                && !master.getHeadTexture().isEmpty())
+                ? Integer.toHexString(master.getHeadTexture().hashCode())
+                : null;
+        String currentTexHash = item.hasItemMeta()
+                ? item.getItemMeta().getPersistentDataContainer().get(headTexKey, PersistentDataType.STRING)
+                : null;
+        boolean headNeedsUpdate = expectedTexHash != null && !expectedTexHash.equals(currentTexHash);
 
-        // 1. Material Hot-Swap (only if not a player head or custom textured item)
-        if (item.getType() != Material.PLAYER_HEAD && master.getMaterial() != Material.PLAYER_HEAD && item.getType() != master.getMaterial()) {
+        boolean stackable = isStackableCategory(master.getCategory());
+        boolean hasStaleUniqueKeys = false;
+        if (stackable && item.hasItemMeta()) {
+            PersistentDataContainer chkPdc = item.getItemMeta().getPersistentDataContainer();
+            hasStaleUniqueKeys = chkPdc.has(UUID_KEY, PersistentDataType.STRING)
+                    || chkPdc.has(ItemTrackerManager.INSTANCE_UUID_KEY, PersistentDataType.STRING)
+                    || chkPdc.has(ItemTrackerManager.LAST_USER_UUID_KEY, PersistentDataType.STRING)
+                    || chkPdc.has(ItemTrackerManager.LAST_USER_NAME_KEY, PersistentDataType.STRING);
+        }
+
+        if (currentVer >= master.getVersion() && !headNeedsUpdate && !hasStaleUniqueKeys) return false; // Already up to date
+
+        // 1. Material Hot-Swap
+        if (item.getType() != master.getMaterial()) {
             item.setType(master.getMaterial());
+        }
+
+        // Apply deterministic custom skull texture if master is PLAYER_HEAD with texture
+        if (expectedTexHash != null) {
+            ItemStack freshHead = dc.dccosmetics.util.HeadUtil.getCustomHead(master.getHeadTexture());
+            if (freshHead != null && freshHead.getItemMeta() instanceof org.bukkit.inventory.meta.SkullMeta freshSkull
+                    && item.getItemMeta() instanceof org.bukkit.inventory.meta.SkullMeta targetSkull) {
+                targetSkull.setOwnerProfile(freshSkull.getOwnerProfile());
+                item.setItemMeta(targetSkull);
+            }
         }
 
         ItemMeta meta = item.getItemMeta();
@@ -965,6 +1102,15 @@ public class ItemRegistry {
             pdc.set(VERSION_KEY, PersistentDataType.INTEGER, master.getVersion());
             pdc.set(CATEGORY_KEY, PersistentDataType.STRING, master.getCategory().name());
             pdc.set(RARITY_KEY, PersistentDataType.STRING, master.getRarity().name());
+            if (stackable) {
+                pdc.remove(UUID_KEY);
+                pdc.remove(ItemTrackerManager.INSTANCE_UUID_KEY);
+                pdc.remove(ItemTrackerManager.LAST_USER_UUID_KEY);
+                pdc.remove(ItemTrackerManager.LAST_USER_NAME_KEY);
+            }
+            if (expectedTexHash != null) {
+                pdc.set(headTexKey, PersistentDataType.STRING, expectedTexHash);
+            }
 
             if (master.getCustomModelData() != null) {
                 meta.setCustomModelData(master.getCustomModelData());

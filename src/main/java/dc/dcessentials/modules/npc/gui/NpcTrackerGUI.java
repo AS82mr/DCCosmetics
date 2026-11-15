@@ -43,8 +43,10 @@ public class NpcTrackerGUI implements Listener {
     private final NpcRegistry registry;
     private NpcCanonManager canonManager;
     private NpcEditorGUI npcEditorGUI;
+    private DecorationListGUI decorationListGUI;
 
     private final Map<UUID, String> viewingDistrict = new HashMap<>();
+    private final Map<UUID, Inventory> activeDistrictInventories = new HashMap<>();
 
     public NpcTrackerGUI(NpcZoneManager zoneManager, NpcRegistry registry) {
         this.zoneManager = zoneManager;
@@ -54,6 +56,10 @@ public class NpcTrackerGUI implements Listener {
     public void setManagers(NpcCanonManager canonManager, NpcEditorGUI npcEditorGUI) {
         this.canonManager = canonManager;
         this.npcEditorGUI = npcEditorGUI;
+    }
+
+    public void setDecorationListGUI(DecorationListGUI decorationListGUI) {
+        this.decorationListGUI = decorationListGUI;
     }
 
     // ==============================================================
@@ -141,6 +147,20 @@ public class NpcTrackerGUI implements Listener {
         }
         inv.setItem(49, summary);
 
+        ItemStack decoBtn = new ItemStack(Material.FLOWER_POT);
+        ItemMeta dMeta = decoBtn.getItemMeta();
+        if (dMeta != null) {
+            dMeta.setDisplayName("§a§lDecoration NPCs (Out-of-Storyline)");
+            List<String> dLore = new ArrayList<>();
+            dLore.add("§7Browse, spawn, animate, and customize");
+            dLore.add("§7ambient non-storyline DCNPCs.");
+            dLore.add("§f");
+            dLore.add("§e▶ Click to open Decoration Catalog");
+            dMeta.setLore(dLore);
+            decoBtn.setItemMeta(dMeta);
+        }
+        inv.setItem(51, decoBtn);
+
         ItemStack close = new ItemStack(Material.BARRIER);
         ItemMeta cMeta = close.getItemMeta();
         if (cMeta != null) {
@@ -160,7 +180,6 @@ public class NpcTrackerGUI implements Listener {
         NpcZone zone = zoneManager.getZone(zoneId);
         if (zone == null) return;
 
-        viewingDistrict.put(player.getUniqueId(), zone.getId());
         Inventory inv = Bukkit.createInventory(null, 54, "§8[District] §b" + zone.getDisplayName());
 
         // Filler
@@ -268,7 +287,9 @@ public class NpcTrackerGUI implements Listener {
         }
         inv.setItem(53, tpDistrict);
 
+        activeDistrictInventories.put(player.getUniqueId(), inv);
         player.openInventory(inv);
+        viewingDistrict.put(player.getUniqueId(), zone.getId());
         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 0.8f, 1.2f);
     }
 
@@ -281,12 +302,18 @@ public class NpcTrackerGUI implements Listener {
 
     @EventHandler
     public void onInventoryClose(org.bukkit.event.inventory.InventoryCloseEvent event) {
-        viewingDistrict.remove(event.getPlayer().getUniqueId());
+        UUID uuid = event.getPlayer().getUniqueId();
+        if (event.getInventory().equals(activeDistrictInventories.get(uuid))) {
+            viewingDistrict.remove(uuid);
+            activeDistrictInventories.remove(uuid);
+        }
     }
 
     @EventHandler
     public void onPlayerQuit(org.bukkit.event.player.PlayerQuitEvent event) {
-        viewingDistrict.remove(event.getPlayer().getUniqueId());
+        UUID uuid = event.getPlayer().getUniqueId();
+        viewingDistrict.remove(uuid);
+        activeDistrictInventories.remove(uuid);
     }
 
     @EventHandler
@@ -305,6 +332,17 @@ public class NpcTrackerGUI implements Listener {
         // LEVEL 1 CLICKS
         // ==============================================================
         if (title.startsWith("§8[Sector Editor]")) {
+            if (slot == 51) {
+                if (!hasAdminPerm(player)) {
+                    DCMessage.sendError(player, "You do not have permission to manage Decoration NPCs.");
+                    return;
+                }
+                if (decorationListGUI != null) {
+                    decorationListGUI.open(player);
+                }
+                return;
+            }
+
             if (slot == 53) {
                 player.closeInventory();
                 return;

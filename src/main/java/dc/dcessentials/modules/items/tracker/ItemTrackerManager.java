@@ -104,6 +104,11 @@ public class ItemTrackerManager implements Listener {
         String itemId = itemRegistry.getItemId(stack);
         if (itemId == null) return null;
 
+        // Do not stamp per-instance tracking UUIDs onto stackable items/scrolls (breaks vanilla stacking)
+        if (itemRegistry.isStackableItem(stack)) {
+            return null;
+        }
+
         String instanceUuid = pdc.get(INSTANCE_UUID_KEY, PersistentDataType.STRING);
         if (instanceUuid == null) {
             instanceUuid = UUID.randomUUID().toString();

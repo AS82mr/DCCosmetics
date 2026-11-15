@@ -29,6 +29,7 @@ public class NpcCharacter {
     private String skinBw;
     private String engineType = "CITIZENS"; // CITIZENS, MODEL_ENGINE
     private String modelId;
+    private final NpcBehaviorProfile behaviorProfile = new NpcBehaviorProfile();
     private String boundWarpAlias;
 
     private final List<String> companionSceneMobIds = new ArrayList<>();
@@ -92,11 +93,19 @@ public class NpcCharacter {
     public String getSkinBw() { return skinBw != null ? skinBw : skin; }
     public void setSkinBw(String skinBw) { this.skinBw = skinBw; }
 
-    public String getEngineType() { return engineType != null ? engineType : "CITIZENS"; }
-    public void setEngineType(String engineType) { this.engineType = engineType; }
+    public String getEngineType() { return behaviorProfile.getEngineType(); }
+    public void setEngineType(String engineType) {
+        this.engineType = engineType;
+        behaviorProfile.setEngineType(engineType);
+    }
 
-    public String getModelId() { return modelId != null ? modelId : ("dcnpc_" + id); }
-    public void setModelId(String modelId) { this.modelId = modelId; }
+    public String getModelId() { return modelId != null ? modelId : behaviorProfile.getModelId(); }
+    public void setModelId(String modelId) {
+        this.modelId = modelId;
+        behaviorProfile.setModelId(modelId);
+    }
+
+    public NpcBehaviorProfile getBehaviorProfile() { return behaviorProfile; }
 
     public String getBoundWarpAlias() { return boundWarpAlias; }
     public void setBoundWarpAlias(String boundWarpAlias) { this.boundWarpAlias = boundWarpAlias; }

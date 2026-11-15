@@ -24,6 +24,7 @@ public class KeystoneProfile {
 
     private volatile int consensualTpaCount = 0;
     private volatile long lastCryoTime = 0;
+    private volatile long lastPhaseVent = 0;
     private volatile long lastNexusIncursion = 0;
     private volatile Location backLocation = null;
 
@@ -321,6 +322,9 @@ public class KeystoneProfile {
 
     public long getLastCryoTime() { return lastCryoTime; }
     public synchronized void setLastCryoTime(long lastCryoTime) { this.lastCryoTime = lastCryoTime; }
+
+    public long getLastPhaseVent() { return lastPhaseVent; }
+    public synchronized void setLastPhaseVent(long lastPhaseVent) { this.lastPhaseVent = lastPhaseVent; }
 
     public long getLastNexusIncursion() { return lastNexusIncursion; }
     public synchronized void setLastNexusIncursion(long lastNexusIncursion) { this.lastNexusIncursion = lastNexusIncursion; }

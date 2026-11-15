@@ -3,7 +3,10 @@ package dc.dcessentials.modules.items.tooltip;
 import dc.dccosmetics.DCCosmetics;
 import dc.dcessentials.core.gui.DceGui;
 import dc.dcessentials.core.util.DCMessage;
+import dc.dcessentials.modules.items.model.DCEItem;
+import dc.dcessentials.modules.items.model.ItemCategory;
 import dc.dcessentials.modules.items.model.ItemRegistry;
+import dc.dcessentials.modules.teleportation.KeystoneDetector;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -74,6 +77,7 @@ public class TooltipModeService implements Listener {
         persistentModes.put(uuid, mode);
         if (mode == TooltipMode.COMPACT) {
             sneakAtOpen.remove(uuid);
+            healBakedExpandedItems(player);
         }
         var db = DCCosmetics.getInstance().getDatabaseManager();
         if (db != null) {
@@ -105,10 +109,45 @@ public class TooltipModeService implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
-        UUID uuid = event.getPlayer().getUniqueId();
+        Player player = event.getPlayer();
+        UUID uuid = player.getUniqueId();
         var db = DCCosmetics.getInstance().getDatabaseManager();
         if (db != null) {
             db.loadPlayerTooltipMode(uuid, modeStr -> persistentModes.put(uuid, TooltipMode.fromString(modeStr)));
+        }
+        if (DCCosmetics.getInstance().isEnabled()) {
+            Bukkit.getScheduler().runTaskLater(DCCosmetics.getInstance(), () -> {
+                if (player.isOnline()) {
+                    healBakedExpandedItems(player);
+                }
+            }, 10L);
+        }
+    }
+
+    /**
+     * Permanently restores canonical COMPACT lore on any non-Keystone DCEItem in the player's
+     * inventory whose server-side ItemStack accidentally had EXPANDED lore baked onto it
+     * (for instance from Creative inventory writeback).
+     */
+    public void healBakedExpandedItems(Player player) {
+        if (player == null || itemRegistry == null) return;
+        var itemMod = DCCosmetics.getInstance().getItemModule();
+        if (itemMod == null) return;
+        var scrollRegistry = itemMod.getScrollRegistry();
+        var inv = player.getInventory();
+        for (int slot = 0; slot < inv.getSize(); slot++) {
+            ItemStack item = inv.getItem(slot);
+            if (item == null || item.getType().isAir()) continue;
+            if (KeystoneDetector.isKeystone(item) || !itemRegistry.isDCEItem(item)) continue;
+            if (!TooltipPacketListener.hasBakedExpandedLore(item)) continue;
+            String id = itemRegistry.getItemId(item);
+            DCEItem dce = itemRegistry.getItem(id);
+            if (dce != null
+                    && dce.getCategory() != ItemCategory.SCROLL
+                    && dce.getCategory() != ItemCategory.COSMETIC_SCROLL) {
+                TooltipRenderer.renderItem(dce, item, scrollRegistry, TooltipMode.COMPACT);
+                inv.setItem(slot, item);
+            }
         }
     }
 

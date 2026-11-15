@@ -36,7 +36,10 @@ public class PetRegistry {
             "cubee_fire_dragon.yml", "cubee_galaxy_dragon.yml", "cubee_ice_dragon.yml",
             "cubee_light_dragon.yml", "cubee_nature_dragon.yml",
             "drone_combat.yml", "drone_flame.yml", "drone_repair.yml",
-            "drone_rocket.yml", "drone_shield.yml", "drako_dragon.yml"
+            "drone_rocket.yml", "drone_shield.yml", "drako_dragon.yml",
+            "astral.yml", "bastion.yml", "crimson.yml", "ember.yml", "glacies.yml",
+            "mend.yml", "pyre.yml", "salvo.yml", "solis.yml", "spark.yml",
+            "striker.yml", "terra.yml", "umbra.yml", "verdant.yml", "zephyr.yml"
     );
 
     private final Map<String, PetSpec> pets = new LinkedHashMap<>();
@@ -55,7 +58,9 @@ public class PetRegistry {
         }
 
         cleanupLegacyFiles(petsFolder);
-        generateDefaults();
+        if (!hasAnyYamlFiles(petsFolder)) {
+            generateDefaults();
+        }
         scanDirectory(petsFolder);
 
         ItemModule itemModule = DCCosmetics.getInstance().getItemModule();
@@ -78,6 +83,19 @@ public class PetRegistry {
                 f.delete();
             }
         }
+    }
+
+    private boolean hasAnyYamlFiles(File dir) {
+        File[] files = dir.listFiles();
+        if (files == null) return false;
+        for (File f : files) {
+            if (f.isDirectory()) {
+                if (hasAnyYamlFiles(f)) return true;
+            } else if (f.getName().toLowerCase(Locale.ROOT).endsWith(".yml")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void scanDirectory(File dir) {
@@ -285,9 +303,10 @@ public class PetRegistry {
         if (spec.getActiveSkill() != null) {
             PetSkillSpec sk = spec.getActiveSkill();
             double effCdSec = Math.round((sk.getEffectiveCooldownMs(level, spec.getMaxLevel()) * cdMult) / 100.0) / 10.0;
+            String cdTxt = Math.abs(effCdSec - Math.rint(effCdSec)) < 1e-4 ? String.valueOf((long) Math.rint(effCdSec)) : String.valueOf(effCdSec);
             lines.add("<#38BDF8>⚡ Auto Ability: &f" + sk.getDisplayName());
             lines.add("&7  Trigger: <#FDE047>" + sk.getTriggerConditionText());
-            lines.add("&7  Cooldown: <#67E8F9>" + effCdSec + "s &8| &7Range: <#67E8F9>" + (int) Math.round(sk.getRange()) + "m");
+            lines.add("&7  Cooldown: <#67E8F9>" + cdTxt + "s &8| &7Range: <#67E8F9>" + (int) Math.round(sk.getRange()) + "m");
             for (String sLine : sk.formatDescriptionLines(level, spec.getMaxLevel(), cdMult, powerMult)) {
                 lines.add("&7  " + sLine);
             }

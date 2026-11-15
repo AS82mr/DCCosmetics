@@ -423,6 +423,7 @@ public class NpcRegistry {
                 if (sec.contains("skin_snow")) c.setSkinSnow(sec.getString("skin_snow"));
                 if (sec.contains("skin_bw")) c.setSkinBw(sec.getString("skin_bw"));
                 if (sec.contains("completion_behavior")) c.setCompletionBehavior(sec.getString("completion_behavior"));
+                c.getBehaviorProfile().loadFrom(sec);
                 if (sec.contains("engine_type")) c.setEngineType(sec.getString("engine_type"));
                 if (sec.contains("model_id")) c.setModelId(sec.getString("model_id"));
                 if (sec.contains("bound_warp")) c.setBoundWarpAlias(sec.getString("bound_warp"));
@@ -497,9 +498,11 @@ public class NpcRegistry {
                 cfg.set(path + "skin_snow", c.getSkinSnow());
                 cfg.set(path + "skin_bw", c.getSkinBw());
                 cfg.set(path + "completion_behavior", c.getCompletionBehavior());
-                cfg.set(path + "engine_type", c.getEngineType());
-                cfg.set(path + "model_id", c.getModelId());
                 cfg.set(path + "bound_warp", c.getBoundWarpAlias());
+                String secPath = path.endsWith(".") ? path.substring(0, path.length() - 1) : path;
+                org.bukkit.configuration.ConfigurationSection behaviorSec = cfg.getConfigurationSection(secPath);
+                if (behaviorSec == null) behaviorSec = cfg.createSection(secPath);
+                c.getBehaviorProfile().saveTo(behaviorSec);
 
                 for (Map.Entry<Integer, NpcStage> e : c.getStages().entrySet()) {
                     String stgPath = path + "stages." + e.getKey() + ".";

@@ -206,11 +206,14 @@ public class PetMenuGUI implements InventoryHolder {
                 double cdMult = petManager.getEffectiveSkillCooldownMultiplier(viewer);
                 double pwrMult = petManager.getEffectiveSkillPowerMultiplier(viewer);
                 double effCd = Math.round((sk.getEffectiveCooldownMs(lvl, activeSpec.getMaxLevel()) * cdMult) / 100.0) / 10.0;
-                double effPwr = Math.round(sk.getEffectivePower(lvl, activeSpec.getMaxLevel()) * pwrMult * 10.0) / 10.0;
+                double rawPwr = sk.getEffectivePower(lvl, activeSpec.getMaxLevel()) * pwrMult;
+                double effPwr = lvl >= activeSpec.getMaxLevel() ? Math.round(rawPwr) : (Math.round(rawPwr * 10.0) / 10.0);
+                String cdTxt = Math.abs(effCd - Math.rint(effCd)) < 1e-4 ? String.valueOf((long) Math.rint(effCd)) : String.valueOf(effCd);
+                String pwrTxt = Math.abs(effPwr - Math.rint(effPwr)) < 1e-4 ? String.valueOf((long) Math.rint(effPwr)) : String.valueOf(effPwr);
                 lore.add("");
                 lore.add("<#38BDF8>⚡ Ability: &f" + sk.getDisplayName());
                 lore.add("&7Trigger: <#FDE047>" + sk.getTriggerConditionText());
-                lore.add("&7Power: <#67E8F9>" + effPwr + " &8| &7Cooldown: <#67E8F9>" + effCd + "s &8| &7Range: <#67E8F9>" + (int) Math.round(sk.getRange()) + "m");
+                lore.add("&7Power: <#67E8F9>" + pwrTxt + " &8| &7Cooldown: <#67E8F9>" + cdTxt + "s &8| &7Range: <#67E8F9>" + (int) Math.round(sk.getRange()) + "m");
             }
         } else {
             lore.add("&7Active: &8None");
@@ -290,9 +293,10 @@ public class PetMenuGUI implements InventoryHolder {
                 double cdMult = petManager.getEffectiveSkillCooldownMultiplier(viewer);
                 double pwrMult = petManager.getEffectiveSkillPowerMultiplier(viewer);
                 double cdSec = Math.round((sk.getEffectiveCooldownMs(level, spec.getMaxLevel()) * cdMult) / 100.0) / 10.0;
+                String cdTxt = Math.abs(cdSec - Math.rint(cdSec)) < 1e-4 ? String.valueOf((long) Math.rint(cdSec)) : String.valueOf(cdSec);
                 lore.add("<#38BDF8>⚡ Auto Ability: &f" + sk.getDisplayName());
                 lore.add("&7  Trigger: <#FDE047>" + sk.getTriggerConditionText());
-                lore.add("&7  Cooldown: <#67E8F9>" + cdSec + "s &8| &7Range: <#67E8F9>" + (int) Math.round(sk.getRange()) + "m");
+                lore.add("&7  Cooldown: <#67E8F9>" + cdTxt + "s &8| &7Range: <#67E8F9>" + (int) Math.round(sk.getRange()) + "m");
                 for (String sLine : sk.formatDescriptionLines(level, spec.getMaxLevel(), cdMult, pwrMult)) {
                     lore.add("&7  " + sLine);
                 }

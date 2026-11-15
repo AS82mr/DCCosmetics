@@ -87,22 +87,22 @@ public class SceneManager implements Listener {
     public List<String> getAllSceneModelIds() {
         return Arrays.asList(
                 // Townsfolks (Vol 3)
-                "scene_townsfolk_vol3",
                 "scene_townsfolk_vol3_beggar",
                 "scene_townsfolk_vol3_mug",
                 "scene_townsfolk_vol3_readers",
                 "scene_townsfolk_vol3_swing",
                 "scene_townsfolk_vol3_swing_mount",
                 "scene_townsfolk_vol3_writer",
-                // Farmers
+                // Farmers & Guards & Combat
                 "scene_farmer",
-                // HoverRides
-                "hoverbikesangel_bike",
-                "hoverbikesangel_bike_purple",
-                "hoverbikesangel_bike_red",
-                "hoverbikesheavy_bike",
-                "hoverbikesnewgen_bike",
-                // Fishermen
+                "scene_guards",
+                "scene_guards2",
+                "scenes_combat_1",
+                // Lumberjacks
+                "scene_lumberjack",
+                "scene_lumberjack_saw",
+                "scene_lumberjack_interactive",
+                // Fishermen (unified scene_fishermen.bbmodel + pose aliases)
                 "scene_fishermen",
                 "scene_fisherman_standing",
                 "scene_fisherman_sitting",
@@ -127,15 +127,70 @@ public class SceneManager implements Listener {
                 "scene_market_10",
                 "scene_market_11",
                 "scene_market_12",
-                // Atmospheric creatures
+                // Atmospheric creatures (Scenes Environment)
                 "scenes_pigeons_ground",
                 "scenes_pigeon",
+                "scenes_pigeon1",
+                "scenes_pigeon2",
+                "scenes_pigeon3",
                 "scenes_pigeons_fly",
-                "ground_crow",
-                "scene_crow_eat",
                 "scenes_crow",
-                "flying_crows"
+                "scenes_crows",
+                "scenes_scarecrow",
+                "scenes_scarecrow_playerhead"
         );
+    }
+
+    private String[] resolveModelAndAnimation(String requestedId) {
+        if (requestedId == null) return new String[]{null, null};
+        String lower = requestedId.toLowerCase(Locale.ROOT);
+        switch (lower) {
+            case "scene_fisherman_stick":
+                return new String[]{"scene_fishermen", "stick"};
+            case "scene_fisherman_sitting":
+                return new String[]{"scene_fishermen", "sitting"};
+            case "scene_fisherman_standing":
+                return new String[]{"scene_fishermen", "fishing"};
+            case "scene_fisherman_boat":
+                return new String[]{"scene_fishermen", "boat"};
+            case "scene_fisherman_interactive":
+                return new String[]{"scene_fishermen", "interactive_idle"};
+            case "scene_market_stand":
+                return new String[]{"scene_market_1", null};
+            case "scene_market_baker":
+                return new String[]{"scene_market_2", null};
+            case "scene_market_bookseller":
+                return new String[]{"scene_market_3", null};
+            case "scene_market_fisherman":
+                return new String[]{"scene_market_4", null};
+            case "ground_crow":
+                return new String[]{"scenes_crow", "idle"};
+            case "scene_crow_eat":
+                return new String[]{"scenes_crow", "eat"};
+            case "flying_crows":
+                return new String[]{"scenes_crows", "fly"};
+            case "flying_crows_wide":
+                return new String[]{"scenes_crows", "fly_large"};
+            default:
+                return new String[]{requestedId, null};
+        }
+    }
+
+    private void playInitialAnimation(Object activeModel, String animName) {
+        if (activeModel == null || animName == null || animName.isEmpty()) return;
+        try {
+            Object animHandler = activeModel.getClass().getMethod("getAnimationHandler").invoke(activeModel);
+            if (animHandler == null) return;
+            for (Method m : animHandler.getClass().getMethods()) {
+                if (m.getName().equals("playAnimation") && m.getParameterCount() == 5) {
+                    Class<?>[] pts = m.getParameterTypes();
+                    if (pts[0] == String.class && pts[4] == boolean.class) {
+                        m.invoke(animHandler, animName, 0.25d, 0.25d, 1.0d, true);
+                        return;
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
     }
 
     /**
@@ -154,55 +209,74 @@ public class SceneManager implements Listener {
         String wName = loc.getWorld().getName();
         boolean isBw = wName.toLowerCase().contains("bw") || wName.toLowerCase().contains("drain") || wName.toLowerCase().contains("void");
 
-        // 1. First attempt: MythicMobs spawn
+        String[] resolved = resolveModelAndAnimation(modelId);
+        String resolvedBlueprint = resolved[0];
+        String initialAnim = resolved[1];
+
+        // 1. First attempt: MythicMobs spawn (if MythicMob definition actually exists)
         Entity ent = spawnSceneMob(modelId, loc);
 
-        // 2. Second attempt / direct ModelEngine attachment
+        // 2. Second attempt / direct ModelEngine attachment (validate blueprint BEFORE spawning ArmorStand)
         if (ent == null) {
+            ArmorStand stand = null;
             try {
-                ArmorStand stand = (ArmorStand) loc.getWorld().spawnEntity(loc, EntityType.ARMOR_STAND);
+                Class<?> apiClass = Class.forName("com.ticxo.modelengine.api.ModelEngineAPI");
+                Method createModel = apiClass.getMethod("createActiveModel", String.class);
+                Method getOrCreate = apiClass.getMethod("getOrCreateModeledEntity", Entity.class);
+
+                Object activeModel = createModel.invoke(null, resolvedBlueprint);
+                if (activeModel == null) {
+                    if (player != null) {
+                        player.sendMessage(DragoncoteColor.PREFIX_ERROR + "Scene blueprint §f" + resolvedBlueprint + " §cis not loaded in ModelEngine! No entity spawned.");
+                    }
+                    return null;
+                }
+
+                stand = (ArmorStand) loc.getWorld().spawnEntity(loc, EntityType.ARMOR_STAND);
                 stand.setVisible(false);
                 stand.setGravity(false);
                 stand.setInvulnerable(true);
-                stand.setSmall(true);
+                stand.setSmall(false);
                 stand.setBasePlate(false);
                 stand.setArms(false);
                 stand.addScoreboardTag("dcnpc_scene");
                 stand.addScoreboardTag("scene_model:" + modelId);
 
-                // Attach ModelEngine model
-                Class<?> apiClass = Class.forName("com.ticxo.modelengine.api.ModelEngineAPI");
-                Method createModel = apiClass.getMethod("createActiveModel", String.class);
-                Method getOrCreate = apiClass.getMethod("getOrCreateModeledEntity", Entity.class);
-
-                Object activeModel = createModel.invoke(null, modelId);
                 Object modeledEntity = getOrCreate.invoke(null, stand);
-                if (modeledEntity != null && activeModel != null) {
-                    Method setBaseVisible = modeledEntity.getClass().getMethod("setBaseEntityVisible", boolean.class);
-                    setBaseVisible.invoke(modeledEntity, false);
-
-                    for (Method m : modeledEntity.getClass().getMethods()) {
-                        if (m.getName().equals("addModel") && m.getParameterCount() == 2) {
-                            m.invoke(modeledEntity, activeModel, true);
-                            break;
-                        }
+                if (modeledEntity == null) {
+                    stand.remove();
+                    if (player != null) {
+                        player.sendMessage(DragoncoteColor.PREFIX_ERROR + "Failed to create ModeledEntity for §f" + resolvedBlueprint + "§c.");
                     }
-
-                    try {
-                        Method detectPlayers = modeledEntity.getClass().getMethod("detectPlayers");
-                        detectPlayers.invoke(modeledEntity);
-                    } catch (Throwable ignored) {}
+                    return null;
                 }
+
+                Method setBaseVisible = modeledEntity.getClass().getMethod("setBaseEntityVisible", boolean.class);
+                setBaseVisible.invoke(modeledEntity, false);
+
+                for (Method m : modeledEntity.getClass().getMethods()) {
+                    if (m.getName().equals("addModel") && m.getParameterCount() == 2) {
+                        m.invoke(modeledEntity, activeModel, true);
+                        break;
+                    }
+                }
+
+                playInitialAnimation(activeModel, initialAnim);
+
+                try {
+                    Method detectPlayers = modeledEntity.getClass().getMethod("detectPlayers");
+                    detectPlayers.invoke(modeledEntity);
+                } catch (Throwable ignored) {}
 
                 ent = stand;
             } catch (Throwable t) {
-                // If ModelEngine fails, fallback to standard entity
-                ArmorStand stand = (ArmorStand) loc.getWorld().spawnEntity(loc, EntityType.ARMOR_STAND);
-                stand.setVisible(false);
-                stand.setGravity(false);
-                stand.setInvulnerable(true);
-                stand.addScoreboardTag("dcnpc_scene");
-                ent = stand;
+                if (stand != null && stand.isValid()) {
+                    stand.remove();
+                }
+                if (player != null) {
+                    player.sendMessage(DragoncoteColor.PREFIX_ERROR + "Could not spawn scene §f" + modelId + " §7(blueprint §f" + resolvedBlueprint + "§7): " + t.getMessage());
+                }
+                return null;
             }
         }
 
@@ -285,7 +359,7 @@ public class SceneManager implements Listener {
         if (isScenesTool(player.getInventory().getItemInMainHand()) && player.hasPermission("dccosmetics.admin")) {
             event.setCancelled(true);
             if (player.isSneaking()) {
-                new dc.dcessentials.modules.npc.gui.SceneEditorGUI(this).open(player, ent);
+                DCCosmetics.getInstance().getSceneEditorGUI().open(player, ent);
             } else {
                 Location loc = ent.getLocation().clone();
                 loc.setYaw(loc.getYaw() + 15.0f);
@@ -485,13 +559,13 @@ public class SceneManager implements Listener {
         Location lBooks = base.clone().add(0, 0, 3);
         Location lFish  = base.clone().add(0, 0, -3);
 
-        spawnSceneModel("scene_market_stand", lStand, player);
-        spawnSceneModel("scene_market_baker", lBaker, player);
-        spawnSceneModel("scene_market_bookseller", lBooks, player);
-        spawnSceneModel("scene_market_fisherman", lFish, player);
+        spawnSceneModel("scene_market_1", lStand, player);
+        spawnSceneModel("scene_market_2", lBaker, player);
+        spawnSceneModel("scene_market_3", lBooks, player);
+        spawnSceneModel("scene_market_4", lFish, player);
 
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_YES, 1.0f, 1.2f);
-        player.sendMessage(DragoncoteColor.PREFIX_GENERAL + "Deployed Market Stalls, Baker, Bookseller, and Fishmonger around the Bazaar!");
+        player.sendMessage(DragoncoteColor.PREFIX_GENERAL + "Deployed Market Stalls (1-4) around the Bazaar!");
         player.sendMessage("§7Use §f/dcnpc scene tool §7to adjust stall orientation and positions.");
     }
 
@@ -501,7 +575,7 @@ public class SceneManager implements Listener {
 
         spawnSceneModel("scenes_pigeons_ground", base.clone().add(2, 0, 1), player);
         spawnSceneModel("scenes_pigeon", base.clone().add(-2, 0, 2), player);
-        spawnSceneModel("scenes_pigeon", base.clone().add(1, 0, -3), player);
+        spawnSceneModel("scenes_pigeon1", base.clone().add(1, 0, -3), player);
         spawnSceneModel("scenes_pigeons_fly", base.clone().add(0, 4, 0), player);
 
         player.playSound(player.getLocation(), Sound.ENTITY_BAT_TAKEOFF, 1.0f, 1.2f);
@@ -512,14 +586,13 @@ public class SceneManager implements Listener {
         Location base = player.getLocation();
         player.sendMessage(DragoncoteColor.PREFIX_INFO + "Deploying desolate Crows across Black & White dimension...");
 
-        spawnSceneModel("ground_crow", base.clone().add(2, 0, 1), player);
-        spawnSceneModel("scene_crow_eat", base.clone().add(-2, 0, 2), player);
-        spawnSceneModel("scenes_crow", base.clone().add(-1, 0, -2), player);
+        spawnSceneModel("scenes_crow", base.clone().add(2, 0, 1), player);
+        spawnSceneModel("scenes_crow", base.clone().add(-2, 0, 2), player);
         spawnSceneModel("flying_crows", base.clone().add(0, 6, 0), player);
         spawnSceneModel("flying_crows_wide", base.clone().add(0, 8, 0), player);
 
         player.playSound(player.getLocation(), Sound.ENTITY_PHANTOM_AMBIENT, 1.0f, 0.8f);
-        player.sendMessage(DragoncoteColor.PREFIX_GENERAL + "Deployed Crows (Ground pecking, individual crows, and circling vortex)!");
+        player.sendMessage(DragoncoteColor.PREFIX_GENERAL + "Deployed Crows (Perched crows & circling flocks)!");
     }
 
     public void deployFishermen(Player player) {
@@ -536,11 +609,29 @@ public class SceneManager implements Listener {
         player.sendMessage("§7Use §f/dcnpc scene tool §7to adjust their positions, or right-click them for quirky dialogue!");
     }
 
+    public void untrackScene(UUID entityUuid) {
+        if (entityUuid == null) return;
+        if (activeSceneUuids.remove(entityUuid.toString())) {
+            saveScenes();
+        }
+    }
+
     public int purgeScenes(Player player, String category) {
         int removed = 0;
         boolean purgeAll = (category == null || category.equalsIgnoreCase("all") || category.isEmpty());
         double radiusSq = purgeAll ? (500.0 * 500.0) : (50.0 * 50.0);
         Location pLoc = (player != null) ? player.getLocation() : null;
+
+        // 0. Always remove any directly tracked scene entities across loaded worlds
+        for (String uuidStr : new ArrayList<>(activeSceneUuids)) {
+            try {
+                Entity tracked = Bukkit.getEntity(UUID.fromString(uuidStr));
+                if (tracked != null && (purgeAll || pLoc == null || (tracked.getWorld().equals(pLoc.getWorld()) && tracked.getLocation().distanceSquared(pLoc) <= radiusSq))) {
+                    tracked.remove();
+                    removed++;
+                }
+            } catch (Throwable ignored) {}
+        }
 
         // 1. MythicMobs API Reflection Purge
         try {
@@ -590,7 +681,7 @@ public class SceneManager implements Listener {
 
                 boolean isTracked = activeSceneUuids.contains(ent.getUniqueId().toString());
 
-                if (isTracked || tagMatch || (isPawn && !ent.hasGravity() && (name.contains("scene") || name.contains("sanctuary")))) {
+                if (isTracked || tagMatch || (isPawn && !ent.hasGravity() && (name.contains("scene") || name.contains("sanctuary") || name.contains("fisherman") || name.contains("angler") || name.contains("blacksmith") || name.contains("market")))) {
                     ent.remove();
                     removed++;
                 }

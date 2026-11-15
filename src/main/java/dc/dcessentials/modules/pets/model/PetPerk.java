@@ -69,6 +69,9 @@ public class PetPerk {
         int clamped = Math.max(unlockLevel, Math.min(effMax, level));
         double t = (double) (clamped - unlockLevel) / (double) (effMax - unlockLevel);
         double val = minValue + (maxValue - minValue) * t;
+        if (clamped >= effMax) {
+            return (double) Math.round(val);
+        }
         return Math.round(val * 10.0) / 10.0;
     }
 

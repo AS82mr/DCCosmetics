@@ -127,3 +127,11 @@ cinematic_biomes:
 debug-mode:
   - dcnpc
 
+# ------------------------------------------------------------------------------
+# 7. STAT TESTER & TELEMETRY DISCORD WEBHOOK
+# ------------------------------------------------------------------------------
+tester:
+  discord-webhook-enabled: true
+  discord-webhook-url: ""
+  discord-username: "Dragoncote Stat Tester"
+

@@ -162,6 +162,30 @@ public class ProfileManager {
         }
     }
 
+    public void refreshWorldCosmetics(Player player) {
+        PlayerProfile profile = profiles.get(player.getUniqueId());
+        if (profile == null) {
+            loadProfile(player);
+            return;
+        }
+        String[] slots = {"head", "chest", "waist", "boots"};
+        for (String s : slots) {
+            if (profile.getActiveCosmetic(s) != null) {
+                profile.getActiveCosmetic(s).despawn();
+            }
+        }
+        saveProfile(player);
+        Bukkit.getScheduler().runTaskLater(DCCosmetics.getInstance(), () -> {
+            if (player.isOnline()) {
+                for (String s : slots) {
+                    if (profile.getEquippedCosmetic(s) != null) {
+                        equipCosmetic(player, s, profile.getEquippedCosmetic(s), profile.getEquippedColor(s));
+                    }
+                }
+            }
+        }, 10L);
+    }
+
     public void unloadProfile(Player player) {
         PlayerProfile profile = profiles.get(player.getUniqueId());
         if (profile != null) {

@@ -75,34 +75,24 @@ public class LiveSyncListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOW)
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
-        ItemStack current = event.getCurrentItem();
-        if (current != null && !current.getType().isAir()) {
-            if (event.getClickedInventory() == player.getInventory()) {
-                Optional<ItemStack> conv = LegacyKeystoneConverter.convert(current);
-                if (conv.isPresent()) {
-                    event.setCurrentItem(conv.get());
-                    current = conv.get();
+        // Avoid mutating items synchronously inside InventoryClickEvent, which causes Paper 1.21
+        // HashedStack cursor desync (ghost items stuck to mouse cursor when moving slots).
+        org.bukkit.Bukkit.getScheduler().runTask(dc.dccosmetics.DCCosmetics.getInstance(), () -> {
+            if (!player.isOnline()) return;
+            if (!player.getItemOnCursor().getType().isAir()) {
+                return;
+            }
+            LegacyKeystoneConverter.convertPlayerInventories(player);
+            for (ItemStack item : player.getInventory().getContents()) {
+                if (item != null && !item.getType().isAir() && itemRegistry.isDCEItem(item)) {
+                    itemRegistry.updateItemToLatest(item);
                 }
             }
-            if (itemRegistry.isDCEItem(current)) {
-                itemRegistry.updateItemToLatest(current);
-            }
-        }
-        ItemStack cursor = event.getCursor();
-        if (cursor != null && !cursor.getType().isAir()) {
-            Optional<ItemStack> conv = LegacyKeystoneConverter.convert(cursor);
-            if (conv.isPresent()) {
-                player.setItemOnCursor(conv.get());
-                cursor = conv.get();
-            }
-            if (itemRegistry.isDCEItem(cursor)) {
-                itemRegistry.updateItemToLatest(cursor);
-            }
-        }
+        });
     }
 
     @EventHandler(priority = EventPriority.LOW)

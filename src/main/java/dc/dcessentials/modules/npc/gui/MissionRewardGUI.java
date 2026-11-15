@@ -45,6 +45,7 @@ public class MissionRewardGUI implements Listener {
     }
 
     private final Map<UUID, PendingClaim> activeClaims = new HashMap<>();
+    private final Map<UUID, Inventory> activeInventories = new HashMap<>();
 
     public MissionRewardGUI(NpcRegistry registry, NpcDialogueEngine dialogueEngine, NpcZoneManager zoneManager) {
         this.registry = registry;
@@ -68,8 +69,6 @@ public class MissionRewardGUI implements Listener {
             player.sendMessage(DragoncoteColor.PREFIX_INFO + "You have already collected all rewards for Chapter #" + stageNum + "!");
             return;
         }
-
-        activeClaims.put(player.getUniqueId(), new PendingClaim(charId, stageNum));
 
         Inventory inv = Bukkit.createInventory(null, 27, "§8✦ Mission Rewards: §f" + c.getShortName());
 
@@ -121,7 +120,9 @@ public class MissionRewardGUI implements Listener {
                 "§e▶ Click to Claim All & Advance Chapter");
         inv.setItem(22, claimBtn);
 
+        activeInventories.put(player.getUniqueId(), inv);
         player.openInventory(inv);
+        activeClaims.put(player.getUniqueId(), new PendingClaim(charId, stageNum));
         player.playSound(player.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_CHIME, 1.0f, 1.3f);
     }
 
@@ -273,8 +274,13 @@ public class MissionRewardGUI implements Listener {
                     npc.getEntity().getLocation().clone() : player.getLocation().clone();
 
             // 1. Update visibility across ALL dimensions immediately (hides Stage 1, reveals Stage 2 at destination)
-            // Keep Stage 2 hidden briefly in current world until walker finishes walking
-            NPC stage2InWorld = zoneManager.findCitizensNpc(c.getId() + ":" + (stage.getStageNumber() + 1), player.getWorld().getName());
+            // Auto-spawn Stage (N+1) if missing so the NPC never vanishes permanently after walking
+            String nextTag = c.getId() + ":" + (stage.getStageNumber() + 1);
+            NPC stage2InWorld = zoneManager.findCitizensNpc(nextTag, player.getWorld().getName());
+            if (stage2InWorld == null) {
+                DCCosmetics.getInstance().getNpcCanonManager().syncStageInstances(c);
+                stage2InWorld = zoneManager.findCitizensNpc(nextTag, player.getWorld().getName());
+            }
             dialogueEngine.updatePlayerNpcVisibility(player);
             if (stage2InWorld != null) {
                 DCCosmetics.getInstance().getNpcCanonManager().hideNpcFromPlayer(player, stage2InWorld);
@@ -288,8 +294,16 @@ public class MissionRewardGUI implements Listener {
                 walker.data().setPersistent("saving", false);
                 walker.data().setPersistent(NPC.Metadata.NAMEPLATE_VISIBLE, false);
 
-                // Copy signed skin textures from base NPC BEFORE spawning so it never blinks as Steve/Alex
+                // Orient walker toward destination before spawning
+                if (finalWalkDest.getWorld() != null && startLoc.getWorld() != null
+                        && finalWalkDest.getWorld().equals(startLoc.getWorld())
+                        && finalWalkDest.distanceSquared(startLoc) > 0.05) {
+                    startLoc.setDirection(finalWalkDest.toVector().subtract(startLoc.toVector()));
+                }
+
+                // Copy signed skin textures from base NPC BEFORE spawning so it never blinks as Steve/Knight
                 DCCosmetics.getInstance().getSkinProcessor().copySkinToWalker(npc, walker, player.getWorld().getName(), c.getId());
+                walker.getOrAddTrait(net.citizensnpcs.trait.SkinTrait.class).setShouldUpdateSkins(false);
 
                 // Isolate visibility to this player only
                 try {
@@ -302,6 +316,12 @@ public class MissionRewardGUI implements Listener {
                 walker.spawn(startLoc);
                 DCCosmetics.getInstance().getNpcCanonManager().configureNpcOverhead(walker, c, player.getWorld().getName());
                 DCCosmetics.getInstance().getNpcCanonManager().applyEngineMode(walker, c);
+                if (c.getBehaviorProfile().isModelEngine() && DCCosmetics.getInstance().getNpcBehaviorController() != null) {
+                    String walkAnim = DCCosmetics.getInstance().getNpcBehaviorController().resolveWalkAnimation(c.getBehaviorProfile());
+                    if (walkAnim != null) {
+                        DCCosmetics.getInstance().getNpcBehaviorController().applyModelAnimation(walker, c.getBehaviorProfile(), walkAnim, true);
+                    }
+                }
 
                 if (walker.getEntity() != null) {
                     for (Player other : player.getWorld().getPlayers()) {
@@ -377,11 +397,17 @@ public class MissionRewardGUI implements Listener {
 
     @EventHandler
     public void onInventoryClose(org.bukkit.event.inventory.InventoryCloseEvent event) {
-        activeClaims.remove(event.getPlayer().getUniqueId());
+        UUID uuid = event.getPlayer().getUniqueId();
+        if (event.getInventory().equals(activeInventories.get(uuid))) {
+            activeClaims.remove(uuid);
+            activeInventories.remove(uuid);
+        }
     }
 
     @EventHandler
     public void onPlayerQuit(org.bukkit.event.player.PlayerQuitEvent event) {
-        activeClaims.remove(event.getPlayer().getUniqueId());
+        UUID uuid = event.getPlayer().getUniqueId();
+        activeClaims.remove(uuid);
+        activeInventories.remove(uuid);
     }
 }

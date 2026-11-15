@@ -22,6 +22,9 @@ public class DCEItem {
     private String executableItemId;
     private String headTexture;
     private org.bukkit.inventory.ItemStack template;
+    private final List<ItemPerk> perks = new ArrayList<>();
+    private String setId;
+    private ItemSetBonus setBonus;
 
     public DCEItem(String id, int version, Material material, String displayName, ItemRarity rarity, ItemCategory category) {
         this.id = id;
@@ -113,4 +116,19 @@ public class DCEItem {
     public void setTemplate(org.bukkit.inventory.ItemStack template) {
         this.template = template != null ? template.clone() : null;
     }
+
+    public List<ItemPerk> getPerks() { return perks; }
+    public void setPerks(List<ItemPerk> perks) {
+        this.perks.clear();
+        if (perks != null) this.perks.addAll(perks);
+    }
+    public void addPerk(ItemPerk perk) {
+        if (perk != null) this.perks.add(perk);
+    }
+
+    public String getSetId() { return setId; }
+    public void setSetId(String setId) { this.setId = setId; }
+
+    public ItemSetBonus getSetBonus() { return setBonus; }
+    public void setSetBonus(ItemSetBonus setBonus) { this.setBonus = setBonus; }
 }

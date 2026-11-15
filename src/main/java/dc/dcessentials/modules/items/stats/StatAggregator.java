@@ -4,8 +4,11 @@ import dc.dccosmetics.DCCosmetics;
 import dc.dccosmetics.model.PlayerProfile;
 import dc.dcessentials.modules.items.model.DCEItem;
 import dc.dcessentials.modules.items.model.ItemCategory;
+import dc.dcessentials.modules.items.model.ItemPerk;
 import dc.dcessentials.modules.items.model.ItemRegistry;
+import dc.dcessentials.modules.items.model.ItemSetBonus;
 import dc.dcessentials.modules.items.model.ItemStat;
+import dc.dcessentials.modules.pets.model.PetPerkEffectType;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -25,7 +28,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -95,6 +100,125 @@ public class StatAggregator implements Listener {
         return getSnapshot(player).get(stat);
     }
 
+    public record StatSourceContribution(String label, double value) {}
+
+    public record DetailedBreakdown(
+            EnumMap<ItemStat, List<StatSourceContribution>> perStat,
+            dc.dcessentials.modules.pets.PetManager.ActivePetDiagnosticInfo petInfo
+    ) {
+        public List<StatSourceContribution> getSources(ItemStat stat) {
+            return perStat.getOrDefault(stat, java.util.Collections.emptyList());
+        }
+    }
+
+    public DetailedBreakdown getDetailedBreakdown(Player player) {
+        EnumMap<ItemStat, List<StatSourceContribution>> map = new EnumMap<>(ItemStat.class);
+        for (ItemStat s : ItemStat.values()) {
+            map.put(s, new ArrayList<>());
+        }
+        if (player == null) {
+            return new DetailedBreakdown(map, null);
+        }
+
+        ItemStack mainHand = player.getInventory().getItemInMainHand();
+        if (isValidMainHandStatItem(mainHand)) {
+            appendItemContributions(map, "Main Hand: " + resolveItemLabel(mainHand, "Weapon"), mainHand);
+        }
+
+        ItemStack offHand = player.getInventory().getItemInOffHand();
+        if (isValidOffHandStatItem(offHand)) {
+            appendItemContributions(map, "Off-Hand: " + resolveItemLabel(offHand, "Off-Hand"), offHand);
+        }
+
+        String[] armorSlots = {"Helmet", "Chestplate", "Leggings", "Boots"};
+        ItemStack[] armor = player.getInventory().getArmorContents();
+        if (armor != null) {
+            // Bukkit returns boots(0), leggings(1), chestplate(2), helmet(3)
+            for (int i = 0; i < armor.length; i++) {
+                ItemStack piece = armor[i];
+                if (piece == null || piece.getType() == Material.AIR) continue;
+                String slotName = armorSlots[Math.max(0, 3 - i)];
+                appendItemContributions(map, slotName + ": " + resolveItemLabel(piece, slotName), piece);
+            }
+        }
+
+        var profileMgr = DCCosmetics.getInstance().getProfileManager();
+        if (profileMgr != null) {
+            PlayerProfile profile = profileMgr.getProfile(player);
+            if (profile != null) {
+                for (String slot : new String[]{"amulet", "cloak", "gloves"}) {
+                    ItemStack acc = profile.getEquipment(slot);
+                    if (acc != null && acc.getType() != Material.AIR) {
+                        String capSlot = Character.toUpperCase(slot.charAt(0)) + slot.substring(1);
+                        appendItemContributions(map, capSlot + ": " + resolveItemLabel(acc, capSlot), acc);
+                    }
+                }
+                ItemStack keystone = profile.getEquipment("keystone");
+                if (keystone != null && keystone.getType() != Material.AIR) {
+                    appendItemContributions(map, "Keystone: " + resolveItemLabel(keystone, "Keystone"), keystone);
+                }
+            }
+        }
+
+        dc.dcessentials.modules.pets.PetManager.ActivePetDiagnosticInfo petInfo = null;
+        var petMgr = DCCosmetics.getInstance().getPetManager();
+        if (petMgr != null) {
+            petInfo = petMgr.getActivePetDiagnosticInfo(player);
+            if (petInfo != null) {
+                String petLabel = "Pet: " + petInfo.petName() + " [Lv." + petInfo.level() + "]";
+                for (Map.Entry<ItemStat, Double> e : petInfo.baseStats().entrySet()) {
+                    if (e.getValue() != null && e.getValue() > 0.0) {
+                        map.get(e.getKey()).add(new StatSourceContribution(petLabel, e.getValue()));
+                    }
+                }
+                for (var perk : petInfo.unlockedPerks()) {
+                    ItemStat mapped = perk.effectType().getMappedStat();
+                    if (mapped != null && perk.value() > 0.0) {
+                        map.get(mapped).add(new StatSourceContribution(
+                                "Perk [" + perk.perkName() + "] (" + petInfo.petName() + ")", perk.value()));
+                    }
+                }
+            }
+        }
+
+        // Active 4/4 Armor Set Bonus STAT_* perks
+        for (ItemSetBonus bonus : getActiveArmorSetBonuses(player)) {
+            for (ItemPerk perk : bonus.perks()) {
+                ItemStat mapped = perk.effectType().getMappedStat();
+                if (mapped != null && perk.value() > 0.0) {
+                    map.get(mapped).add(new StatSourceContribution(
+                            "Set Bonus [" + bonus.setName() + "] (" + bonus.requiredPieces() + "/" + bonus.requiredPieces() + ")", perk.value()));
+                }
+            }
+        }
+
+        return new DetailedBreakdown(map, petInfo);
+    }
+
+    private void appendItemContributions(EnumMap<ItemStat, List<StatSourceContribution>> map, String label, ItemStack item) {
+        EnumMap<ItemStat, Double> stats = extractItemStats(item);
+        for (Map.Entry<ItemStat, Double> entry : stats.entrySet()) {
+            if (entry.getValue() != null && entry.getValue() > 0.0) {
+                map.get(entry.getKey()).add(new StatSourceContribution(label, entry.getValue()));
+            }
+        }
+    }
+
+    private String resolveItemLabel(ItemStack item, String fallback) {
+        if (item == null) return fallback;
+        if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
+            String stripped = org.bukkit.ChatColor.stripColor(item.getItemMeta().getDisplayName());
+            if (stripped != null && !stripped.isBlank()) {
+                return stripped.replace("✦", "").trim();
+            }
+        }
+        DCEItem dce = getDCEItem(item);
+        if (dce != null && dce.getDisplayName() != null && !dce.getDisplayName().isBlank()) {
+            return org.bukkit.ChatColor.stripColor(dc.dcessentials.core.util.ColorUtil.colorize(dce.getDisplayName()));
+        }
+        return item.getType().name();
+    }
+
     private PlayerStatSnapshot computeSnapshot(Player player) {
         EnumMap<StatSource, EnumMap<ItemStat, Double>> bySource = new EnumMap<>(StatSource.class);
         for (StatSource src : StatSource.values()) {
@@ -129,6 +253,11 @@ public class StatAggregator implements Listener {
                 resonanceSources += mergeIntoSource(bySource.get(StatSource.ARMOR), itemStats);
                 lowestResonanceCadence = updateLowestResonance(lowestResonanceCadence, itemStats.getOrDefault(ItemStat.RESONANCE, 0.0));
             }
+        }
+        Map<ItemStat, Double> activeSetStats = getActiveSetStatBonuses(player);
+        if (!activeSetStats.isEmpty()) {
+            resonanceSources += mergeIntoSource(bySource.get(StatSource.ARMOR), activeSetStats);
+            lowestResonanceCadence = updateLowestResonance(lowestResonanceCadence, activeSetStats.getOrDefault(ItemStat.RESONANCE, 0.0));
         }
 
         // 4. PROFILE EQUIPMENT: ACCESSORIES (amulet, cloak, gloves) & KEYSTONE (keystone)
@@ -232,6 +361,102 @@ public class StatAggregator implements Listener {
                 }
             }
         } catch (Throwable ignored) {}
+
+        try {
+            var petMgr = DCCosmetics.getInstance().getPetManager();
+            if (petMgr != null) {
+                petMgr.applySpeedPerkModifier(player);
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    public List<ItemSetBonus> getActiveArmorSetBonuses(Player player) {
+        if (player == null) return java.util.Collections.emptyList();
+        ItemStack[] armor = player.getInventory().getArmorContents();
+        if (armor == null) return java.util.Collections.emptyList();
+        Map<String, Integer> counts = new java.util.HashMap<>();
+        Map<String, ItemSetBonus> defs = new java.util.LinkedHashMap<>();
+        for (ItemStack piece : armor) {
+            DCEItem dce = getDCEItem(piece);
+            if (dce == null || dce.getSetId() == null || dce.getSetId().isBlank()) continue;
+            counts.merge(dce.getSetId(), 1, Integer::sum);
+            if (dce.getSetBonus() != null && !defs.containsKey(dce.getSetId())) {
+                defs.put(dce.getSetId(), dce.getSetBonus());
+            }
+        }
+        if (defs.isEmpty()) return java.util.Collections.emptyList();
+        List<ItemSetBonus> active = new ArrayList<>();
+        for (Map.Entry<String, ItemSetBonus> e : defs.entrySet()) {
+            ItemSetBonus bonus = e.getValue();
+            if (counts.getOrDefault(e.getKey(), 0) >= bonus.requiredPieces()) {
+                active.add(bonus);
+            }
+        }
+        return active;
+    }
+
+    public Map<ItemStat, Double> getActiveSetStatBonuses(Player player) {
+        List<ItemSetBonus> active = getActiveArmorSetBonuses(player);
+        if (active.isEmpty()) return java.util.Collections.emptyMap();
+        EnumMap<ItemStat, Double> out = new EnumMap<>(ItemStat.class);
+        for (ItemSetBonus bonus : active) {
+            for (ItemPerk perk : bonus.perks()) {
+                ItemStat mapped = perk.effectType().getMappedStat();
+                if (mapped == null || perk.value() <= 0.0) continue;
+                if (mapped == ItemStat.RESONANCE) {
+                    double cur = out.getOrDefault(mapped, perk.value());
+                    out.put(mapped, Math.min(cur, perk.value()));
+                } else {
+                    out.put(mapped, out.getOrDefault(mapped, 0.0) + perk.value());
+                }
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Sums active passive perk values of the given type across equipped Armor pieces,
+     * active 4/4 Armor Set Bonuses, and /profile Accessories & Keystone.
+     */
+    public double getEquipmentPerkValue(Player player, PetPerkEffectType type) {
+        if (player == null || type == null) return 0.0;
+        double total = 0.0;
+
+        ItemStack[] armor = player.getInventory().getArmorContents();
+        if (armor != null) {
+            for (ItemStack piece : armor) {
+                DCEItem dce = getDCEItem(piece);
+                if (dce != null && !dce.getPerks().isEmpty()) {
+                    for (ItemPerk p : dce.getPerks()) {
+                        if (p.effectType() == type) total += p.value();
+                    }
+                }
+            }
+        }
+
+        for (ItemSetBonus bonus : getActiveArmorSetBonuses(player)) {
+            for (ItemPerk p : bonus.perks()) {
+                if (p.effectType() == type) total += p.value();
+            }
+        }
+
+        var profileMgr = DCCosmetics.getInstance().getProfileManager();
+        if (profileMgr != null) {
+            PlayerProfile profile = profileMgr.getProfile(player);
+            if (profile != null) {
+                for (String slot : new String[]{"amulet", "cloak", "gloves", "keystone"}) {
+                    ItemStack eq = profile.getEquipment(slot);
+                    DCEItem dce = getDCEItem(eq);
+                    if (dce != null && !dce.getPerks().isEmpty()) {
+                        for (ItemPerk p : dce.getPerks()) {
+                            if (p.effectType() == type) total += p.value();
+                        }
+                    }
+                }
+            }
+        }
+
+        return total;
     }
 
     private boolean isValidMainHandStatItem(ItemStack item) {

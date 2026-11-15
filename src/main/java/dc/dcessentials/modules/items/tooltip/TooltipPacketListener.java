@@ -16,9 +16,12 @@ import dc.dcessentials.modules.items.scroll.ScrollRegistry;
 import dc.dcessentials.modules.teleportation.KeystoneDetector;
 import dc.dcessentials.modules.teleportation.KeystoneLoreTokens;
 import dc.dcessentials.modules.teleportation.KeystoneProfile;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -71,6 +74,12 @@ public class TooltipPacketListener {
                     GameMode gm = viewer.getGameMode();
                     if (gm == GameMode.CREATIVE || gm == GameMode.SPECTATOR) {
                         return; // Creative safety: never rewrite item packets for creative clients
+                    }
+
+                    // Do not rewrite outgoing slot/window packets while player holds an item on cursor
+                    // to prevent Paper 1.21 HashedStack client-server cursor desync (ghost items).
+                    if (!viewer.getItemOnCursor().getType().isAir()) {
+                        return;
                     }
 
                     PacketType type = event.getPacketType();
@@ -184,21 +193,29 @@ public class TooltipPacketListener {
 
         TooltipMode mode = modeService.getEffectiveMode(viewer.getUniqueId());
         boolean isKeystone = KeystoneDetector.isKeystone(original);
-        boolean needExpanded = mode == TooltipMode.EXPANDED && itemRegistry.isDCEItem(original);
+        boolean isDce = itemRegistry.isDCEItem(original);
+        boolean needExpanded = mode == TooltipMode.EXPANDED && isDce;
+        // Fallback: if an item accidentally had EXPANDED lore baked onto its server ItemStack
+        // (e.g. via Creative inventory packet writeback), re-compact it on the wire in COMPACT mode.
+        boolean needCompactHeal = mode == TooltipMode.COMPACT && !isKeystone && isDce && hasBakedExpandedLore(original);
 
-        if (!needExpanded && !isKeystone) {
+        // In COMPACT mode, Keystone lore tokens are already baked directly onto the server-side
+        // ItemStack by KeystoneLoreTokens. Avoiding wire-only mutation in COMPACT mode ensures
+        // 100% client-server HashedStack parity when moving Keystones in inventory.
+        if (!needExpanded && !needCompactHeal) {
             return null;
         }
 
         ItemStack clone = null;
-        if (needExpanded) {
+        if (needExpanded || needCompactHeal) {
             String itemId = itemRegistry.getItemId(original);
             DCEItem dceItem = itemRegistry.getItem(itemId);
             if (dceItem != null
                     && dceItem.getCategory() != ItemCategory.SCROLL
                     && dceItem.getCategory() != ItemCategory.COSMETIC_SCROLL) {
                 clone = original.clone();
-                TooltipRenderer.renderItem(dceItem, clone, scrollRegistry, TooltipMode.EXPANDED);
+                TooltipRenderer.renderItem(dceItem, clone, scrollRegistry,
+                        needExpanded ? TooltipMode.EXPANDED : TooltipMode.COMPACT);
             }
         }
 
@@ -208,9 +225,25 @@ public class TooltipPacketListener {
             }
             var teleMgr = plugin.getTeleportationManager();
             KeystoneProfile kProfile = teleMgr != null ? teleMgr.getProfile(viewer.getUniqueId()) : null;
-            KeystoneLoreTokens.bakeIntoItem(clone, viewer, kProfile);
+            KeystoneLoreTokens.bakeIntoItem(clone, viewer, kProfile,
+                    needExpanded ? TooltipMode.EXPANDED : TooltipMode.COMPACT);
         }
 
         return clone;
+    }
+
+    static boolean hasBakedExpandedLore(ItemStack stack) {
+        if (stack == null || !stack.hasItemMeta()) return false;
+        ItemMeta meta = stack.getItemMeta();
+        if (meta == null || !meta.hasLore()) return false;
+        List<Component> lore = meta.lore();
+        if (lore == null || lore.isEmpty()) return false;
+        for (Component line : lore) {
+            String plain = PlainTextComponentSerializer.plainText().serialize(line).trim();
+            if (plain.startsWith("└") || plain.startsWith("\u2514")) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -14,7 +14,7 @@ import java.util.List;
 
 public class DCEssentialsTabCompleter implements TabCompleter {
 
-    private static final List<String> ROOT_SUBS = Arrays.asList("status", "gui", "reload", "items", "editor", "import", "tester", "give", "update", "unbind", "givexp", "selectdrop", "event", "events", "calendar", "emperor");
+    private static final List<String> ROOT_SUBS = Arrays.asList("status", "gui", "reload", "items", "editor", "import", "tester", "curator", "give", "update", "unbind", "givexp", "selectdrop", "event", "events", "calendar", "emperor");
     private static final List<String> XP_AMOUNTS = Arrays.asList("10", "25", "50", "100", "250", "500", "1000");
     private static final List<String> CATEGORIES = Arrays.asList(
             "general", "overworld", "nether", "end", "bosses", "lowercity", "survival_custom", "casino"
@@ -78,7 +78,37 @@ public class DCEssentialsTabCompleter implements TabCompleter {
         }
 
         if (args.length == 2 && (args[0].equalsIgnoreCase("tester") || args[0].equalsIgnoreCase("dummy"))) {
-            StringUtil.copyPartialMatches(args[1], Arrays.asList("spawn", "clear", "remove"), completions);
+            StringUtil.copyPartialMatches(args[1], Arrays.asList("spawn", "clear", "remove", "chat", "on", "off", "toggle", "stats", "webhook"), completions);
+            Collections.sort(completions);
+            return completions;
+        }
+
+        if (args[0].equalsIgnoreCase("curator") || args[0].equalsIgnoreCase("curate") || args[0].equalsIgnoreCase("models")) {
+            if (args.length == 2) {
+                StringUtil.copyPartialMatches(args[1], Arrays.asList("wand", "scenewand", "gui", "anim", "clear", "rescan", "export", "filter", "jump"), completions);
+                Collections.sort(completions);
+                return completions;
+            }
+            if (args.length == 3 && (args[1].equalsIgnoreCase("anim") || args[1].equalsIgnoreCase("animation") || args[1].equalsIgnoreCase("animate"))) {
+                StringUtil.copyPartialMatches(args[2], Arrays.asList("next", "list", "auto", "stop", "play"), completions);
+                Collections.sort(completions);
+                return completions;
+            }
+            if (args.length == 3 && args[1].equalsIgnoreCase("gui")) {
+                StringUtil.copyPartialMatches(args[2], Arrays.asList("all", "favorites", "cleanup"), completions);
+                Collections.sort(completions);
+                return completions;
+            }
+            if (args.length == 3 && args[1].equalsIgnoreCase("filter")) {
+                StringUtil.copyPartialMatches(args[2], Arrays.asList("all", "meg", "furniture", "item"), completions);
+                Collections.sort(completions);
+                return completions;
+            }
+        }
+
+        if (args.length == 3 && (args[0].equalsIgnoreCase("tester") || args[0].equalsIgnoreCase("dummy"))
+                && (args[1].equalsIgnoreCase("webhook") || args[1].equalsIgnoreCase("discord"))) {
+            StringUtil.copyPartialMatches(args[2], Arrays.asList("test", "status", "off", "clear"), completions);
             Collections.sort(completions);
             return completions;
         }

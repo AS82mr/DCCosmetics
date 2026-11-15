@@ -79,6 +79,14 @@ public final class TpEffectCommand implements CommandExecutor, TabCompleter {
         }
 
         TpEffectEntry entry = manager.getRegistry().getById(args[1]);
+        String targetPlayerName = args.length >= 3 ? args[2] : null;
+        if (entry == null && args.length >= 3) {
+            TpEffectEntry swapped = manager.getRegistry().getById(args[2]);
+            if (swapped != null) {
+                entry = swapped;
+                targetPlayerName = args[1];
+            }
+        }
         if (entry == null) {
             DCMessage.sendError(sender, "Unknown teleport effect '" + args[1] + "'.");
             return;
@@ -88,11 +96,11 @@ public final class TpEffectCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        if (args.length >= 3) {
+        if (targetPlayerName != null) {
             if (!requireAdmin(sender)) return;
-            Player target = Bukkit.getPlayerExact(args[2]);
+            Player target = Bukkit.getPlayerExact(targetPlayerName);
             if (target == null) {
-                DCMessage.sendError(sender, "Player '" + args[2] + "' is not online.");
+                DCMessage.sendError(sender, "Player '" + targetPlayerName + "' is not online.");
                 return;
             }
             manager.setSelectedEffect(target, entry);

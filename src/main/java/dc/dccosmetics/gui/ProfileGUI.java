@@ -766,11 +766,20 @@ public class ProfileGUI implements DceGui {
             teleMgr.getEnergyService().giveEnergyCubes(player, overflow);
             player.sendMessage(dc.dcessentials.core.util.DCMessage.info("Returned &#FFFFFF" + overflow + "x Tesseract Energy Cube &#BAE6FDabove your new Keystone's capacity."));
         }
+        boolean heatCleared = false;
+        if (kProfile.getHeat() > 0 && kProfile.getTotalMicro() > 0) {
+            kProfile.setHeat(0, teleMgr.getOverloadClearBelow());
+            kProfile.setOverloaded(false);
+            heatCleared = true;
+        }
         teleMgr.getPersistence().saveNow(kProfile);
         invalidatePlayerStats(player);
 
         player.playSound(player.getLocation(), Sound.ITEM_ARMOR_EQUIP_DIAMOND, 0.8f, 1.0f);
         player.sendMessage(dc.dcessentials.core.util.DCMessage.general("Equipped " + tierName + " &#0CBF93. Max Capacity: &#38BDF8" + effMax + " 🗲&#0CBF93."));
+        if (heatCleared) {
+            player.sendMessage(dc.dcessentials.core.util.DCMessage.info("Activated parked Tesseract Energy — Matrix cooled Timeline Heat to &#FFFFFF0/100 🔥&#BAE6FD."));
+        }
     }
 
     private void invalidatePlayerStats(Player player) {

@@ -352,19 +352,49 @@ public class TooltipRenderer {
             }
         }
 
+        // Item Passive Perks & 4/4 Full Set Bonus
+        var itemPerks = model.dceItem().getPerks();
+        var setBonus = model.dceItem().getSetBonus();
+        if ((itemPerks != null && !itemPerks.isEmpty()) || setBonus != null) {
+            lore.add("");
+            if (itemPerks != null) {
+                for (var perk : itemPerks) {
+                    lore.add(ColorUtil.colorize("&#10B981✦ &l" + perk.name()));
+                    if (perk.description() != null && !perk.description().isEmpty()) {
+                        lore.add(ColorUtil.colorize("  &8└ &7" + perk.description()));
+                    }
+                }
+            }
+            if (setBonus != null && setBonus.perks() != null && !setBonus.perks().isEmpty()) {
+                int req = setBonus.requiredPieces();
+                lore.add(ColorUtil.colorize("&#F59E0B✦ Full Set Bonus (" + req + "/" + req + "): &f" + setBonus.setName()));
+                for (var perk : setBonus.perks()) {
+                    if (perk.description() != null && !perk.description().isEmpty()) {
+                        lore.add(ColorUtil.colorize("  &8└ &7" + perk.description()));
+                    } else {
+                        lore.add(ColorUtil.colorize("  &8└ &7" + perk.name()));
+                    }
+                }
+            }
+        }
+
         List<String> socketBadges = model.socketBadges();
         List<String> enchantTags = model.enchantTags();
         List<String> validCustomLore = model.customLoreLines();
         String divider = model.rarityFormat().getDivider();
 
         if (!socketBadges.isEmpty()) {
-            boolean hasContentAbove = model.hasStats() || model.skinLine() != null;
+            boolean hasPerks = (itemPerks != null && !itemPerks.isEmpty()) || setBonus != null;
+            boolean hasContentAbove = model.hasStats() || hasPerks || model.skinLine() != null;
             if (hasContentAbove) {
                 lore.add(ColorUtil.colorize(divider));
             }
 
-            // Task P3-07: 1 blank spacer line above and below 2x socket badge row
-            lore.add("");
+            long nonZeroStats = model.stats().values().stream().filter(v -> v > 0.0).count();
+            boolean denseExpanded = expanded && nonZeroStats >= 6;
+            if (!denseExpanded) {
+                lore.add("");
+            }
 
             StringBuilder row = new StringBuilder("  ");
             for (int i = 0; i < socketBadges.size(); i++) {
@@ -373,7 +403,9 @@ public class TooltipRenderer {
             }
             lore.add(ColorUtil.colorize(row.toString()));
 
-            lore.add("");
+            if (!denseExpanded || !model.socketedEntries().isEmpty()) {
+                lore.add("");
+            }
 
             if (expanded && !model.socketedEntries().isEmpty()) {
                 for (SocketedEntry entry : model.socketedEntries()) {

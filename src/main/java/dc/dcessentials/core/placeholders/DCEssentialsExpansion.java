@@ -35,7 +35,7 @@ public class DCEssentialsExpansion extends PlaceholderExpansion {
 
     @Override
     public String onPlaceholderRequest(Player player, @NotNull String params) {
-        if (player == null) return "";
+        if (player == null || DCCosmetics.getInstance() == null || DCCosmetics.getInstance().getTeleportationManager() == null) return "";
 
         KeystoneProfile profile = DCCosmetics.getInstance().getTeleportationManager().getProfile(player);
         String pLower = params.toLowerCase();

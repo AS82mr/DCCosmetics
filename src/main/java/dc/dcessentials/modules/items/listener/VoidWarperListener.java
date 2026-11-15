@@ -44,9 +44,13 @@ public class VoidWarperListener implements Listener {
     private final Map<UUID, Long> sonicCooldowns = new ConcurrentHashMap<>();
     // Currently charging players
     private final Set<UUID> chargingPlayers = Collections.synchronizedSet(new HashSet<>());
+    // Active Etherwarp BlockDisplay markers per sneaking player
+    private final Map<UUID, org.bukkit.entity.BlockDisplay> etherwarpMarkers = new ConcurrentHashMap<>();
+    private static final double ETHERWARP_RANGE = 60.0;
 
     public VoidWarperListener(ItemRegistry itemRegistry) {
         this.itemRegistry = itemRegistry;
+        startEtherwarpPreviewTask();
     }
 
     public boolean isVoidWarper(ItemStack item) {
@@ -84,6 +88,15 @@ public class VoidWarperListener implements Listener {
 
         if (event.getAction() == Action.PHYSICAL) return;
 
+        Action action = event.getAction();
+        boolean isRight = (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK);
+        boolean isLeft = (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK);
+
+        // Normal Left-Click is allowed through for normal melee/interactions
+        if (isLeft && !player.isSneaking()) {
+            return;
+        }
+
         UUID uuid = player.getUniqueId();
         int currentTick = player.getTicksLived();
         Integer prevTick = lastInteractTick.put(uuid, currentTick);
@@ -102,20 +115,190 @@ public class VoidWarperListener implements Listener {
 
         event.setCancelled(true);
 
-        // Only Right-Click triggers Void Warper abilities (No Left-Click)
-        if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            TeleportationManager teleMgr = DCCosmetics.getInstance().getTeleportationManager();
-            KeystoneEnergyService energyService = teleMgr != null ? teleMgr.getEnergyService() : null;
-            if (energyService != null && !energyService.authorizeAbility(player)) {
-                return;
+        TeleportationManager teleMgr = DCCosmetics.getInstance().getTeleportationManager();
+        KeystoneEnergyService energyService = teleMgr != null ? teleMgr.getEnergyService() : null;
+        if (energyService != null && !energyService.authorizeAbility(player)) {
+            return;
+        }
+
+        if (isLeft && player.isSneaking()) {
+            // Shift + Left-Click: Sonic Boom
+            handleSonicBoomCharge(player);
+        } else if (isRight && player.isSneaking()) {
+            // Shift + Right-Click: Etherwarp
+            handleEtherwarp(player, energyService);
+        } else if (isRight) {
+            // Normal Right-Click: Void Bounce
+            handleVoidBounce(player, energyService);
+        }
+    }
+
+    private Block raycastEtherwarpBlock(Player player) {
+        Location eye = player.getEyeLocation();
+        RayTraceResult hit = player.getWorld().rayTraceBlocks(
+                eye,
+                eye.getDirection().normalize(),
+                ETHERWARP_RANGE,
+                FluidCollisionMode.NEVER,
+                true
+        );
+        if (hit == null || hit.getHitBlock() == null) {
+            return null;
+        }
+        return hit.getHitBlock();
+    }
+
+    private boolean isSafeEtherwarpLanding(Block targetBlock) {
+        if (targetBlock == null || targetBlock.getType().isAir() || !targetBlock.getType().isSolid()) {
+            return false;
+        }
+        Block feet = targetBlock.getRelative(0, 1, 0);
+        Block head = targetBlock.getRelative(0, 2, 0);
+        return isStandableAirOrPassable(feet) && isStandableAirOrPassable(head);
+    }
+
+    private boolean isStandableAirOrPassable(Block b) {
+        if (b == null) return false;
+        Material type = b.getType();
+        if (type == Material.LAVA || type == Material.FIRE || type == Material.SOUL_FIRE || type == Material.POWDER_SNOW) {
+            return false;
+        }
+        if (b.isPassable()) {
+            return true;
+        }
+        VoxelShape shape = b.getCollisionShape();
+        return shape.getBoundingBoxes().isEmpty();
+    }
+
+    private void handleEtherwarp(Player player, KeystoneEnergyService energyService) {
+        Block targetBlock = raycastEtherwarpBlock(player);
+        if (targetBlock == null) {
+            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_DIDGERIDOO, 0.9f, 0.7f);
+            player.sendActionBar(ColorUtil.colorize("&f&l✦ ETHERWARP &8[&cNO BLOCK IN RANGE (60m)&8] &f✦"));
+            return;
+        }
+
+        if (!isSafeEtherwarpLanding(targetBlock)) {
+            player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_PLACE, 0.45f, 1.8f);
+            player.sendActionBar(ColorUtil.colorize("&f&l✦ ETHERWARP &8[&cOBSTRUCTED — NEED 2 BLOCKS ABOVE&8] &f✦"));
+            return;
+        }
+
+        SpendResult spendRes = energyService != null ? energyService.spendVoidBounce(player) : null;
+        if (spendRes != null && !spendRes.authorized()) {
+            return;
+        }
+        if (spendRes != null) {
+            KeystoneLoreTokens.scheduleInventoryRefresh(player);
+        }
+
+        Location start = player.getLocation();
+        World world = player.getWorld();
+        Location dest = new Location(
+                world,
+                targetBlock.getX() + 0.5,
+                targetBlock.getY() + 1.0,
+                targetBlock.getZ() + 0.5,
+                start.getYaw(),
+                start.getPitch()
+        );
+
+        world.playSound(start, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 1.45f);
+        world.spawnParticle(Particle.END_ROD, start.clone().add(0, 0.9, 0), 18, 0.25, 0.45, 0.25, 0.04);
+
+        suppressAbilityTp(player, 1000L);
+        TpEffectManager.teleportWithoutEffect(player, dest);
+        player.setFallDistance(0f);
+        player.setVelocity(new Vector(0, 0, 0));
+
+        world.playSound(dest, Sound.ENTITY_ENDERMAN_TELEPORT, 1.1f, 1.65f);
+        world.playSound(dest, Sound.BLOCK_AMETHYST_BLOCK_CHIME, 1.3f, 1.85f);
+        world.spawnParticle(Particle.END_ROD, dest.clone().add(0, 0.5, 0), 22, 0.3, 0.4, 0.3, 0.05);
+        world.spawnParticle(Particle.WITCH, dest.clone().add(0, 0.2, 0), 12, 0.25, 0.1, 0.25, 0.02);
+
+        String costSuffix = formatSpendSuffix(spendRes);
+        player.sendActionBar(ColorUtil.colorize("&f&l✦ ETHERWARP &7(" + (int) Math.round(dest.distance(start)) + "m) &f✦" + costSuffix));
+    }
+
+    private void startEtherwarpPreviewTask() {
+        Bukkit.getScheduler().runTaskTimer(DCCosmetics.getInstance(), () -> {
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                UUID uuid = player.getUniqueId();
+                boolean holding = isVoidWarper(player.getInventory().getItemInMainHand())
+                        || isVoidWarper(player.getInventory().getItemInOffHand());
+                if (!player.isSneaking() || !holding || player.isDead()) {
+                    removeEtherwarpMarker(uuid);
+                    continue;
+                }
+
+                Block target = raycastEtherwarpBlock(player);
+                if (target == null) {
+                    removeEtherwarpMarker(uuid);
+                    continue;
+                }
+
+                boolean safe = isSafeEtherwarpLanding(target);
+                updateEtherwarpMarker(player, target, safe);
             }
 
-            if (player.isSneaking()) {
-                handleSonicBoomCharge(player);
-            } else {
-                handleVoidBounce(player, energyService);
+            // Cleanup any stale markers for offline players
+            Iterator<Map.Entry<UUID, org.bukkit.entity.BlockDisplay>> it = etherwarpMarkers.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<UUID, org.bukkit.entity.BlockDisplay> entry = it.next();
+                Player p = Bukkit.getPlayer(entry.getKey());
+                org.bukkit.entity.BlockDisplay disp = entry.getValue();
+                if (p == null || !p.isOnline() || disp == null || !disp.isValid()) {
+                    if (disp != null && disp.isValid()) {
+                        disp.remove();
+                    }
+                    it.remove();
+                }
             }
+        }, 4L, 2L);
+    }
+
+    private void updateEtherwarpMarker(Player player, Block target, boolean safe) {
+        UUID uuid = player.getUniqueId();
+        Location markerLoc = target.getLocation().add(-0.002, -0.002, -0.002);
+        org.bukkit.entity.BlockDisplay display = etherwarpMarkers.get(uuid);
+
+        if (display == null || !display.isValid() || !display.getWorld().equals(target.getWorld())) {
+            removeEtherwarpMarker(uuid);
+            display = target.getWorld().spawn(markerLoc, org.bukkit.entity.BlockDisplay.class, d -> {
+                d.setPersistent(false);
+                d.setGlowing(true);
+                d.setBrightness(new org.bukkit.entity.Display.Brightness(15, 15));
+                d.setTransformation(new org.bukkit.util.Transformation(
+                        new org.joml.Vector3f(0f, 0f, 0f),
+                        new org.joml.Quaternionf(),
+                        new org.joml.Vector3f(1.004f, 1.004f, 1.004f),
+                        new org.joml.Quaternionf()
+                ));
+                for (Player other : Bukkit.getOnlinePlayers()) {
+                    if (!other.getUniqueId().equals(uuid)) {
+                        other.hideEntity(DCCosmetics.getInstance(), d);
+                    }
+                }
+            });
+            etherwarpMarkers.put(uuid, display);
+        } else {
+            display.teleport(markerLoc);
         }
+
+        display.setBlock((safe ? Material.WHITE_STAINED_GLASS : Material.RED_STAINED_GLASS).createBlockData());
+        display.setGlowColorOverride(safe ? Color.WHITE : Color.fromRGB(239, 68, 68));
+    }
+
+    private void removeEtherwarpMarker(UUID uuid) {
+        org.bukkit.entity.BlockDisplay existing = etherwarpMarkers.remove(uuid);
+        if (existing != null && existing.isValid()) {
+            existing.remove();
+        }
+    }
+
+    @EventHandler
+    public void onQuit(org.bukkit.event.player.PlayerQuitEvent event) {
+        removeEtherwarpMarker(event.getPlayer().getUniqueId());
     }
 
     private void handleVoidBounce(Player player, KeystoneEnergyService energyService) {
@@ -160,7 +343,7 @@ public class VoidWarperListener implements Listener {
 
         // 4. Spend Microcharge / Overdraw Heat before teleporting
         SpendResult spendRes = energyService != null ? energyService.spendVoidBounce(player) : null;
-        if (spendRes != null && !spendRes.allowed()) {
+        if (spendRes != null && !spendRes.authorized()) {
             return;
         }
         if (spendRes != null) {
@@ -284,7 +467,7 @@ public class VoidWarperListener implements Listener {
             return;
         }
         SpendResult spendRes = energyService != null ? energyService.spendSonicBoom(player) : null;
-        if (spendRes != null && !spendRes.allowed()) {
+        if (spendRes != null && !spendRes.authorized()) {
             return;
         }
         if (spendRes != null) {

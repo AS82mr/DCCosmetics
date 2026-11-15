@@ -221,6 +221,14 @@ public class NpcZoneManager {
                 return false;
             }
 
+            if (DCCosmetics.getInstance().getTeleportationManager() != null) {
+                DCCosmetics.getInstance().getTeleportationManager().armContext(
+                        player,
+                        dc.dcessentials.modules.teleportation.TeleportContext.Type.FREE_COMMAND,
+                        "warp"
+                );
+            }
+
             // 1. Direct calibrated warp location
             if (zone.getWarpLocation() != null && zone.getWarpLocation().getWorld() != null) {
                 Location dest = zone.getWarpLocation().clone();

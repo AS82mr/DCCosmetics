@@ -63,8 +63,17 @@ public class TeleportationManager {
     private int conduitMaxRefundPerMinute = 400;
 
     private Set<String> freeCommands = Set.of("back", "spawn", "warp", "pwarp", "pw");
-    private Set<String> chargedCommands = Set.of("home", "tpa", "tpahere", "tpaccept", "tpyes");
+    private Set<String> chargedCommands = Set.of("home", "homes", "tpa", "tpahere", "tpaccept", "tpyes", "tp", "teleport", "rtp", "wild");
     private volatile boolean debugTeleportCauses = false;
+    private final Map<UUID, Long> recentFreeArrivalGrace = new ConcurrentHashMap<>();
+    private final Map<UUID, Integer> lastFreeMsgIndex = new ConcurrentHashMap<>();
+    private static final String[] REBELLION_FREE_MESSAGES = {
+            "Safe Rebellion transit relay complete — 0 ⚡ charged.",
+            "Travelled via a Rebellion slipstream corridor — no Tesseract spent.",
+            "Encrypted Rebellion waypoint route active — travel is free.",
+            "Secured Rebellion transfer complete — passage cost waived.",
+            "Quiet jump through Rebellion channels — your Keystone rests at 0 ⚡."
+    };
 
     public void loadConfig() {
         var mainCfg = DCCosmetics.getInstance().getConfig();
@@ -95,7 +104,7 @@ public class TeleportationManager {
 
         this.microPerCharge = cfg.getInt(prefix + "micro-per-charge", 1000);
         this.warpCostChargesMin = cfg.getInt(prefix + "warp-cost-charges.min", 1);
-        this.warpCostChargesMax = cfg.getInt(prefix + "warp-cost-charges.max", 3);
+        this.warpCostChargesMax = cfg.getInt(prefix + "warp-cost-charges.max", 5);
         this.depletedHeatMin = cfg.getInt(prefix + "depleted-heat.min", 6);
         this.depletedHeatMax = cfg.getInt(prefix + "depleted-heat.max", 10);
         this.unattunedHeatMin = cfg.getInt(prefix + "unattuned-heat.min", 10);
@@ -129,20 +138,32 @@ public class TeleportationManager {
         this.conduitRefundMicroMax = cfg.getInt(prefix + "conduit.refund-micro.max", 100);
         this.conduitMaxRefundPerMinute = cfg.getInt(prefix + "conduit.max-refund-micro-per-minute", 400);
 
-        List<String> freeList = cfg.getStringList(prefix + "free-commands");
+        List<String> freeList = cfg.getStringList(prefix + "teleportation-free");
+        if (freeList.isEmpty()) freeList = cfg.getStringList("teleportation-free");
+        if (freeList.isEmpty()) freeList = cfg.getStringList(prefix + "free-commands");
         if (!freeList.isEmpty()) {
             Set<String> set = new HashSet<>();
             for (String s : freeList) {
-                if (s != null && !s.isBlank()) set.add(s.trim().toLowerCase(Locale.ROOT).replace("?", ""));
+                if (s != null && !s.isBlank()) {
+                    String normalized = s.trim().toLowerCase(Locale.ROOT).replace("?", "");
+                    if (normalized.startsWith("/")) normalized = normalized.substring(1).trim();
+                    if (!normalized.isEmpty()) set.add(normalized);
+                }
             }
             this.freeCommands = Collections.unmodifiableSet(set);
         }
 
-        List<String> chargedList = cfg.getStringList(prefix + "charged-commands");
+        List<String> chargedList = cfg.getStringList(prefix + "teleportation-cost");
+        if (chargedList.isEmpty()) chargedList = cfg.getStringList("teleportation-cost");
+        if (chargedList.isEmpty()) chargedList = cfg.getStringList(prefix + "charged-commands");
         if (!chargedList.isEmpty()) {
             Set<String> set = new HashSet<>();
             for (String s : chargedList) {
-                if (s != null && !s.isBlank()) set.add(s.trim().toLowerCase(Locale.ROOT));
+                if (s != null && !s.isBlank()) {
+                    String normalized = s.trim().toLowerCase(Locale.ROOT);
+                    if (normalized.startsWith("/")) normalized = normalized.substring(1).trim();
+                    if (!normalized.isEmpty()) set.add(normalized);
+                }
             }
             this.chargedCommands = Collections.unmodifiableSet(set);
         }
@@ -158,6 +179,9 @@ public class TeleportationManager {
                 KeystoneProfile profile = getProfile(player);
                 if (profile.getHeat() <= 0) continue;
 
+                ItemStack equippedKeystone = getEquippedKeystoneItem(player);
+                int effClearBelow = KeystoneDetector.getOverloadClearBelow(equippedKeystone, overloadClearBelow);
+
                 // Check immersion in Water or Powder Snow
                 var block = player.getLocation().getBlock();
                 var type = block.getType().name();
@@ -167,17 +191,62 @@ public class TeleportationManager {
                     long now = System.currentTimeMillis();
                     if (now - profile.getLastCryoTime() >= cryoCooldownSeconds * 1000L) {
                         profile.setLastCryoTime(now);
-                        profile.reduceHeat(cryoPurgeAmount, overloadClearBelow);
+                        profile.reduceHeat(cryoPurgeAmount, effClearBelow);
                         player.playSound(player.getLocation(), Sound.BLOCK_LAVA_EXTINGUISH, 0.8f, 1.2f);
                         player.spawnParticle(Particle.CLOUD, player.getLocation().add(0, 1, 0), 20, 0.3, 0.5, 0.3, 0.05);
                         DCMessage.sendInfo(player, "Cryo-immersion purged &#FFFFFF-" + cryoPurgeAmount + " Heat&#BAE6FD! Current Heat: &#FFFFFF" + profile.getHeat() + "/100&#BAE6FD.");
                     }
                 }
 
-                // High Heat Visual Warnings (>= instabilityThreshold)
+                // High Heat Visual & Physical Instability Warnings (>= instabilityThreshold)
                 if (profile.getHeat() >= instabilityThreshold) {
-                    player.spawnParticle(Particle.SOUL_FIRE_FLAME, player.getLocation().add(0, 0.5, 0), 3, 0.2, 0.3, 0.2, 0.02);
-                    if (profile.getHeat() >= 85) {
+                    int heat = profile.getHeat();
+                    player.spawnParticle(Particle.SOUL_FIRE_FLAME, player.getLocation().add(0, 0.5, 0), 16, 0.4, 0.5, 0.4, 0.03);
+                    player.spawnParticle(Particle.ELECTRIC_SPARK, player.getLocation().add(0, 1.0, 0), 20, 0.5, 0.6, 0.5, 0.06);
+                    player.spawnParticle(Particle.PORTAL, player.getLocation().add(0, 1.0, 0), 15, 0.45, 0.5, 0.45, 0.15);
+
+                    if (!KeystoneDetector.hasInstabilitySuppression(equippedKeystone)) {
+                        player.playSound(player.getLocation(), Sound.ENTITY_WARDEN_HEARTBEAT, 1.0f, 1.0f);
+                        player.playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 0.45f, 0.65f);
+                        player.sendActionBar(net.kyori.adventure.text.Component.text(
+                                "§c⚡ Temporal Instability (§e" + heat + "/100 🔥§c) — Spatial recoil, destabilized stats & +15% Boss/Void damage! ⚡"
+                        ));
+                        if (!player.hasMetadata("in_wardrobe")) {
+                            long graceUntil = recentFreeArrivalGrace.getOrDefault(player.getUniqueId(), 0L);
+                            if (System.currentTimeMillis() < graceUntil) {
+                                continue;
+                            }
+                            boolean critical = heat >= 90;
+                            double impulseScale = critical ? 0.95 : 0.65;
+                            double jx = (ThreadLocalRandom.current().nextDouble() - 0.5) * impulseScale;
+                            double jz = (ThreadLocalRandom.current().nextDouble() - 0.5) * impulseScale;
+                            double jy = player.isFlying() ? 0.0 : (critical ? 0.28 : 0.18);
+                            player.setVelocity(player.getVelocity().add(new org.bukkit.util.Vector(jx, jy, jz)));
+
+                            player.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                                    org.bukkit.potion.PotionEffectType.NAUSEA, 80, 0, true, false, true));
+                            player.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                                    org.bukkit.potion.PotionEffectType.SLOWNESS, 50, critical ? 1 : 0, true, false, true));
+                            player.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                                    org.bukkit.potion.PotionEffectType.MINING_FATIGUE, 50, 0, true, false, true));
+                            if (critical) {
+                                player.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                                        org.bukkit.potion.PotionEffectType.WEAKNESS, 50, 0, true, false, true));
+                                player.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                                        org.bukkit.potion.PotionEffectType.DARKNESS, 45, 0, true, false, true));
+                            }
+
+                            org.bukkit.GameMode gm = player.getGameMode();
+                            if (gm == org.bukkit.GameMode.SURVIVAL || gm == org.bukkit.GameMode.ADVENTURE) {
+                                double zapDmg = critical ? 2.0 : 1.0;
+                                if (player.getHealth() > zapDmg + 1.5) {
+                                    player.damage(zapDmg);
+                                }
+                            }
+                        }
+                    }
+
+                    if (heat >= 85) {
                         for (Player nearby : player.getWorld().getPlayers()) {
                             if (nearby.equals(player)) continue;
                             if (nearby.getLocation().distanceSquared(player.getLocation()) <= 100) {
@@ -196,12 +265,14 @@ public class TeleportationManager {
                 if (profile.getHeat() <= 0) continue;
 
                 ItemStack equippedKeystone = getEquippedKeystoneItem(player);
+                int effClearBelow = KeystoneDetector.getOverloadClearBelow(equippedKeystone, overloadClearBelow);
+
                 int baseDecay = profile.getTier().getPassiveDecay();
                 int scrollCoolPct = KeystoneDetector.getScrollCooldownRatePct(equippedKeystone);
                 int thermalBonus = (int) Math.floor(energyService.getThermalStat(player) / 20.0);
 
                 int totalDecay = Math.max(1, (int) Math.round(baseDecay * (1.0 + (scrollCoolPct / 100.0))) + thermalBonus);
-                profile.reduceHeat(totalDecay, overloadClearBelow);
+                profile.reduceHeat(totalDecay, effClearBelow);
             }
         }, 600L, 600L); // Every 30 seconds
     }
@@ -342,25 +413,19 @@ public class TeleportationManager {
         // 1. Check & consume active TeleportContext token
         TeleportContext ctx = consumeContext(player);
         if (ctx != null && ctx.type() == TeleportContext.Type.FREE_COMMAND) {
+            if (!gate.isExemptOrSuppressedTransit(player, cause, from, to)) {
+                recentFreeArrivalGrace.put(player.getUniqueId(), System.currentTimeMillis() + 3500L);
+                sendVariedRebellionFreeMessage(player);
+            }
             return;
         }
 
-        // 2. Wardrobe Session Immunity
-        if (DCCosmetics.getInstance().getWardrobeManager() != null
-                && DCCosmetics.getInstance().getWardrobeManager().isInWardrobe(player)) {
+        // 2. Environmental, wardrobe, cinematic camera, short-hop, and ability teleports are exempt
+        if (gate.isExemptOrSuppressedTransit(player, cause, from, to)) {
             return;
         }
 
-        // 3. Environmental & Non-Command Teleport Immunity
-        if (TeleportGate.isExemptCause(cause)) {
-            return;
-        }
-        if ((cause == TeleportCause.PLUGIN || cause == TeleportCause.UNKNOWN)
-                && (ctx == null || ctx.type() != TeleportContext.Type.CHARGED_COMMAND)) {
-            return;
-        }
-
-        // 4. Unloaded profile safety (already logged in TeleportGate)
+        // 3. Unloaded profile safety (already logged in TeleportGate)
         if (!profile.isLoaded()) {
             return;
         }
@@ -410,6 +475,17 @@ public class TeleportationManager {
         }
     }
 
+    private void sendVariedRebellionFreeMessage(Player player) {
+        int count = REBELLION_FREE_MESSAGES.length;
+        int prev = lastFreeMsgIndex.getOrDefault(player.getUniqueId(), -1);
+        int idx = ThreadLocalRandom.current().nextInt(count);
+        if (count > 1 && idx == prev) {
+            idx = (idx + 1 + ThreadLocalRandom.current().nextInt(count - 1)) % count;
+        }
+        lastFreeMsgIndex.put(player.getUniqueId(), idx);
+        DCMessage.sendInfo(player, REBELLION_FREE_MESSAGES[idx]);
+    }
+
     private String formatMicroAsCharges(int micro) {
         if (micro % microPerCharge == 0) {
             return String.valueOf(micro / microPerCharge);
@@ -434,7 +510,7 @@ public class TeleportationManager {
 
         player.playSound(loc, Sound.ENTITY_WARDEN_HEARTBEAT, 1.5f, 0.6f);
         player.playSound(loc, Sound.BLOCK_PORTAL_TRIGGER, 1.2f, 0.5f);
-        player.spawnParticle(Particle.SCULK_CHARGE, loc, 50, 1.0, 1.0, 1.0, 0.1);
+        player.spawnParticle(Particle.SCULK_CHARGE, loc, 50, 1.0, 1.0, 1.0, 0.1, 0.0f);
 
         DCMessage.sendError(player, "Timeline Variance Limit (100/100) Exceeded! The Emperor's Sentinels have breached your coordinates!");
 
@@ -456,7 +532,7 @@ public class TeleportationManager {
             int min = Math.max(1, tpaSynergyHeatMin);
             int max = Math.max(min, tpaSynergyHeatMax);
             int reduction = Math.min(profile.getHeat(), ThreadLocalRandom.current().nextInt(min, max + 1));
-            profile.reduceHeat(reduction, overloadClearBelow);
+            profile.reduceHeat(reduction, getEffectiveOverloadClearBelow(player));
 
             player.playSound(player.getLocation(), Sound.BLOCK_LAVA_EXTINGUISH, 0.6f, 1.0f);
             DCMessage.sendGeneral(player, "Consensual TPA synergy! Timeline Heat purged by &#FFFFFF-" + reduction + " &#0CBF93(Stability: " + profile.getStability() + "&#0CBF93).");
@@ -476,6 +552,9 @@ public class TeleportationManager {
     public int getUnattunedHeatMax() { return unattunedHeatMax; }
     public int getCostReductionCapPct() { return costReductionCapPct; }
     public int getOverloadClearBelow() { return overloadClearBelow; }
+    public int getEffectiveOverloadClearBelow(Player player) {
+        return KeystoneDetector.getOverloadClearBelow(getEquippedKeystoneItem(player), overloadClearBelow);
+    }
     public int getInstabilityThreshold() { return instabilityThreshold; }
     public double getInstabilityIncomingDamagePct() { return instabilityIncomingDamagePct; }
     public int getInstabilityJitterMin() { return instabilityJitterMin; }

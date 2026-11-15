@@ -102,11 +102,7 @@ public class TeleportListener implements Listener {
         // Check if this is a charged warp subject to Unstable jitter
         TeleportContext ctx = manager.peekContext(player);
         if (ctx != null && ctx.type() == TeleportContext.Type.FREE_COMMAND) return;
-        if (DCCosmetics.getInstance().getWardrobeManager() != null
-                && DCCosmetics.getInstance().getWardrobeManager().isInWardrobe(player)) return;
-        if (TeleportGate.isExemptCause(cause)) return;
-        if ((cause == TeleportCause.PLUGIN || cause == TeleportCause.UNKNOWN)
-                && (ctx == null || ctx.type() != TeleportContext.Type.CHARGED_COMMAND)) return;
+        if (manager.getGate().isExemptOrSuppressedTransit(player, cause, from, to)) return;
 
         KeystoneProfile profile = manager.getProfile(player);
         if (profile.isLoaded()
@@ -132,43 +128,72 @@ public class TeleportListener implements Listener {
     }
 
     /**
-     * P1-06: Exact command label & alias resolution at MONITOR when not cancelled.
+     * P1-06: Capture raw command before CMI/Multiverse alias rewrites (LOWEST) and after (MONITOR).
      */
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onCommandPreprocessEarly(PlayerCommandPreprocessEvent event) {
+        captureCommandContext(event.getPlayer(), event.getMessage());
+    }
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCommandPreprocess(PlayerCommandPreprocessEvent event) {
-        String rawMsg = event.getMessage().trim();
+        captureCommandContext(event.getPlayer(), event.getMessage());
+    }
+
+    private void captureCommandContext(Player player, String rawInput) {
+        if (player == null || rawInput == null) return;
+        String rawMsg = rawInput.trim();
         if (rawMsg.isEmpty() || !rawMsg.startsWith("/")) return;
 
         String body = rawMsg.substring(1).trim();
         if (body.isEmpty()) return;
 
-        int spaceIdx = body.indexOf(' ');
-        String token = (spaceIdx == -1 ? body : body.substring(0, spaceIdx)).toLowerCase(Locale.ROOT);
-        int colonIdx = token.indexOf(':');
-        if (colonIdx >= 0 && colonIdx + 1 < token.length()) {
-            token = token.substring(colonIdx + 1);
+        String[] parts = body.split("\\s+");
+        String token = stripNamespace(parts[0].toLowerCase(Locale.ROOT));
+        String subToken = parts.length > 1 ? stripNamespace(parts[1].toLowerCase(Locale.ROOT)) : "";
+
+        // Unwrap plugin command wrappers (/cmi home, /cmi warp, /mw tp, /mv tp, /essentials warp)
+        String effectiveToken = token;
+        if ((token.equals("cmi") || token.equals("mw") || token.equals("mv")
+                || token.equals("multiverse") || token.equals("essentials") || token.equals("ess"))
+                && !subToken.isEmpty()) {
+            effectiveToken = subToken;
         }
 
-        String resolved = token;
+        String resolved = effectiveToken;
         try {
-            Command cmd = Bukkit.getCommandMap().getCommand(token);
+            Command cmd = Bukkit.getCommandMap().getCommand(effectiveToken);
             if (cmd != null && cmd.getName() != null) {
-                resolved = cmd.getName().toLowerCase(Locale.ROOT);
+                String cmdName = stripNamespace(cmd.getName().toLowerCase(Locale.ROOT));
+                if (!cmdName.equals("cmi") && !cmdName.equals("mw") && !cmdName.equals("mv")) {
+                    resolved = cmdName;
+                }
             }
         } catch (Throwable ignored) {}
 
-        Player player = event.getPlayer();
         lastCommands.put(player.getUniqueId(), new RecentCommand(rawMsg, resolved, System.currentTimeMillis()));
 
-        if (manager.getFreeCommands().contains(token) || manager.getFreeCommands().contains(resolved)) {
-            manager.armContext(player, TeleportContext.Type.FREE_COMMAND, token);
-        } else if (manager.getChargedCommands().contains(token) || manager.getChargedCommands().contains(resolved)) {
-            if (token.equals("tpaccept") || token.equals("tpyes")
+        if (manager.getFreeCommands().contains(effectiveToken)
+                || manager.getFreeCommands().contains(resolved)
+                || manager.getFreeCommands().contains(token)) {
+            manager.armContext(player, TeleportContext.Type.FREE_COMMAND, effectiveToken);
+        } else if (manager.getChargedCommands().contains(effectiveToken)
+                || manager.getChargedCommands().contains(resolved)
+                || manager.getChargedCommands().contains(token)) {
+            if (effectiveToken.equals("tpaccept") || effectiveToken.equals("tpyes")
                     || resolved.equals("tpaccept") || resolved.equals("tpyes")) {
                 manager.armPendingTpaAccept(player);
             }
-            manager.armContext(player, TeleportContext.Type.CHARGED_COMMAND, token);
+            manager.armContext(player, TeleportContext.Type.CHARGED_COMMAND, effectiveToken);
         }
+    }
+
+    private static String stripNamespace(String cmd) {
+        int colonIdx = cmd.indexOf(':');
+        if (colonIdx >= 0 && colonIdx + 1 < cmd.length()) {
+            return cmd.substring(colonIdx + 1);
+        }
+        return cmd;
     }
 
     /**

@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 public class HeadUtil {
@@ -29,8 +30,8 @@ public class HeadUtil {
 
         SkullMeta meta = (SkullMeta) head.getItemMeta();
         if (meta != null) {
-            // Create a random UUID for the profile so it doesn't conflict with real players
-            PlayerProfile profile = Bukkit.createProfile(UUID.randomUUID());
+            // Deterministic UUID per texture payload so identical custom heads stack cleanly
+            PlayerProfile profile = Bukkit.createProfile(UUID.nameUUIDFromBytes(base64.getBytes(StandardCharsets.UTF_8)));
             profile.setProperty(new ProfileProperty("textures", base64));
             meta.setPlayerProfile(profile);
             head.setItemMeta(meta);

@@ -147,6 +147,12 @@ public class KeystoneItemListener implements Listener {
             }
         }
 
+        if (accepted > 0 && profile.getHeat() > 0 && profile.getTotalMicro() > 0) {
+            profile.setHeat(0, teleMgr.getOverloadClearBelow());
+            profile.setOverloaded(false);
+            DCMessage.sendInfo(player, "Active Tesseract infusion cooled Timeline Heat to &#FFFFFF0/100 🔥&#BAE6FD.");
+        }
+
         teleMgr.getPersistence().saveNow(profile);
         KeystoneLoreTokens.scheduleInventoryRefresh(player);
 
@@ -156,7 +162,7 @@ public class KeystoneItemListener implements Listener {
 
     private void handleKeystoneRightClick(Player player, EquipmentSlot hand, ItemStack handItem, KeystoneTier itemTier) {
         if (KeystoneDetector.isLegacy(handItem)) {
-            handItem = LegacyKeystoneConverter.convert(handItem);
+            handItem = LegacyKeystoneConverter.convert(handItem).orElse(handItem);
             if (hand == EquipmentSlot.OFF_HAND) {
                 player.getInventory().setItemInOffHand(handItem);
             } else {
@@ -192,11 +198,20 @@ public class KeystoneItemListener implements Listener {
                 kProfile.setTier(itemTier);
                 int effMax = teleMgr.getEnergyService().getEffectiveMaxEnergy(player, kProfile);
                 int overflow = kProfile.trimToTier(effMax);
+                boolean heatCleared = false;
+                if (kProfile.getHeat() > 0 && kProfile.getTotalMicro() > 0) {
+                    kProfile.setHeat(0, teleMgr.getOverloadClearBelow());
+                    kProfile.setOverloaded(false);
+                    heatCleared = true;
+                }
                 if (overflow > 0) {
                     teleMgr.getEnergyService().giveEnergyCubes(player, overflow);
                     DCMessage.sendInfo(player, "Returned &#FFFFFF" + overflow + "x Tesseract Energy Cube &#BAE6FDabove your Keystone's capacity.");
                 }
                 teleMgr.getPersistence().saveNow(kProfile);
+                if (heatCleared) {
+                    DCMessage.sendInfo(player, "Parked Tesseract matrix reactivated — &#10B981Temporal Heat reset to 0 🔥&#BAE6FD.");
+                }
 
                 var itemMod = DCCosmetics.getInstance().getItemModule();
                 if (itemMod != null && itemMod.getStatAggregator() != null) {

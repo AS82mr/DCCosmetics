@@ -15,9 +15,11 @@ import java.util.List;
 public class KeystoneTabCompleter implements TabCompleter {
 
     private static final List<String> USER_SUBS = Arrays.asList("gui", "status");
-    private static final List<String> ADMIN_SUBS = Arrays.asList("gui", "status", "charge", "clearheat", "tier", "heat", "microcharge", "debugspend", "debugtp");
+    private static final List<String> ADMIN_SUBS = Arrays.asList(
+            "gui", "status", "charge", "set", "take", "remove", "reset",
+            "clearheat", "tier", "heat", "microcharge", "debugspend", "debugtp");
     private static final List<String> TIERS = Arrays.asList("NONE", "RARE", "EPIC", "LEGENDARY");
-    private static final List<String> AMOUNTS = Arrays.asList("10", "25", "50", "100", "200");
+    private static final List<String> AMOUNTS = Arrays.asList("0", "10", "25", "50", "100", "200");
     private static final List<String> DELTAS = Arrays.asList("-50", "-25", "-10", "10", "25", "50", "250");
 
     @Override
@@ -33,7 +35,10 @@ public class KeystoneTabCompleter implements TabCompleter {
 
         if (args.length == 2 && isAdmin) {
             String sub = args[0].toLowerCase();
-            if (sub.equals("charge") || sub.equals("addenergy") || sub.equals("clearheat") || sub.equals("resetheat")
+            if (sub.equals("charge") || sub.equals("addenergy") || sub.equals("set") || sub.equals("setenergy")
+                    || sub.equals("take") || sub.equals("remove") || sub.equals("deduct")
+                    || sub.equals("reset") || sub.equals("clear") || sub.equals("clearenergy")
+                    || sub.equals("clearheat") || sub.equals("resetheat")
                     || sub.equals("tier") || sub.equals("settier") || sub.equals("heat")
                     || sub.equals("microcharge") || sub.equals("micro")) {
                 List<String> playerNames = new ArrayList<>();
@@ -52,7 +57,8 @@ public class KeystoneTabCompleter implements TabCompleter {
 
         if (args.length == 3 && isAdmin) {
             String sub = args[0].toLowerCase();
-            if (sub.equals("charge") || sub.equals("addenergy")) {
+            if (sub.equals("charge") || sub.equals("addenergy") || sub.equals("set") || sub.equals("setenergy")
+                    || sub.equals("take") || sub.equals("remove") || sub.equals("deduct")) {
                 StringUtil.copyPartialMatches(args[2], AMOUNTS, completions);
                 return completions;
             }
