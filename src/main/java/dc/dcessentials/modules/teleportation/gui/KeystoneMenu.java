@@ -191,10 +191,10 @@ public class KeystoneMenu implements DceGui {
                 Arrays.asList(
                         "&8Sub-Tesseract Ability Capacitor",
                         "&f",
-                        "&7Buffer: &8[" + microBar + "&8] &#38BDF8" + micro + "&7/&f1000 mC",
+                        "&7Buffer: &8[" + microBar + "&8] &#38BDF8" + micro + "&7/&f1000 " + KeystoneLoreTokens.MICRO_ICON,
                         "&7Exact Reserve: &f" + exactStr + " &#38BDF8🗲",
                         "&f",
-                        "&71 Tesseract Charge = &#38BDF81,000 Microcharges (mC)&7.",
+                        "&71 Tesseract Charge = &#38BDF81,000 Microcharges (" + KeystoneLoreTokens.MICRO_ICON + ")&7.",
                         "&7Active item abilities (&dVoid Bounce&7, &bEtherwarp&7, &bSonic Boom&7)",
                         "&7drain from this buffer before cracking a new charge."
                 )
@@ -434,10 +434,9 @@ public class KeystoneMenu implements DceGui {
                 )
         ));
 
-        // Slot 49: Back to Profile
-        inventory.setItem(49, createItem(
-                Material.ARROW,
-                "&#38BDF8&l← Back to Profile",
+        // Slot 49: Unified Back to Profile
+        inventory.setItem(49, dc.dccosmetics.util.HeadUtil.createBackButton(
+                "&#38BDF8&lBack to Profile",
                 Collections.singletonList("&7Click to return to your Player Profile (/profile).")
         ));
     }

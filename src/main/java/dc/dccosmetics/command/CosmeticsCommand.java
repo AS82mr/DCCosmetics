@@ -3,6 +3,7 @@ package dc.dccosmetics.command;
 import dc.dccosmetics.DCCosmetics;
 import dc.dccosmetics.gui.GuiManager;
 import dc.dccosmetics.listener.FootstepListener;
+import dc.dcessentials.core.util.DCMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -26,20 +27,20 @@ public class CosmeticsCommand implements CommandExecutor {
         // 0. HELP COMMAND: /cosmetics help
         // =========================================
         if (args.length > 0 && args[0].equalsIgnoreCase("help")) {
-            sender.sendMessage(ChatColor.GOLD + "=== DCCosmetics Commands ===");
-            sender.sendMessage(ChatColor.YELLOW + "/cosmetics" + ChatColor.WHITE + " - Open the cosmetics menu");
-            sender.sendMessage(ChatColor.YELLOW + "/customise" + ChatColor.WHITE + " - Customise cosmetic on held item");
-            sender.sendMessage(ChatColor.YELLOW + "/profile [player]" + ChatColor.WHITE + " - View a player's profile");
-            sender.sendMessage(ChatColor.YELLOW + "/wardrobe" + ChatColor.WHITE + " - Enter the gaming wardrobe");
+            DCMessage.sendHelp(sender, "Cosmetics & Wardrobe Commands:");
+            DCMessage.sendHelp(sender, "&#FFFFFF/cosmetics &#CBD5E1- Open the cosmetics menu");
+            DCMessage.sendHelp(sender, "&#FFFFFF/customise &#CBD5E1- Customise cosmetic on held item");
+            DCMessage.sendHelp(sender, "&#FFFFFF/profile [player] &#CBD5E1- View a player's profile");
+            DCMessage.sendHelp(sender, "&#FFFFFF/wardrobe &#CBD5E1- Enter the 3D wardrobe");
             if (sender.hasPermission("dccosmetics.admin")) {
-                sender.sendMessage(ChatColor.RED + "--- Admin Commands ---");
-                sender.sendMessage(ChatColor.YELLOW + "/cosmetics reload" + ChatColor.WHITE + " - Reload configurations");
-                sender.sendMessage(ChatColor.YELLOW + "/cosmetics import <file>" + ChatColor.WHITE + " - Import a blockbench model");
-                sender.sendMessage(ChatColor.YELLOW + "/cosmetics scroll <player> <id>" + ChatColor.WHITE + " - Give a cosmetic scroll");
-                sender.sendMessage(ChatColor.YELLOW + "/wardrobe admin" + ChatColor.WHITE + " - Open Wardrobe setup GUI");
-                sender.sendMessage(ChatColor.YELLOW + "/wardrobe [wand|setup|setspawn|setnpc|setexit]" + ChatColor.WHITE + " - Setup tools");
-                sender.sendMessage(ChatColor.YELLOW + "/setupcinematicworld" + ChatColor.WHITE + " - Create a void world");
-                sender.sendMessage(ChatColor.YELLOW + "/draincolors" + ChatColor.WHITE + " - Drain colors from WE selection");
+                DCMessage.sendHelp(sender, "&#FCA5A5Admin Commands:");
+                DCMessage.sendHelp(sender, "&#FFFFFF/cosmetics reload &#CBD5E1- Reload configurations");
+                DCMessage.sendHelp(sender, "&#FFFFFF/cosmetics import <file> &#CBD5E1- Import a Blockbench model");
+                DCMessage.sendHelp(sender, "&#FFFFFF/cosmetics scroll <player> <id> &#CBD5E1- Give a cosmetic scroll");
+                DCMessage.sendHelp(sender, "&#FFFFFF/wardrobe admin &#CBD5E1- Open Wardrobe setup GUI");
+                DCMessage.sendHelp(sender, "&#FFFFFF/wardrobe [wand|setup|setspawn|setnpc|setexit] &#CBD5E1- Setup tools");
+                DCMessage.sendHelp(sender, "&#FFFFFF/setupcinematicworld &#CBD5E1- Create a void world");
+                DCMessage.sendHelp(sender, "&#FFFFFF/draincolors &#CBD5E1- Drain colors from selection");
             }
             return true;
         }

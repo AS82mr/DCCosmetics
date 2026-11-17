@@ -95,7 +95,7 @@ public class PetsConfig {
         categorySkillMap.put(PetCategory.ENCHANTING, new LinkedHashSet<>(Arrays.asList(
                 "enchanting", "rift")));
         categorySkillMap.put(PetCategory.UTILITY, new LinkedHashSet<>(Arrays.asList(
-                "agility", "stealth", "kinetics", "architect", "crafting", "discovery", "chronos", "rift", "brewing", "enchanting")));
+                "agility", "stealth", "kinetics", "architect", "crafting", "discovery", "chronos", "rift", "brewing", "enchanting", "golemancy")));
         categorySkillMap.put(PetCategory.OMNI, new LinkedHashSet<>());
 
         categoryDomains.clear();
@@ -253,6 +253,7 @@ public class PetsConfig {
         putDomainWeight("architect", SkillDomain.UTILITY, 1.0);
         putDomainWeight("crafting", SkillDomain.UTILITY, 1.0);
         putDomainWeight("discovery", SkillDomain.UTILITY, 1.0);
+        putDomainWeight("golemancy", SkillDomain.ARCANE, 0.50, SkillDomain.UTILITY, 0.50);
     }
 
     private void putDomainWeight(String skill, SkillDomain d1, double w1) {

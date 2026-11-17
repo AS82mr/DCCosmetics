@@ -149,7 +149,7 @@ items:
     slots: [ 13 ]
     lore:
       - "&8[Keystone & Companion]"
-      - " &3🌀 &7Keystone: &f%dragoncote_keystone_name% &8(&b%dragoncote_tesseract%&8/&b%dragoncote_keystone_max%🗲 &8| &e%dragoncote_microcharges%mC &8| &c%dragoncote_heat%🔥&8)"
+      - " &3🌀 &7Keystone: &f%dragoncote_keystone_name% &8(&b%dragoncote_tesseract%&8/&b%dragoncote_keystone_max%🗲 &8| &e%dragoncote_microcharges%↯ &8| &c%dragoncote_heat%🔥&8)"
       - " &d🐾 &7Pet: %dragoncote_pet_name% &8(&7Lv.&f%dragoncote_pet_level% &8• &7%dragoncote_pet_category%&8)"
       - ""
       - "&8[Combat & Utility Stats]"
@@ -253,7 +253,7 @@ items:
       - "&7Switch between clean &fCOMPACT &7tooltips"
       - "&7and detailed &bEXPANDED &7stat/socket breakdowns."
       - ""
-      - "&8Tip: Shift+Right-Click any DCE item in inventory!"
+      - "&8Tip: Shift+Right-Click any custom item in inventory!"
       - "&eClick to Toggle"
     leftClickCommands: [ "[PLAYER] tooltip toggle" ]
     rightClickCommands: [ "[PLAYER] tooltip toggle" ]

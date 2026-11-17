@@ -6,7 +6,7 @@ public enum ItemRarity {
     RARE("Rare", "<#55FFFF>", ":lztooltips:rare:", "minecraft:rare"),
     EPIC("Epic", "<#AA00AA>", ":lztooltips:epic:", "minecraft:epic"),
     LEGENDARY("Legendary", "<#FFAA00>", ":lztooltips:legendary:", "minecraft:legendary"),
-    MASTERY("Mastery", "<#FF5555>", ":lztooltips:artifact:", "minecraft:artifact");
+    MASTERY("Mastery", "<#FF5555>", ":lztooltips:mastery:", "lztooltips:artifact");
 
     private final String displayName;
     private final String color;

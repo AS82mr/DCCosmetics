@@ -806,16 +806,15 @@ public final class DCCosmetics extends JavaPlugin {
 
         java.util.List<String> loreLines = new java.util.ArrayList<>();
         String slotName = temp.getEquipmentSlot() != null ? temp.getEquipmentSlot().toUpperCase() : "EQUIPMENT";
-        loreLines.add("&7Type: <#B996E2>Cosmetic Infusion");
         loreLines.add("&7Target Slot: &f" + slotName);
-        loreLines.add("&f");
         if (temp.getLore() != null && !temp.getLore().isEmpty()) {
+            loreLines.add("");
             for (String l : temp.getLore()) {
                 loreLines.add(l);
             }
-            loreLines.add("&f");
         }
-        loreLines.add("<#FCD34D>&l▶ Drag & drop onto " + slotName.toLowerCase() + " to infuse!");
+        loreLines.add("");
+        loreLines.add("<#FCD34D>▶ Drag & drop onto " + slotName.toLowerCase() + " to infuse!");
 
         meta.getPersistentDataContainer().set(new NamespacedKey(this, "cosmetic_scroll_id"), PersistentDataType.STRING, id);
         meta.getPersistentDataContainer().set(new NamespacedKey(this, "cosmetic_scroll_color"), PersistentDataType.STRING, color);

@@ -69,7 +69,7 @@ public class PityGUI implements Listener {
             lore.add("&f");
             lore.add("&7Progress: &f" + k + " &7/ &f" + n);
             lore.add(bar + " &e(" + pct + "%)");
-            lore.add("&7Current Odds: &#38BDF8&l1/" + d + " &7per qualifying action");
+            lore.add("&7Current Odds: &#38BDF81/" + d + " &7per qualifying action");
             lore.add("&f");
             if (k >= n - 1) {
                 lore.add("&#10B981&l★ GUARANTEED DROP READY");

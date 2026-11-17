@@ -123,7 +123,7 @@ public class KeystoneCommand implements CommandExecutor {
                 }
                 teleManager.getPersistence().saveNow(profile);
                 dc.dcessentials.modules.teleportation.KeystoneLoreTokens.scheduleInventoryRefresh(target);
-                DCMessage.sendGeneral(sender, "Adjusted &#FFFFFF" + target.getName() + "'s &#0CBF93microcharges by &#FFFFFF" + (delta >= 0 ? "+" + delta : delta) + " mC &#0CBF93(Now: &#38BDF8" + profile.getMicro() + "/1000 mC &8| &f" + profile.getEnergy() + "/" + effectiveMax + " 🗲&#0CBF93).");
+                DCMessage.sendGeneral(sender, "Adjusted &#FFFFFF" + target.getName() + "'s &#0CBF93microcharges by &#FFFFFF" + (delta >= 0 ? "+" + delta : delta) + " " + dc.dcessentials.modules.teleportation.KeystoneLoreTokens.MICRO_ICON + " &#0CBF93(Now: &#38BDF8" + profile.getMicro() + "/1000 " + dc.dcessentials.modules.teleportation.KeystoneLoreTokens.MICRO_ICON + " &8| &f" + profile.getEnergy() + "/" + effectiveMax + " 🗲&#0CBF93).");
             } catch (NumberFormatException e) {
                 DCMessage.sendError(sender, "Invalid microcharge delta.");
             }
@@ -257,7 +257,7 @@ public class KeystoneCommand implements CommandExecutor {
             profile.setMicro(0);
             teleManager.getPersistence().saveNow(profile);
             dc.dcessentials.modules.teleportation.KeystoneLoreTokens.scheduleInventoryRefresh(target);
-            DCMessage.sendGeneral(sender, "Reset &#FFFFFF" + target.getName() + "'s &#0CBF93Tesseract Energy to &#FFFFFF0 🗲 (0 mC)&#0CBF93.");
+            DCMessage.sendGeneral(sender, "Reset &#FFFFFF" + target.getName() + "'s &#0CBF93Tesseract Energy to &#FFFFFF0 🗲 (0 " + dc.dcessentials.modules.teleportation.KeystoneLoreTokens.MICRO_ICON + ")&#0CBF93.");
             DCMessage.sendGeneral(target, "Your Tesseract Energy was reset to &#FFFFFF0 &#38BDF8🗲&#0CBF93.");
             return true;
         }
@@ -314,13 +314,13 @@ public class KeystoneCommand implements CommandExecutor {
             }
             SpendResult res = teleManager.getEnergyService().spend(player, kind, baseCost);
             player.sendMessage(ColorUtil.colorize("&8[&bKeystoneDebug&8] &7allowed=&f" + res.authorized()
-                    + " &7effCost=&b" + res.effectiveCostMicro() + "mC"
+                    + " &7effCost=&b" + res.effectiveCostMicro() + dc.dcessentials.modules.teleportation.KeystoneLoreTokens.MICRO_ICON
                     + " &7cracked=&e" + res.chargesCracked()
                     + " &7mPaid=&a" + res.microPaid()
                     + " &7shortfall=&c" + res.microShortfall()
                     + " &7overdraw=&6" + res.overdraw()
                     + " &7heatAdd=&c+" + res.heatAdded()
-                    + " &7rem=&f" + res.remainingEnergy() + "🗲/" + res.remainingMicro() + "mC"
+                    + " &7rem=&f" + res.remainingEnergy() + "🗲/" + res.remainingMicro() + dc.dcessentials.modules.teleportation.KeystoneLoreTokens.MICRO_ICON
                     + " &7heat=&c" + res.resultingHeat()
                     + " &7overloaded=&4" + res.overloaded()));
             return true;
@@ -347,7 +347,7 @@ public class KeystoneCommand implements CommandExecutor {
             if (profile.parkedEnergy() > 0) {
                 player.sendMessage(ColorUtil.colorize("  &8• &7Parked Energy: &#FBBF24" + profile.parkedEnergy() + " 🗲 &8(Exceeds current tier cap)"));
             }
-            player.sendMessage(ColorUtil.colorize("  &8• &7Microcharge Buffer: &#38BDF8" + profile.getMicro() + " &7/ &f1,000 mC"));
+            player.sendMessage(ColorUtil.colorize("  &8• &7Microcharge Buffer: &#38BDF8" + profile.getMicro() + " &7/ &f1,000 " + dc.dcessentials.modules.teleportation.KeystoneLoreTokens.MICRO_ICON));
             player.sendMessage(ColorUtil.colorize("  &8• &7Heat: &#EF4444" + profile.getHeat() + " &7/ &c100 🔥 &7(" + profile.getStability() + "&7)"));
             if (profile.isOverloaded()) {
                 player.sendMessage(ColorUtil.colorize("  &8• &7State: &#EF4444&lOVERLOADED &7(Cool to ≤50🔥 to unlock)"));

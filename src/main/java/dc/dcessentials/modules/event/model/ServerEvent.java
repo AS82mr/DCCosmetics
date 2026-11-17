@@ -25,7 +25,7 @@ public class ServerEvent {
     private String warpTarget = "";
     private String startCommand = "none";
     private String endCommand = "none";
-    private String rewardSummary = "Exclusive Event Tokens & Mastery XP";
+    private String rewardSummary = "Exclusive Event Tokens & Global XP";
     private String soundEffect = "UI_TOAST_CHALLENGE_COMPLETE";
 
     // Runtime state tracking

@@ -636,7 +636,7 @@ public class StatCombatListener implements Listener {
         int granted = StatCombatEngine.tryConduitMobKillRefund(killer, snap);
         if (granted > 0) {
             killer.playSound(killer.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.6f, 1.6f);
-            killer.sendActionBar(ColorUtil.colorize("<#22D3EE>⚛ Conduit Siphon: &b+" + granted + " mC"));
+            killer.sendActionBar(ColorUtil.colorize("<#22D3EE>⚛ Conduit Siphon: &b+" + granted + dc.dcessentials.modules.teleportation.KeystoneLoreTokens.MICRO_ICON));
         }
     }
 

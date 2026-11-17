@@ -97,14 +97,14 @@ items:
     slot: 31
     priority: 1
     update: true
-    display_name: "&#2ECC71&lAdapt EXP Surge"
+    display_name: "&#2ECC71&lSkill EXP Surge"
     lore:
       - "&8Event Frequency: &eEvery 3 hours"
       - "&7Duration: &f30 minutes"
       - "&7Current Status: &f%dragoncote_event_adapt_status%"
       - "&f"
       - "&7Doubles all experience gains across"
-      - "&7every Adapt skill category."
+      - "&7every Skill category."
 
   "mini_iceboat":
     material: OAK_BOAT
@@ -128,7 +128,7 @@ items:
       - "&7Return to the active realm status"
       - "&7and running mini-events."
       - "&f"
-      - "&#ABE284&l▶ &eClick to return to Page 1!"
+      - "&#ABE284▶ &eClick to return to Page 1!"
     left_click_commands:
       - "[openguimenu] events_calendar"
     right_click_commands:
@@ -141,7 +141,7 @@ items:
     lore:
       - "&7Time Left: &#FFD166%dragoncote_event_active_time%"
       - "&f"
-      - "&#ABE284&l▶ &eClick to fast-travel now (/spawn)!"
+      - "&#ABE284▶ &eClick to fast-travel now (/spawn)!"
     left_click_commands:
       - "[close]"
       - "[player] spawn"

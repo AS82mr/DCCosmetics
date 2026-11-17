@@ -12,6 +12,29 @@ import java.util.UUID;
 
 public class HeadUtil {
 
+    /** Canonical unified Back / Return to Main Menu button texture. */
+    public static final String BACK_BUTTON_TEXTURE =
+            "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDQ2NmM1YmQwNDlmNzVhYzdhYWJhZTgyY2MzZmNlNDIzMzUzMmFhNTk4NjMyZmEzYmVmYjE1YWM0MGIwMTUyNiJ9fX0=";
+
+    public static ItemStack createBackButton(String displayName, java.util.List<String> lore) {
+        ItemStack item = getCustomHead(BACK_BUTTON_TEXTURE);
+        org.bukkit.inventory.meta.ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            if (displayName != null) {
+                meta.setDisplayName(dc.dcessentials.core.util.ColorUtil.colorize(displayName));
+            }
+            if (lore != null && !lore.isEmpty()) {
+                java.util.List<String> colored = new java.util.ArrayList<>(lore.size());
+                for (String l : lore) {
+                    colored.add(dc.dcessentials.core.util.ColorUtil.colorize(l));
+                }
+                meta.setLore(colored);
+            }
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
     /**
      * Creates a Player Head with a custom Base64 texture.
      * * @param base64 The raw Base64 string or a string prefixed with "head;" or "basehead-"

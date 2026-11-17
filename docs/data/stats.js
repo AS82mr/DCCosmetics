@@ -156,7 +156,7 @@ window.WIKI_DATA.STATS_REGISTRY = [
     color: "#C084FC",
     category: "UTILITY",
     brief: "Bonus craft/brew/enchant XP & refund",
-    effect: "Grants +X% bonus Adapt XP on crafting, brewing, and enchanting actions via AdaptHook, plus X% chance to refund enchantment level cost on EnchantItemEvent.",
+    effect: "Grants +X% bonus Skill XP on crafting, brewing, and enchanting actions, plus X% chance to refund enchantment level cost on EnchantItemEvent.",
     cap: "40%",
     audience: "player"
   },
@@ -166,8 +166,8 @@ window.WIKI_DATA.STATS_REGISTRY = [
     icon: "⚛",
     color: "#22D3EE",
     category: "UTILITY",
-    brief: "Reduces mC cost & siphons charge",
-    effect: "Reduces Keystone Microcharge warp and ability costs (sharing the 70% cost-reduction cap), plus gives min(25%, X%) chance on hostile kill to siphon 25–100 mC (capped at 400 mC/min/player).",
+    brief: "Reduces ↯ cost & siphons charge",
+    effect: "Reduces Keystone Microcharge warp and ability costs (sharing the 70% cost-reduction cap), plus gives min(25%, X%) chance on hostile kill to siphon 25–100 ↯ (capped at 400 ↯/min/player).",
     cap: "40% (25% Siphon)",
     audience: "player"
   },

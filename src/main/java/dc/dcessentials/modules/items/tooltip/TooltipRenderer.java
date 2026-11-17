@@ -2,19 +2,23 @@ package dc.dcessentials.modules.items.tooltip;
 
 import dc.dccosmetics.DCCosmetics;
 import dc.dcessentials.core.util.ColorUtil;
+import dc.dcessentials.modules.items.enchant.EnchantConfigManager;
 import dc.dcessentials.modules.items.model.DCEItem;
+import dc.dcessentials.modules.items.model.ItemCategory;
 import dc.dcessentials.modules.items.model.ItemRarity;
 import dc.dcessentials.modules.items.model.ItemStat;
 import dc.dcessentials.modules.items.rarity.RarityConfigManager;
 import dc.dcessentials.modules.items.scroll.ScrollRegistry;
 import dc.dcessentials.modules.items.scroll.ScrollType;
 import dc.dcessentials.modules.items.util.FontImageUtil;
+import dc.dcessentials.modules.teleportation.KeystoneLoreTokens;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -26,6 +30,9 @@ import java.util.*;
 public class TooltipRenderer {
 
     private static final int TARGET_LINE_LENGTH = 36;
+    public static final NamespacedKey ENCHANT_SIG_KEY = DCCosmetics.getInstance() != null
+            ? new NamespacedKey(DCCosmetics.getInstance(), "dce_ench_sig")
+            : new NamespacedKey("dcessentials", "dce_ench_sig");
 
     private static String stripAllFormatting(String str) {
         if (str == null) return "";
@@ -55,17 +62,21 @@ public class TooltipRenderer {
     ) {}
 
     public static void renderItem(DCEItem dceItem, ItemStack itemStack, ScrollRegistry scrollRegistry) {
-        renderItem(dceItem, itemStack, scrollRegistry, TooltipMode.COMPACT);
+        renderItem(dceItem, itemStack, scrollRegistry, TooltipMode.COMPACT, null);
     }
 
     public static void renderItem(DCEItem dceItem, ItemStack itemStack, ScrollRegistry scrollRegistry, TooltipMode mode) {
+        renderItem(dceItem, itemStack, scrollRegistry, mode, null);
+    }
+
+    public static void renderItem(DCEItem dceItem, ItemStack itemStack, ScrollRegistry scrollRegistry, TooltipMode mode, Player viewer) {
         if (dceItem == null || itemStack == null) return;
         ItemMeta meta = itemStack.getItemMeta();
         if (meta == null) return;
 
         // Scroll / Cosmetic Scroll Enchantment Safety
-        if (dceItem.getCategory() == dc.dcessentials.modules.items.model.ItemCategory.SCROLL ||
-                dceItem.getCategory() == dc.dcessentials.modules.items.model.ItemCategory.COSMETIC_SCROLL) {
+        if (dceItem.getCategory() == ItemCategory.SCROLL ||
+                dceItem.getCategory() == ItemCategory.COSMETIC_SCROLL) {
             for (Enchantment e : new ArrayList<>(meta.getEnchants().keySet())) {
                 meta.removeEnchant(e);
             }
@@ -74,7 +85,7 @@ public class TooltipRenderer {
             itemStack.setItemMeta(meta);
         }
 
-        TooltipModel model = build(dceItem, itemStack, scrollRegistry);
+        TooltipModel model = build(dceItem, itemStack, scrollRegistry, viewer);
         if (model == null) return;
 
         meta = itemStack.getItemMeta();
@@ -83,11 +94,16 @@ public class TooltipRenderer {
         meta.lore(render(model, mode != null ? mode : TooltipMode.COMPACT));
         meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
         meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ATTRIBUTES);
+        meta.getPersistentDataContainer().set(ENCHANT_SIG_KEY, PersistentDataType.STRING, computeEnchantSignature(meta));
         applyTooltipStyle(meta, model.rarityFormat().getTooltipStyle());
         itemStack.setItemMeta(meta);
     }
 
     public static TooltipModel build(DCEItem dceItem, ItemStack itemStack, ScrollRegistry scrollRegistry) {
+        return build(dceItem, itemStack, scrollRegistry, null);
+    }
+
+    public static TooltipModel build(DCEItem dceItem, ItemStack itemStack, ScrollRegistry scrollRegistry, Player viewer) {
         if (dceItem == null || itemStack == null) return null;
         ItemMeta meta = itemStack.getItemMeta();
         if (meta == null) return null;
@@ -95,9 +111,20 @@ public class TooltipRenderer {
         ItemRarity rarity = dceItem.getRarity();
         RarityConfigManager.RarityFormat rarityFormat = RarityConfigManager.getFormat(rarity);
 
-        // 1. Display Name
-        String starGlyphs = dceItem.getStars() > 0 ? " " + "★".repeat(dceItem.getStars()) : "";
-        String styledName = ColorUtil.colorize(rarityFormat.getNameColor() + "&l" + dceItem.getDisplayName() + starGlyphs);
+        // 1. Display Name (stars render strictly on the top header badge line; native DCE items match rarity color)
+        ItemCategory category = dceItem.getCategory();
+        boolean preserveCustomColors = (category == ItemCategory.VOUCHER
+                || category == ItemCategory.COSMETIC
+                || category == ItemCategory.PET);
+        String rawTitle = dceItem.getDisplayName() != null ? dceItem.getDisplayName() : "";
+        String noTrailingStars = rawTitle.replaceAll("\\s*★+\\s*$", "").trim();
+        String styledName;
+        if (preserveCustomColors && !stripAllFormatting(noTrailingStars).equals(noTrailingStars)) {
+            styledName = ColorUtil.colorize(noTrailingStars);
+        } else {
+            String cleanName = stripAllFormatting(noTrailingStars).replaceAll("\\s*★+\\s*$", "").trim();
+            styledName = ColorUtil.colorize(rarityFormat.getNameColor() + "&l" + cleanName);
+        }
         Component nameComp = LegacyComponentSerializer.legacySection().deserialize(styledName)
                 .decoration(TextDecoration.ITALIC, false);
 
@@ -177,51 +204,26 @@ public class TooltipRenderer {
             }
         }
 
-        // 5. Enchants
+        // 5. Vanilla Enchants (strictly vanilla-only; level >= cap from enchants.yml renders &c, else &9)
         Map<Enchantment, Integer> enchants = meta.getEnchants();
         List<String> enchantTags = new ArrayList<>();
-        if (!enchants.isEmpty() && dceItem.getCategory() != dc.dcessentials.modules.items.model.ItemCategory.SCROLL
-                && dceItem.getCategory() != dc.dcessentials.modules.items.model.ItemCategory.COSMETIC_SCROLL) {
+        if (!enchants.isEmpty() && category != ItemCategory.SCROLL && category != ItemCategory.COSMETIC_SCROLL) {
             for (Map.Entry<Enchantment, Integer> entry : enchants.entrySet()) {
-                if (entry.getKey().getKey().getKey().equalsIgnoreCase("unbreaking") && entry.getValue() == 1) {
-                    continue;
-                }
-                String name = formatEnchantmentName(entry.getKey());
-                String level = toRoman(entry.getValue());
-                enchantTags.add("&9" + name + " " + level);
+                Enchantment ench = entry.getKey();
+                if (!EnchantConfigManager.isVanilla(ench)) continue;
+                int lvl = entry.getValue();
+                int configuredCap = EnchantConfigManager.getMaxLevel(ench);
+                int vanillaMax = ench.getMaxLevel();
+                String color = lvl >= configuredCap ? "&c" : "&9";
+                String name = formatEnchantmentName(ench);
+                String suffix = (lvl == 1 && vanillaMax == 1 && configuredCap == 1) ? "" : (" " + toRoman(lvl));
+                enchantTags.add(color + name + suffix);
             }
         }
 
-        // 6. Custom Lore
-        List<String> validCustomLore = new ArrayList<>();
-        if (!dceItem.getCustomLore().isEmpty()) {
-            for (String line : dceItem.getCustomLore()) {
-                if (line == null) continue;
-                String plain = stripAllFormatting(line).toLowerCase();
-                if (plain.isEmpty() || plain.contains("infusion sockets") ||
-                        plain.startsWith("✦ cosmetic:") || plain.startsWith("\u2726 cosmetic:") ||
-                        plain.endsWith(" skin") && (plain.startsWith("✦ ") || plain.startsWith("\u2726 ")) ||
-                        plain.contains("component(s)") || plain.startsWith("minecraft:")) {
-                    continue;
-                }
-                if ((dceItem.getCategory() == dc.dcessentials.modules.items.model.ItemCategory.SCROLL ||
-                        dceItem.getCategory() == dc.dcessentials.modules.items.model.ItemCategory.COSMETIC_SCROLL) &&
-                        (plain.equals("unbreaking i") || plain.equals("unbreaking 1") || plain.startsWith("unbreaking"))) {
-                    continue;
-                }
-                String lettersOnly = plain.replaceAll("[^a-z]", "");
-                if (lettersOnly.equals("common") || lettersOnly.equals("uncommon") || lettersOnly.equals("rare") ||
-                        lettersOnly.equals("epic") || lettersOnly.equals("legendary") || lettersOnly.equals("mastery") ||
-                        lettersOnly.equals("artifact")) {
-                    continue;
-                }
-                String nonSym = plain.replaceAll("[\\-_=~*·•—–―\u2500-\u257F\u00A0 ]", "").trim();
-                if (nonSym.isEmpty() && plain.length() >= 3) {
-                    continue;
-                }
-                validCustomLore.add(ColorUtil.colorize(line));
-            }
-        }
+        // 6. Custom Lore (preserves internal blank spacer lines, strips legacy framing/prose, resolves {mc:...})
+        boolean isScrollCat = (category == ItemCategory.SCROLL || category == ItemCategory.COSMETIC_SCROLL);
+        List<String> validCustomLore = sanitizeCustomLore(dceItem.getCustomLore(), isScrollCat, viewer);
 
         // 7. Sockets & Socketed Scroll Entries
         Set<ScrollType> sockets = dceItem.getAllowedSockets();
@@ -236,15 +238,12 @@ public class TooltipRenderer {
                     String scrollId = pdc.get(combatKey, PersistentDataType.STRING);
                     var scroll = scrollRegistry != null ? scrollRegistry.getScroll(scrollId) : null;
                     String tier = scroll != null && scroll.getRarity() != null ? normalizeRarity(scroll.getRarity()) : "common";
-                    String scrollBracketColor = getTierBracketColor(tier);
-                    String icon = FontImageUtil.getGlyph("scroll_combat_" + tier);
-                    socketBadges.add(scrollBracketColor + "[&f" + icon + "&r" + scrollBracketColor + "]");
+                    socketBadges.add(formatFilledSocketBadge(FontImageUtil.getGlyph("scroll_combat_" + tier), tier, rarityFormat));
                     if (scroll != null) {
                         socketedEntries.add(new SocketedEntry(scroll.getSocketDisplay(), scroll.getBrief()));
                     }
                 } else {
-                    String icon = FontImageUtil.getGlyph("scroll_combat_empty");
-                    socketBadges.add("&8[&f" + icon + "&r&8]");
+                    socketBadges.add(formatEmptySocketBadge(FontImageUtil.getGlyph("scroll_combat_empty"), rarityFormat));
                 }
             }
 
@@ -256,15 +255,12 @@ public class TooltipRenderer {
                             ? DCCosmetics.getInstance().getTemplateRegistry().getTemplate(cosmeticId)
                             : null;
                     String tier = template != null && template.getRarity() != null ? normalizeRarity(template.getRarity()) : "common";
-                    String scrollBracketColor = getTierBracketColor(tier);
-                    String icon = FontImageUtil.getGlyph("scroll_cosmetic_" + tier);
-                    socketBadges.add(scrollBracketColor + "[&f" + icon + "&r" + scrollBracketColor + "]");
+                    socketBadges.add(formatFilledSocketBadge(FontImageUtil.getGlyph("scroll_cosmetic_" + tier), tier, rarityFormat));
                     if (template != null) {
                         socketedEntries.add(new SocketedEntry("<#D946EF>✦ " + template.getItemName(), "Cosmetic Skin Infusion"));
                     }
                 } else {
-                    String icon = FontImageUtil.getGlyph("scroll_cosmetic_empty");
-                    socketBadges.add("&8[&f" + icon + "&r&8]");
+                    socketBadges.add(formatEmptySocketBadge(FontImageUtil.getGlyph("scroll_cosmetic_empty"), rarityFormat));
                 }
             }
 
@@ -277,15 +273,12 @@ public class TooltipRenderer {
                         String scrollId = ksScrollIds.get(i);
                         var scroll = scrollRegistry != null ? scrollRegistry.getScroll(scrollId) : null;
                         String tier = scroll != null && scroll.getRarity() != null ? normalizeRarity(scroll.getRarity()) : "common";
-                        String scrollBracketColor = getTierBracketColor(tier);
-                        String icon = FontImageUtil.getGlyph("scroll_keystone_" + tier);
-                        socketBadges.add(scrollBracketColor + "[&f" + icon + "&r" + scrollBracketColor + "]");
+                        socketBadges.add(formatFilledSocketBadge(FontImageUtil.getGlyph("scroll_keystone_" + tier), tier, rarityFormat));
                         if (scroll != null) {
                             socketedEntries.add(new SocketedEntry(scroll.getSocketDisplay(), scroll.getBrief()));
                         }
                     } else {
-                        String icon = FontImageUtil.getGlyph("scroll_keystone_empty");
-                        socketBadges.add("&8[&f" + icon + "&r&8]");
+                        socketBadges.add(formatEmptySocketBadge(FontImageUtil.getGlyph("scroll_keystone_empty"), rarityFormat));
                     }
                 }
             }
@@ -297,15 +290,12 @@ public class TooltipRenderer {
                     String scrollId = pdc.get(masteryKey, PersistentDataType.STRING);
                     var scroll = scrollRegistry != null ? scrollRegistry.getScroll(scrollId) : null;
                     String tier = scroll != null && scroll.getRarity() != null ? normalizeRarity(scroll.getRarity()) : "common";
-                    String scrollBracketColor = getTierBracketColor(tier);
-                    String icon = FontImageUtil.getGlyph("scroll_mastery_" + tier);
-                    socketBadges.add(scrollBracketColor + "[&f" + icon + "&r" + scrollBracketColor + "]");
+                    socketBadges.add(formatFilledSocketBadge(FontImageUtil.getGlyph("scroll_mastery_" + tier), tier, rarityFormat));
                     if (scroll != null) {
                         socketedEntries.add(new SocketedEntry(scroll.getSocketDisplay(), scroll.getBrief()));
                     }
                 } else {
-                    String icon = FontImageUtil.getGlyph("scroll_mastery_empty");
-                    socketBadges.add("&8[&f" + icon + "&r&8]");
+                    socketBadges.add(formatEmptySocketBadge(FontImageUtil.getGlyph("scroll_mastery_empty"), rarityFormat));
                 }
             }
         }
@@ -381,31 +371,16 @@ public class TooltipRenderer {
         List<String> socketBadges = model.socketBadges();
         List<String> enchantTags = model.enchantTags();
         List<String> validCustomLore = model.customLoreLines();
-        String divider = model.rarityFormat().getDivider();
 
         if (!socketBadges.isEmpty()) {
-            boolean hasPerks = (itemPerks != null && !itemPerks.isEmpty()) || setBonus != null;
-            boolean hasContentAbove = model.hasStats() || hasPerks || model.skinLine() != null;
-            if (hasContentAbove) {
-                lore.add(ColorUtil.colorize(divider));
-            }
+            addSpacerIfNeeded(lore);
 
-            long nonZeroStats = model.stats().values().stream().filter(v -> v > 0.0).count();
-            boolean denseExpanded = expanded && nonZeroStats >= 6;
-            if (!denseExpanded) {
-                lore.add("");
-            }
-
-            StringBuilder row = new StringBuilder("  ");
+            StringBuilder row = new StringBuilder("§8§m=§r ");
             for (int i = 0; i < socketBadges.size(); i++) {
-                if (i > 0) row.append("  ");
+                if (i > 0) row.append(" ");
                 row.append(socketBadges.get(i));
             }
             lore.add(ColorUtil.colorize(row.toString()));
-
-            if (!denseExpanded || !model.socketedEntries().isEmpty()) {
-                lore.add("");
-            }
 
             if (expanded && !model.socketedEntries().isEmpty()) {
                 for (SocketedEntry entry : model.socketedEntries()) {
@@ -419,50 +394,48 @@ public class TooltipRenderer {
                     }
                 }
             }
-
-            boolean hasContentBelow = !validCustomLore.isEmpty() || !enchantTags.isEmpty();
-            if (hasContentBelow) {
-                lore.add(ColorUtil.colorize(divider));
-            }
         }
 
         if (!enchantTags.isEmpty()) {
-            if (socketBadges.isEmpty()) {
-                lore.add("");
-            }
-            if (enchantTags.size() <= 3) {
-                for (String tag : enchantTags) {
-                    lore.add(ColorUtil.colorize(tag));
-                }
-            } else {
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < enchantTags.size(); i++) {
-                    if (sb.length() > 0) sb.append("&7, ");
-                    sb.append(enchantTags.get(i));
-                    if ((i + 1) % 3 == 0 || i == enchantTags.size() - 1) {
-                        lore.add(ColorUtil.colorize(sb.toString()));
-                        sb = new StringBuilder();
+            addSpacerIfNeeded(lore);
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < enchantTags.size(); i++) {
+                if (sb.length() > 0) sb.append("&7, ");
+                sb.append(enchantTags.get(i));
+                boolean endOfRow = (i + 1) % 3 == 0;
+                boolean lastOverall = (i == enchantTags.size() - 1);
+                if (endOfRow || lastOverall) {
+                    if (endOfRow && !lastOverall) {
+                        sb.append("&7,");
                     }
+                    lore.add(ColorUtil.colorize(sb.toString()));
+                    sb.setLength(0);
                 }
             }
         }
 
         if (!validCustomLore.isEmpty()) {
-            if (socketBadges.isEmpty() && enchantTags.isEmpty()) {
-                lore.add("");
-            }
+            addSpacerIfNeeded(lore);
             lore.addAll(validCustomLore);
         }
 
         if (!model.rarityFormat().getFooter().isEmpty()) {
-            if (!validCustomLore.isEmpty() || !enchantTags.isEmpty()) {
-                lore.add("");
-            }
+            addSpacerIfNeeded(lore);
             for (String fLine : model.rarityFormat().getFooter()) {
                 lore.add(ColorUtil.colorize(fLine));
             }
         }
 
+        return toComponentLore(lore);
+    }
+
+    private static void addSpacerIfNeeded(List<String> lore) {
+        if (lore != null && !lore.isEmpty() && !lore.get(lore.size() - 1).trim().isEmpty()) {
+            lore.add("");
+        }
+    }
+
+    private static List<Component> toComponentLore(List<String> lore) {
         List<Component> componentLore = new ArrayList<>(lore.size());
         for (String line : lore) {
             if (line == null || line.trim().isEmpty()) {
@@ -477,31 +450,70 @@ public class TooltipRenderer {
         return componentLore;
     }
 
+    private static List<String> sanitizeCustomLore(List<String> rawLines, boolean isScroll, Player viewer) {
+        List<String> out = new ArrayList<>();
+        if (rawLines == null || rawLines.isEmpty()) return out;
+
+        for (String raw : rawLines) {
+            if (raw == null) continue;
+            String resolvedMc = KeystoneLoreTokens.resolveMcTokens(raw, viewer);
+            String plain = stripAllFormatting(resolvedMc).toLowerCase(Locale.ROOT);
+
+            if (plain.isEmpty()) {
+                if (!out.isEmpty() && !out.get(out.size() - 1).isEmpty()) {
+                    out.add("");
+                }
+                continue;
+            }
+
+            if (plain.contains("infusion sockets")
+                    || plain.startsWith("✦ cosmetic:") || plain.startsWith("\u2726 cosmetic:")
+                    || (plain.endsWith(" skin") && (plain.startsWith("✦ ") || plain.startsWith("\u2726 ")))
+                    || plain.contains("component(s)") || plain.startsWith("minecraft:")
+                    || (plain.startsWith(":") && plain.endsWith(":"))
+                    || plain.startsWith("rarity:") || plain.startsWith("ʀᴀʀɪᴛʏ:")
+                    || plain.startsWith("type:") || plain.startsWith("ᴛʏᴘᴇ:")) {
+                continue;
+            }
+            if (isScroll && (plain.equals("unbreaking i") || plain.equals("unbreaking 1") || plain.startsWith("unbreaking"))) {
+                continue;
+            }
+            String lettersOnly = plain.replaceAll("[^a-z]", "");
+            if (lettersOnly.equals("common") || lettersOnly.equals("uncommon") || lettersOnly.equals("rare")
+                    || lettersOnly.equals("epic") || lettersOnly.equals("legendary") || lettersOnly.equals("mastery")
+                    || lettersOnly.equals("artifact") || lettersOnly.equals("mythic")) {
+                continue;
+            }
+            String nonSym = plain.replaceAll("[\\-_=~*·•—–―\u2500-\u257F\u00A0 ]", "").trim();
+            if (nonSym.isEmpty() && plain.length() >= 3) {
+                continue;
+            }
+            out.add(ColorUtil.colorize(resolvedMc));
+        }
+
+        while (!out.isEmpty() && out.get(out.size() - 1).isEmpty()) {
+            out.remove(out.size() - 1);
+        }
+        return out;
+    }
+
+    private static String formatFilledSocketBadge(String icon, String tier, RarityConfigManager.RarityFormat itemFormat) {
+        ItemRarity scrollRarity = ItemRarity.fromString(normalizeRarity(tier));
+        String color = RarityConfigManager.getFormat(scrollRarity).getBracketColor();
+        return color + itemFormat.getBracketLeft() + "&f" + icon + "&r" + color + itemFormat.getBracketRight();
+    }
+
+    private static String formatEmptySocketBadge(String icon, RarityConfigManager.RarityFormat itemFormat) {
+        String color = itemFormat.getEmptyBracketColor();
+        return color + itemFormat.getBracketLeft() + "&f" + icon + "&r" + color + itemFormat.getBracketRight();
+    }
+
     private static String createDotLeader(String left, String right, String valColor) {
         int leftLen = ChatColor.stripColor(ColorUtil.colorize(left)).length();
         int rightLen = ChatColor.stripColor(ColorUtil.colorize(right)).length();
         int dotCount = Math.max(3, TARGET_LINE_LENGTH - leftLen - rightLen);
         String dots = "·".repeat(dotCount);
         return left + " &8" + dots + " " + valColor + right;
-    }
-
-    private static String getTierBracketColor(String tier) {
-        if (tier == null) return "&7";
-        switch (tier.toLowerCase()) {
-            case "uncommon": return "<#55FF55>";
-            case "rare": return "<#0098FF>";
-            case "epic": return "<#A855F7>";
-            case "legendary": return "<#FFD700>";
-            case "mastery": return "<#FF5555>";
-            case "common":
-            default:
-                return "&7";
-        }
-    }
-
-    private static String getRarityBracketColor(ItemRarity rarity) {
-        if (rarity == null) return "&7";
-        return RarityConfigManager.getDefaultBracketColor(rarity);
     }
 
     private static String normalizeRarity(String rarityStr) {
@@ -560,6 +572,43 @@ public class TooltipRenderer {
         return result.toString();
     }
 
+    public static String computeEnchantSignature(ItemMeta meta) {
+        if (meta == null || !meta.hasEnchants()) return "";
+        Map<Enchantment, Integer> enchants = meta.getEnchants();
+        if (enchants.isEmpty()) return "";
+        List<String> parts = new ArrayList<>(enchants.size());
+        for (Map.Entry<Enchantment, Integer> e : enchants.entrySet()) {
+            if (!EnchantConfigManager.isVanilla(e.getKey())) continue;
+            parts.add(e.getKey().getKey().getKey() + ":" + e.getValue());
+        }
+        if (parts.isEmpty()) return "";
+        Collections.sort(parts);
+        return String.join(",", parts);
+    }
+
+    public static boolean hasMatchingEnchantSignature(ItemMeta meta) {
+        if (meta == null) return true;
+        String actual = computeEnchantSignature(meta);
+        String stored = meta.getPersistentDataContainer().get(ENCHANT_SIG_KEY, PersistentDataType.STRING);
+        if (stored == null) {
+            return false;
+        }
+        return actual.equals(stored);
+    }
+
+    public static boolean hasMatchingTooltipStyle(ItemMeta meta, String expectedStyleKey) {
+        if (meta == null || expectedStyleKey == null || expectedStyleKey.isEmpty()) return true;
+        try {
+            NamespacedKey expected = NamespacedKey.fromString(expectedStyleKey);
+            if (expected == null) return true;
+            Method m = meta.getClass().getMethod("getTooltipStyle");
+            Object current = m.invoke(meta);
+            return expected.equals(current);
+        } catch (Throwable ignored) {
+            return true;
+        }
+    }
+
     public static void applyTooltipStyle(ItemMeta meta, String styleKey) {
         if (meta == null || styleKey == null) return;
         try {
@@ -581,42 +630,41 @@ public class TooltipRenderer {
         if (rarity == null) rarity = ItemRarity.COMMON;
         RarityConfigManager.RarityFormat format = RarityConfigManager.getFormat(rarity);
 
-        // 1. Display Name
-        String styledName = ColorUtil.colorize(format.getNameColor() + "&l" + displayName);
+        // 1. Display Name (scroll names always match their rarity color, no duplicate stars)
+        String cleanName = stripAllFormatting(displayName).replaceAll("\\s*★+\\s*$", "").trim();
+        String styledName = ColorUtil.colorize(format.getNameColor() + "&l" + cleanName);
         Component nameComp = LegacyComponentSerializer.legacySection().deserialize(styledName)
                 .decoration(TextDecoration.ITALIC, false);
         meta.displayName(nameComp);
 
-        // 2. Build Lore
+        // 2. Build Unified Option A Scroll Frame (top glyph + 1 gradient header, sanitized body, 1 gradient footer)
         List<String> lore = new ArrayList<>();
-
-        // Header: Rarity glyph
         String rarityTag = FontImageUtil.getGlyph(format.getTag());
         if (rarityTag.isEmpty() || rarityTag.startsWith(":")) {
             rarityTag = FontImageUtil.getGlyph(rarity.name());
         }
         String header = "&f" + (rarityTag.isEmpty() ? "&8[" + rarity.getDisplayName() + "&8]" : rarityTag);
         lore.add(ColorUtil.colorize(header));
-        lore.add("");
-
-        if (customLore != null && !customLore.isEmpty()) {
-            for (String line : customLore) {
-                lore.add(ColorUtil.colorize(line));
+        if (!format.getHeader().isEmpty()) {
+            for (String hLine : format.getHeader()) {
+                lore.add(ColorUtil.colorize(hLine));
             }
         }
 
-        List<Component> componentLore = new ArrayList<>(lore.size());
-        for (String line : lore) {
-            if (line == null || line.trim().isEmpty()) {
-                componentLore.add(Component.text(" "));
-                continue;
-            }
-            String resolved = FontImageUtil.replaceFontImages(line);
-            Component comp = LegacyComponentSerializer.legacySection().deserialize(resolved)
-                    .decoration(TextDecoration.ITALIC, false);
-            componentLore.add(comp);
+        List<String> validLore = sanitizeCustomLore(customLore, true, null);
+        if (!validLore.isEmpty()) {
+            addSpacerIfNeeded(lore);
+            lore.addAll(validLore);
         }
-        meta.lore(componentLore);
+
+        if (!format.getFooter().isEmpty()) {
+            addSpacerIfNeeded(lore);
+            for (String fLine : format.getFooter()) {
+                lore.add(ColorUtil.colorize(fLine));
+            }
+        }
+
+        meta.lore(toComponentLore(lore));
 
         // Strip any legacy enchantments from scroll to prevent 'Unbreaking I' text
         for (Enchantment e : new ArrayList<>(meta.getEnchants().keySet())) {

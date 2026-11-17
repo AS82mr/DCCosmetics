@@ -410,9 +410,9 @@
         statOut.innerHTML = `
           <span>Surge Cap: <code>+${cappedSurge}%</code> ${rawSurge > 100 ? '<small>(hard-capped)</small>' : ''}</span>
           <span>Resonance: <code>${effRes}</code></span>
-          <span>mC Reduction: <code>-${totalRedPct}%</code> <small>(cap 70%)</small></span>
-          <span>Void Bounce: <code>${effBounce} mC</code></span>
-          <span>Sonic Boom: <code>${effBoom} mC</code></span>
+          <span>↯ Reduction: <code>-${totalRedPct}%</code> <small>(cap 70%)</small></span>
+          <span>Void Bounce: <code>${effBounce}↯</code></span>
+          <span>Sonic Boom: <code>${effBoom}↯</code></span>
         `;
       };
       ['cWepSurge', 'cPetSurge', 'cAccSurge', 'cResBase', 'cResCount', 'cConduit', 'cFlux', 'cTierPct'].forEach(id => {
@@ -450,7 +450,7 @@
 
         ksOut.innerHTML = `
           <span>Charges Cracked: <code>${cracked}</code></span>
-          <span>Remaining: <code>${curE}🗲 | ${curM} mC</code></span>
+          <span>Remaining: <code>${curE}🗲 | ${curM}↯</code></span>
           <span>Mode: <span class="tag ${overdraw ? 'red' : 'green'}">${overdraw ? 'OVERDRAW' : 'CHARGED'}</span></span>
           <span>Heat Added: <code>+${addedHeat} 🔥</code></span>
         `;

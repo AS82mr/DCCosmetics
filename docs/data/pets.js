@@ -25,6 +25,6 @@ window.WIKI_DATA.SKILL_DOMAINS_REGISTRY = [
   { category: "FORAGING", domains: "FORAGING", adaptSkills: "axes (50% log/combat split)", audience: "player" },
   { category: "FISHING", domains: "FISHING", adaptSkills: "seaborne (100%)", audience: "player" },
   { category: "ALCHEMY", domains: "ALCHEMY", adaptSkills: "brewing (100%), crafting (50%)", audience: "player" },
-  { category: "ENCHANTING", domains: "ARCANE", adaptSkills: "enchanting (100%), rift (100%), tragoul (50%), chronos (50%)", audience: "player" },
-  { category: "OMNI", domains: "All 12 SkillDomains", adaptSkills: "Receives 100% XP from every Adapt skill including MOBILITY & UTILITY.", audience: "player" }
+  { category: "ENCHANTING", domains: "ARCANE", adaptSkills: "enchanting (100%), rift (100%), tragoul (50%), chronos (50%), golemancy (50% ARCANE / 50% UTILITY)", audience: "player" },
+  { category: "OMNI", domains: "All 12 SkillDomains", adaptSkills: "Receives 100% XP from every Skill including MOBILITY & UTILITY.", audience: "player" }
 ];

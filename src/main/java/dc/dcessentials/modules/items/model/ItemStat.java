@@ -82,13 +82,13 @@ public enum ItemStat {
     REFINEMENT("Refinement", "✧", "<#C084FC>", StatCategory.UTILITY,
             "Artisan Efficiency & Insight",
             "Bonus craft/brew/enchant XP & refund",
-            "+X% Adapt XP from crafting, brewing, and enchanting, plus X% chance to refund enchantment level costs.",
+            "+X% Skill XP from crafting, brewing, and enchanting, plus X% chance to refund enchantment level costs.",
             40.0, 40.0, 1),
 
     CONDUIT("Conduit", "⚛", "<#22D3EE>", StatCategory.UTILITY,
             "Tesseract Channeling & Siphon",
-            "Reduces mC cost & siphons charge",
-            "-X% Microcharge cost for abilities and warps, plus X% chance on mob kill to siphon 25-100 mC.",
+            "Reduces ↯ cost & siphons charge",
+            "-X% Microcharge cost for abilities and warps, plus X% chance on mob kill to siphon 25-100 ↯.",
             40.0, 40.0, 1),
 
     THERMAL("Thermal", "❄", "<#7DD3FC>", StatCategory.UTILITY,

@@ -301,7 +301,7 @@ public class ProfileGUI implements DceGui {
                     lore.add(formatText("&7Attuned Tier: " + itemTier.getDisplayName() + " &8(" + itemTier.getKeystoneName() + "&8)"));
                     lore.add(formatText("&7Energy: &f" + energy + "&7/&f" + effMax + " &#38BDF8🗲"
                             + (parked > 0 ? " &8(&e+" + parked + " Parked&8)" : "")));
-                    lore.add(formatText("&7Buffer: &8[" + microBar + "&8] &#38BDF8" + micro + "&7/1000 mC"));
+                    lore.add(formatText("&7Buffer: &8[" + microBar + "&8] &#38BDF8" + micro + "&7/1000 &#38BDF8" + KeystoneLoreTokens.MICRO_ICON));
                     lore.add(formatText("&7Heat: &#EF4444" + heat + "&7/100 🔥 &7(" + stability + "&7)"));
                     lore.add(formatText("&7Sockets: &f" + sockets.size() + "&7/&f" + itemTier.getSockets()));
                     for (ScrollModel sm : sockets) {

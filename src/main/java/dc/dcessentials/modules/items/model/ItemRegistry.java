@@ -1079,7 +1079,23 @@ public class ItemRegistry {
                     || chkPdc.has(ItemTrackerManager.LAST_USER_NAME_KEY, PersistentDataType.STRING);
         }
 
-        if (currentVer >= master.getVersion() && !headNeedsUpdate && !hasStaleUniqueKeys) return false; // Already up to date
+        ItemRarity effectiveRarity = master.getRarity();
+        if (master.getCategory() == ItemCategory.PET && item.hasItemMeta()) {
+            String petRarityStr = item.getItemMeta().getPersistentDataContainer().get(PET_RARITY_KEY, PersistentDataType.STRING);
+            if (petRarityStr != null && !petRarityStr.isBlank()) {
+                effectiveRarity = ItemRarity.fromString(petRarityStr);
+            }
+        }
+        String expectedStyle = dc.dcessentials.modules.items.rarity.RarityConfigManager.getFormat(effectiveRarity).getTooltipStyle();
+        boolean styleNeedsUpdate = item.hasItemMeta() && !TooltipRenderer.hasMatchingTooltipStyle(item.getItemMeta(), expectedStyle);
+        boolean isScrollOrPet = master.getCategory() == ItemCategory.SCROLL
+                || master.getCategory() == ItemCategory.COSMETIC_SCROLL
+                || master.getCategory() == ItemCategory.PET;
+        boolean enchantsNeedUpdate = !isScrollOrPet
+                && item.hasItemMeta()
+                && !TooltipRenderer.hasMatchingEnchantSignature(item.getItemMeta());
+
+        if (currentVer >= master.getVersion() && !headNeedsUpdate && !hasStaleUniqueKeys && !styleNeedsUpdate && !enchantsNeedUpdate) return false; // Already up to date
 
         // 1. Material Hot-Swap
         if (item.getType() != master.getMaterial()) {
@@ -1101,7 +1117,9 @@ public class ItemRegistry {
             PersistentDataContainer pdc = meta.getPersistentDataContainer();
             pdc.set(VERSION_KEY, PersistentDataType.INTEGER, master.getVersion());
             pdc.set(CATEGORY_KEY, PersistentDataType.STRING, master.getCategory().name());
-            pdc.set(RARITY_KEY, PersistentDataType.STRING, master.getRarity().name());
+            if (master.getCategory() != ItemCategory.PET) {
+                pdc.set(RARITY_KEY, PersistentDataType.STRING, master.getRarity().name());
+            }
             if (stackable) {
                 pdc.remove(UUID_KEY);
                 pdc.remove(ItemTrackerManager.INSTANCE_UUID_KEY);
@@ -1120,7 +1138,17 @@ public class ItemRegistry {
         }
 
         // 2. Re-render Tooltip
-        TooltipRenderer.renderItem(master, item, scrollRegistry);
+        if (master.getCategory() == ItemCategory.SCROLL
+                || master.getCategory() == ItemCategory.COSMETIC_SCROLL
+                || master.getCategory() == ItemCategory.PET) {
+            ItemMeta keepMeta = item.getItemMeta();
+            if (keepMeta != null) {
+                TooltipRenderer.applyTooltipStyle(keepMeta, expectedStyle);
+                item.setItemMeta(keepMeta);
+            }
+        } else {
+            TooltipRenderer.renderItem(master, item, scrollRegistry);
+        }
         return true;
     }
 

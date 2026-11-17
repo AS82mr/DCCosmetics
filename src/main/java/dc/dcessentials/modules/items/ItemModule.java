@@ -1,6 +1,7 @@
 package dc.dcessentials.modules.items;
 
 import dc.dccosmetics.DCCosmetics;
+import dc.dcessentials.modules.items.enchant.EnchantConfigManager;
 import dc.dcessentials.modules.items.gather.GatheringBonusService;
 import dc.dcessentials.modules.items.gather.PlacedBlockTracker;
 import dc.dcessentials.modules.items.gui.ItemBrowserGUI;
@@ -97,6 +98,7 @@ public class ItemModule {
 
         // Load configurations
         RarityConfigManager.load();
+        EnchantConfigManager.load();
         scrollRegistry.loadScrolls();
         itemRegistry.loadItems();
 
@@ -139,6 +141,7 @@ public class ItemModule {
 
     public void reload() {
         RarityConfigManager.load();
+        EnchantConfigManager.load();
         scrollRegistry.loadScrolls();
         itemRegistry.loadItems();
         if (statAggregator != null) {

@@ -254,11 +254,12 @@ public class PetRegistry {
             stack.setItemMeta(meta);
         }
 
+        String rarityColor = dc.dcessentials.modules.items.rarity.RarityConfigManager.getFormat(effRarity).getNameColor();
         DCEItem tempDce = new DCEItem(
                 "pet_" + spec.getId(),
                 1,
                 Material.PLAYER_HEAD,
-                "&7Lv " + clampedLevel + " " + effRarity.getColorHex() + spec.getDisplayName(),
+                "&7Lv " + clampedLevel + " " + rarityColor + "&l" + spec.getDisplayName(),
                 effRarity,
                 ItemCategory.PET
         );

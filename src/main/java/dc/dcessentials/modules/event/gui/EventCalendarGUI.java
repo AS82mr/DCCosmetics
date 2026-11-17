@@ -86,7 +86,7 @@ public class EventCalendarGUI implements Listener {
         if (cycle != null) {
             List<String> cycleLore = new ArrayList<>();
             cycleLore.add("§8Dimension: §f" + cycle.getWorldName());
-            cycleLore.add("§8Status: " + (eventManager.isEvacuating() ? "§c§lEVACUATING (§e" + eventManager.getCycleSecondsRemaining() + "s§c)" : "§a§lACTIVE REALM"));
+            cycleLore.add("§8Status: " + (eventManager.isEvacuating() ? "§cEvacuating (§e" + eventManager.getCycleSecondsRemaining() + "s§c)" : "§aActive Realm"));
             cycleLore.add("§8Time Remaining: §e" + eventManager.getFormattedCycleTimeRemaining());
             cycleLore.add(" ");
             cycleLore.add("§6§lDimensional Perks:");
@@ -111,7 +111,7 @@ public class EventCalendarGUI implements Listener {
             ServerEvent me = minis.get(i);
             List<String> lore = new ArrayList<>();
             lore.add("§8Category: §fMini-Event");
-            lore.add("§8Status: " + (me.isRunning() ? "§a§lACTIVE NOW" : "§7Waiting"));
+            lore.add("§8Status: " + (me.isRunning() ? "§aActive Now" : "§7Waiting"));
             lore.add(me.isRunning() ? "§8Time Left: §e" + me.getFormattedRemainingTime() : "§8Starts in: §e" + me.getFormattedUntilStartTime());
             lore.add("§8Duration: §f" + me.getDurationMinutes() + " mins");
             lore.add("§8Rewards: §6" + me.getRewardSummary());
@@ -171,7 +171,7 @@ public class EventCalendarGUI implements Listener {
             lore.add("§8Cycle Slot: §f#" + (i + 1));
             lore.add("§8World: §f" + se.getWorldName());
             lore.add("§8Standard Duration: §f" + se.getDurationMinutes() + " mins");
-            lore.add("§8Status: " + (isCurrent ? "§a§lCURRENTLY ACTIVE" : "§7Queued"));
+            lore.add("§8Status: " + (isCurrent ? "§aCurrently Active" : "§7Queued"));
             if (isCurrent) {
                 lore.add("§8Time Remaining: §e" + eventManager.getFormattedCycleTimeRemaining());
             }
@@ -191,7 +191,7 @@ public class EventCalendarGUI implements Listener {
             ServerEvent me = minis.get(i);
             List<String> lore = new ArrayList<>();
             lore.add("§8Type: §eScheduled Event");
-            lore.add("§8Status: " + (me.isRunning() ? "§a§lACTIVE NOW" : "§7Queued"));
+            lore.add("§8Status: " + (me.isRunning() ? "§aActive Now" : "§7Queued"));
             lore.add(me.isRunning() ? "§8Time Left: §e" + me.getFormattedRemainingTime() : "§8Starts in: §e" + me.getFormattedUntilStartTime());
             lore.add("§8Duration: §f" + me.getDurationMinutes() + " mins");
             lore.add("§8Interval: §fEvery " + (me.getIntervalMinutes() / 60) + " hours");

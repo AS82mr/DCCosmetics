@@ -329,7 +329,7 @@ public class NpcDialogueEngine {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "dce givexp " + player.getName() + " 15");
             int metCount = getMetCount(player);
             player.sendMessage(DragoncoteColor.PREFIX_INFO + "Personnel Dossier Unlocked: §f" + c.getShortName() +
-                    " §7(§a+$500 §7| §e+15 Mastery XP §7| §f" + metCount + "/" + registry.getAllCharacters().size() + " Met§7)");
+                    " §7(§a+$500 §7| §e+15 Global XP §7| §f" + metCount + "/" + registry.getAllCharacters().size() + " Met§7)");
             player.playSound(player.getLocation(), Sound.BLOCK_VAULT_INSERT_ITEM, 0.9f, 1.6f);
         }
 

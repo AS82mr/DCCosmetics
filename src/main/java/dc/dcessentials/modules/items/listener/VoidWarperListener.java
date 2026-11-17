@@ -383,7 +383,7 @@ public class VoidWarperListener implements Listener {
         if (res.overdraw()) {
             return " &8| &c&lOVERDRAW +" + res.heatAdded() + " 🔥";
         }
-        return " &8| &#38BDF8-" + res.effectiveCostMicro() + " mC";
+        return " &8| &#38BDF8-" + res.effectiveCostMicro() + dc.dcessentials.modules.teleportation.KeystoneLoreTokens.MICRO_ICON;
     }
 
     private void handleSonicBoomCharge(Player player) {

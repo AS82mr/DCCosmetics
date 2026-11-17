@@ -122,7 +122,7 @@ public class EventManager implements Listener {
                     se.setStartCommand(cs.getString("start_command", "none"));
                     se.setEndCommand(cs.getString("end_command", "none"));
                     se.setSoundEffect(cs.getString("sound", "UI_TOAST_CHALLENGE_COMPLETE"));
-                    se.setRewardSummary(cs.getString("reward_summary", "Seasonal Tokens & Mastery XP"));
+                    se.setRewardSummary(cs.getString("reward_summary", "Seasonal Tokens & Global XP"));
                     se.setLore(cs.getStringList("lore"));
                     se.setPerks(cs.getStringList("perks"));
 
@@ -271,9 +271,9 @@ public class EventManager implements Listener {
                 "&c• Direct warp via &f/warp colosseum"
         ));
 
-        // Adapt EXP Surge
-        def.set("mini_events.adapt_exp_surge.title", "&a&lAdapt EXP Surge");
-        def.set("mini_events.adapt_exp_surge.subtitle", "&22x Skill Mastery Across the Realm");
+        // Skill EXP Surge
+        def.set("mini_events.adapt_exp_surge.title", "&a&lSkill EXP Surge");
+        def.set("mini_events.adapt_exp_surge.subtitle", "&22x Skill Experience Across the Realm");
         def.set("mini_events.adapt_exp_surge.icon", "EXPERIENCE_BOTTLE");
         def.set("mini_events.adapt_exp_surge.custom_model_data", 0);
         def.set("mini_events.adapt_exp_surge.duration_minutes", 30);
@@ -282,14 +282,14 @@ public class EventManager implements Listener {
         def.set("mini_events.adapt_exp_surge.start_command", "none");
         def.set("mini_events.adapt_exp_surge.end_command", "none");
         def.set("mini_events.adapt_exp_surge.sound", "ENTITY_EXPERIENCE_ORB_PICKUP");
-        def.set("mini_events.adapt_exp_surge.reward_summary", "Double Experience for all Adapt Skills");
+        def.set("mini_events.adapt_exp_surge.reward_summary", "Double Experience for all Skills");
         def.set("mini_events.adapt_exp_surge.lore", Arrays.asList(
                 "&7An arcane surge energizes the island ley lines.",
-                "&7Earn double experience towards all Adapt skills",
+                "&7Earn double experience towards all Skills",
                 "&7including Mining, Combat, Woodcutting, and Foraging."
         ));
         def.set("mini_events.adapt_exp_surge.perks", Arrays.asList(
-                "&a• 2x Multiplier on all Adapt skill gains",
+                "&a• 2x Multiplier on all Skill gains",
                 "&a• Applies across all dimensions automatically"
         ));
 

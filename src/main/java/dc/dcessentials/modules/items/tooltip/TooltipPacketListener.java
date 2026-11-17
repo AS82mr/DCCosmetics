@@ -12,6 +12,7 @@ import dc.dccosmetics.DCCosmetics;
 import dc.dcessentials.modules.items.model.DCEItem;
 import dc.dcessentials.modules.items.model.ItemCategory;
 import dc.dcessentials.modules.items.model.ItemRegistry;
+import dc.dcessentials.modules.items.rarity.RarityConfigManager;
 import dc.dcessentials.modules.items.scroll.ScrollRegistry;
 import dc.dcessentials.modules.teleportation.KeystoneDetector;
 import dc.dcessentials.modules.teleportation.KeystoneLoreTokens;
@@ -194,6 +195,29 @@ public class TooltipPacketListener {
         TooltipMode mode = modeService.getEffectiveMode(viewer.getUniqueId());
         boolean isKeystone = KeystoneDetector.isKeystone(original);
         boolean isDce = itemRegistry.isDCEItem(original);
+        String itemId = isDce ? itemRegistry.getItemId(original) : null;
+        DCEItem dceItem = itemId != null ? itemRegistry.getItem(itemId) : null;
+        dc.dcessentials.modules.items.model.ItemRarity effectiveRarity = dceItem != null ? dceItem.getRarity() : null;
+        if (dceItem != null && dceItem.getCategory() == ItemCategory.PET && original.hasItemMeta()) {
+            String petRarityStr = original.getItemMeta().getPersistentDataContainer()
+                    .get(ItemRegistry.PET_RARITY_KEY, org.bukkit.persistence.PersistentDataType.STRING);
+            if (petRarityStr != null && !petRarityStr.isBlank()) {
+                effectiveRarity = dc.dcessentials.modules.items.model.ItemRarity.fromString(petRarityStr);
+            }
+        }
+        String expectedStyle = effectiveRarity != null
+                ? RarityConfigManager.getFormat(effectiveRarity).getTooltipStyle()
+                : null;
+        boolean isScroll = dceItem != null && (dceItem.getCategory() == ItemCategory.SCROLL
+                || dceItem.getCategory() == ItemCategory.COSMETIC_SCROLL);
+        boolean isPet = dceItem != null && dceItem.getCategory() == ItemCategory.PET;
+        boolean needStyleHeal = dceItem != null
+                && expectedStyle != null
+                && !TooltipRenderer.hasMatchingTooltipStyle(original.getItemMeta(), expectedStyle);
+        boolean needEnchantHeal = dceItem != null
+                && !isScroll
+                && !isPet
+                && !TooltipRenderer.hasMatchingEnchantSignature(original.getItemMeta());
         boolean needExpanded = mode == TooltipMode.EXPANDED && isDce;
         // Fallback: if an item accidentally had EXPANDED lore baked onto its server ItemStack
         // (e.g. via Creative inventory packet writeback), re-compact it on the wire in COMPACT mode.
@@ -202,20 +226,28 @@ public class TooltipPacketListener {
         // In COMPACT mode, Keystone lore tokens are already baked directly onto the server-side
         // ItemStack by KeystoneLoreTokens. Avoiding wire-only mutation in COMPACT mode ensures
         // 100% client-server HashedStack parity when moving Keystones in inventory.
-        if (!needExpanded && !needCompactHeal) {
+        if (!needExpanded && !needCompactHeal && !needStyleHeal && !needEnchantHeal) {
             return null;
         }
 
         ItemStack clone = null;
-        if (needExpanded || needCompactHeal) {
-            String itemId = itemRegistry.getItemId(original);
-            DCEItem dceItem = itemRegistry.getItem(itemId);
-            if (dceItem != null
-                    && dceItem.getCategory() != ItemCategory.SCROLL
-                    && dceItem.getCategory() != ItemCategory.COSMETIC_SCROLL) {
-                clone = original.clone();
-                TooltipRenderer.renderItem(dceItem, clone, scrollRegistry,
-                        needExpanded ? TooltipMode.EXPANDED : TooltipMode.COMPACT);
+        if (needExpanded || needCompactHeal || needStyleHeal || needEnchantHeal) {
+            if (dceItem != null) {
+                if (isScroll || (isPet && needStyleHeal && !needExpanded && !needCompactHeal)) {
+                    if (needStyleHeal) {
+                        clone = original.clone();
+                        ItemMeta cloneMeta = clone.getItemMeta();
+                        if (cloneMeta != null) {
+                            TooltipRenderer.applyTooltipStyle(cloneMeta, expectedStyle);
+                            clone.setItemMeta(cloneMeta);
+                        }
+                    }
+                } else {
+                    clone = original.clone();
+                    TooltipRenderer.renderItem(dceItem, clone, scrollRegistry,
+                            needExpanded ? TooltipMode.EXPANDED : TooltipMode.COMPACT,
+                            viewer);
+                }
             }
         }
 

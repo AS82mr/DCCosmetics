@@ -132,10 +132,10 @@ public class NpcRegistry {
         // 14. Colosseum (Trial Master)
         registerChar("valerius", "Valerius", "&#EF4444Combat Master Valerius", "#EF4444", "MHF_Gladiator", 1, "Resistance", "Trial Master",
                 "Step onto the frost arena if you dare test your blade against Syndicate champions.", Material.DIAMOND_SWORD, "Snow Colosseum - Glacial Duel Grounds", "colosseum");
-        registerService("valerius", "battlepass", "BattlePass");
+        registerService("valerius", "battlepass", "DragonPass");
         regAmbient("valerius",
                 "The cold numbs your fingers, but sharpens your reflexes.",
-                "Prove your worth in duels, and the Syndicate BattlePass will reward you handsomely.",
+                "Prove your worth in duels, and the Syndicate DragonPass will reward you handsomely.",
                 "The Empire's sentinels bleed just like anyone else.");
 
         // 15. Fisherman House
@@ -156,11 +156,11 @@ public class NpcRegistry {
 
         // 17. Tech Spire & Academy
         registerChar("orion", "Orion", "&#8B5CF6Chronomancer Orion", "#8B5CF6", "MHF_Mage", 1, "Resistance", "Academy Chronomancer",
-                "Probability is merely physics waiting to be bent. Master your Adapt skills.", Material.BEACON, "Celestial Observatory - Chronomancer Spire", "observatory");
+                "Probability is merely physics waiting to be bent. Hone your Skills.", Material.BEACON, "Celestial Observatory - Chronomancer Spire", "observatory");
         registerService("orion", "rng", "RNG");
         regAmbient("orion",
                 "Explore your drop probability curves with /rng and track milestones via /pity.",
-                "Leveling your Adapt mastery unlocks latent dimensional synergies.",
+                "Leveling your Skills unlocks latent dimensional synergies.",
                 "Luck is the weapon of the amateur. Determinism belongs to the Syndicate.");
 
         // 18. Mines Outpost

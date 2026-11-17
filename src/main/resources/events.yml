@@ -82,8 +82,8 @@ mini_events:
     - '&c• Double PvP Honor points inside the Colosseum'
     - '&c• Direct warp via &f/warp colosseum'
   adapt_exp_surge:
-    title: '&a&lAdapt EXP Surge'
-    subtitle: '&22x Skill Mastery Across the Realm'
+    title: '&a&lSkill EXP Surge'
+    subtitle: '&22x Skill Experience Across the Realm'
     icon: EXPERIENCE_BOTTLE
     custom_model_data: 0
     duration_minutes: 30
@@ -92,13 +92,13 @@ mini_events:
     start_command: none
     end_command: none
     sound: ENTITY_EXPERIENCE_ORB_PICKUP
-    reward_summary: Double Experience for all Adapt Skills
+    reward_summary: Double Experience for all Skills
     lore:
     - '&7An arcane surge energizes the island ley lines.'
-    - '&7Earn double experience towards all Adapt skills'
+    - '&7Earn double experience towards all Skills'
     - '&7including Mining, Combat, Woodcutting, and Foraging.'
     perks:
-    - '&a• 2x Multiplier on all Adapt skill gains'
+    - '&a• 2x Multiplier on all Skill gains'
     - '&a• Applies across all dimensions automatically'
   iceboat_rally:
     title: '&3&lSupersonic IceBoat Rally'

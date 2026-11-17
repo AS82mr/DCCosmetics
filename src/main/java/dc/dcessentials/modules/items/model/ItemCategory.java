@@ -55,7 +55,8 @@ public enum ItemCategory {
         if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
             name = org.bukkit.ChatColor.stripColor(item.getItemMeta().getDisplayName()).toLowerCase();
         }
-        if (name.contains("voucher") || name.contains("ticket") || name.contains("pass") || name.contains("rank")) {
+        if (name.contains("voucher") || name.contains("ticket") || name.contains("pass") || name.contains("rank")
+                || name.contains("chat color") || name.contains("chatcolor") || name.contains("tag")) {
             return VOUCHER;
         }
         if ((name.contains("cosmetic") && (name.contains("scroll") || name.contains("skin"))) ||

@@ -460,7 +460,7 @@ public class TeleportationManager {
         if (!res.overdraw()) {
             DCMessage.sendInfo(player, "Transit complete: &#FFFFFF-" + formatMicroAsCharges(res.microPaid())
                     + " 🗲 &#BAE6FD(&#FFFFFF" + res.remainingEnergy() + " 🗲 &#7DD3FC| &#FFFFFF" + res.remainingMicro()
-                    + " mC&#BAE6FD) | Matrix absorbed friction (&#10B9810 Heat&#BAE6FD).");
+                    + KeystoneLoreTokens.MICRO_ICON + "&#BAE6FD) | Matrix absorbed friction (&#10B9810 Heat&#BAE6FD).");
             return;
         }
 

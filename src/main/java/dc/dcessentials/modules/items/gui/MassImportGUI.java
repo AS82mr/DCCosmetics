@@ -24,6 +24,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class MassImportGUI implements Listener {
 
@@ -138,6 +139,9 @@ public class MassImportGUI implements Listener {
                         if (stripped.matches(".*(Surge|Ward|Resonance|Execute|Cleave|Siphon|Stasis|Catalyst).*·+.*")) continue;
                         if (stripped.startsWith("----------------------------------------") || stripped.startsWith("-------[")) continue;
                         if (stripped.contains("[🛡]") || stripped.contains("[🪽]") || stripped.contains("[🧪]") || stripped.contains("[🔮]")) continue;
+                        if (stripped.toLowerCase().matches("^(?:rarity|ʀᴀʀɪᴛʏ)\\s*:.*$")) continue;
+                        if (stripped.toLowerCase().matches("^(?:type|ᴛʏᴘᴇ)\\s*:.*$")) continue;
+                        if (stripped.replaceAll("[\\-_=~*·•—–―\u2500-\u257F\u00A0 ]", "").isEmpty() && stripped.length() >= 3) continue;
                         preserved.add(line);
                     }
                     // Trim leading and trailing empty lines from preserved, keeping internal returns intact
@@ -231,11 +235,27 @@ public class MassImportGUI implements Listener {
     }
 
     private ItemRarity detectRarityFromItem(ItemStack item) {
-        if (item.hasItemMeta() && item.getItemMeta().hasLore()) {
-            String fullLore = String.join(" ", item.getItemMeta().getLore()).toUpperCase();
-            for (ItemRarity r : ItemRarity.values()) {
-                if (fullLore.contains(r.name()) || fullLore.contains(r.getDisplayName().toUpperCase())) {
-                    return r;
+        if (item != null && item.hasItemMeta() && item.getItemMeta().hasLore()) {
+            List<String> lore = item.getItemMeta().getLore();
+            if (lore != null) {
+                // 1. Prefer explicit structured rarity identifier line (e.g. "&8Rarity: Epic")
+                for (String rawLine : lore) {
+                    String plain = ChatColor.stripColor(rawLine).trim().toLowerCase(Locale.ROOT);
+                    java.util.regex.Matcher m = java.util.regex.Pattern
+                            .compile("^(?:rarity|ʀᴀʀɪᴛʏ)\\s*:\\s*([a-zA-Z]+)\\b")
+                            .matcher(plain);
+                    if (m.find()) {
+                        return ItemRarity.fromString(m.group(1));
+                    }
+                }
+                // 2. Fallback: match highest-tier rarity keyword as whole word (prevents "common" prose overriding)
+                String fullLore = ChatColor.stripColor(String.join(" ", lore)).toUpperCase(Locale.ROOT);
+                ItemRarity[] values = ItemRarity.values();
+                for (int i = values.length - 1; i >= 0; i--) {
+                    ItemRarity r = values[i];
+                    if (fullLore.matches(".*\\b(" + r.name() + "|" + r.getDisplayName().toUpperCase(Locale.ROOT) + ")\\b.*")) {
+                        return r;
+                    }
                 }
             }
         }

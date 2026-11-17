@@ -2,6 +2,11 @@ package dc.dcessentials.modules.teleportation;
 
 import dc.dccosmetics.DCCosmetics;
 import dc.dcessentials.core.util.ColorUtil;
+import dc.dcessentials.modules.items.model.DCEItem;
+import dc.dcessentials.modules.items.model.ItemCategory;
+import dc.dcessentials.modules.items.model.ItemRegistry;
+import dc.dcessentials.modules.items.tooltip.TooltipMode;
+import dc.dcessentials.modules.items.tooltip.TooltipRenderer;
 import dc.dcessentials.modules.teleportation.gui.KeystoneMenu;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -17,13 +22,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Resolves dynamic Keystone lore tokens ({ks:energy}, {ks:max}, {ks:micro}, {ks:heat})
- * and manages debounced inventory refreshes (Task P2-08).
+ * and dynamic Microcharge ability cost tokens ({mc:...}) + debounced inventory refreshes.
  */
 public final class KeystoneLoreTokens {
 
+    /** Canonical lightning-style Unicode symbol for Microcharges (never render plain text "mC"). */
+    public static final String MICRO_ICON = "\u21AF"; // ↯
+
+    private static final Pattern MC_TOKEN_PATTERN = Pattern.compile("\\{mc:([a-zA-Z0-9_]+)\\}");
     private static final Map<UUID, BukkitTask> PENDING_REFRESH = new ConcurrentHashMap<>();
 
     private KeystoneLoreTokens() {}
@@ -34,6 +45,54 @@ public final class KeystoneLoreTokens {
                 || line.contains("{ks:max}")
                 || line.contains("{ks:micro}")
                 || line.contains("{ks:heat}");
+    }
+
+    public static boolean containsMcTokens(String line) {
+        return line != null && !line.isEmpty() && line.contains("{mc:");
+    }
+
+    public static boolean itemUsesMcTokens(DCEItem dceItem) {
+        if (dceItem == null || dceItem.getCustomLore() == null) return false;
+        for (String line : dceItem.getCustomLore()) {
+            if (containsMcTokens(line)) return true;
+        }
+        return false;
+    }
+
+    public static int resolveBaseMcCost(String key, TeleportationManager teleMgr) {
+        if (key == null || key.isEmpty()) return 0;
+        if ("void_bounce".equalsIgnoreCase(key)) {
+            return teleMgr != null ? teleMgr.getVoidBounceCostMicro() : 75;
+        }
+        if ("sonic_boom".equalsIgnoreCase(key)) {
+            return teleMgr != null ? teleMgr.getSonicBoomCostMicro() : 250;
+        }
+        try {
+            return Math.max(0, Integer.parseInt(key));
+        } catch (NumberFormatException ignored) {
+            return 0;
+        }
+    }
+
+    public static String resolveMcTokens(String line, Player viewer) {
+        if (line == null || line.isEmpty() || !line.contains("{mc:")) return line;
+        DCCosmetics plugin = DCCosmetics.getInstance();
+        TeleportationManager teleMgr = plugin != null ? plugin.getTeleportationManager() : null;
+        KeystoneEnergyService energySvc = teleMgr != null ? teleMgr.getEnergyService() : null;
+        KeystoneProfile profile = (viewer != null && teleMgr != null) ? teleMgr.getProfile(viewer.getUniqueId()) : null;
+
+        Matcher m = MC_TOKEN_PATTERN.matcher(line);
+        StringBuilder sb = new StringBuilder();
+        while (m.find()) {
+            String key = m.group(1);
+            int base = resolveBaseMcCost(key, teleMgr);
+            int val = (viewer != null && energySvc != null && base > 0)
+                    ? energySvc.effectiveCost(viewer, profile, base)
+                    : base;
+            m.appendReplacement(sb, Matcher.quoteReplacement(String.valueOf(val)));
+        }
+        m.appendTail(sb);
+        return sb.toString();
     }
 
     public static List<String> resolve(List<String> lines, KeystoneProfile profile) {
@@ -105,9 +164,10 @@ public final class KeystoneLoreTokens {
             String itemId = itemMod.getItemRegistry().getItemId(stack);
             var master = itemId != null ? itemMod.getItemRegistry().getItem(itemId) : null;
             if (master != null) {
-                dc.dcessentials.modules.items.tooltip.TooltipRenderer.renderItem(
+                TooltipRenderer.renderItem(
                         master, stack, itemMod.getScrollRegistry(),
-                        mode != null ? mode : dc.dcessentials.modules.items.tooltip.TooltipMode.COMPACT);
+                        mode != null ? mode : TooltipMode.COMPACT,
+                        viewer);
             }
         }
 
@@ -166,8 +226,55 @@ public final class KeystoneLoreTokens {
     }
 
     /**
-     * Schedules a 10-tick debounced inventory/GUI refresh if the player holds a physical keystone
-     * or currently has KeystoneMenu open (Task P2-08).
+     * Reverts any dynamic player-discounted {mc:...} lore on an ItemStack back to server base rate
+     * (used whenever an item leaves the player's inventory to the world, a container, AH, or trade).
+     */
+    public static boolean revertToBaseRate(ItemStack stack) {
+        if (stack == null || stack.getType().isAir() || !stack.hasItemMeta()) return false;
+        DCCosmetics plugin = DCCosmetics.getInstance();
+        var itemMod = plugin != null ? plugin.getItemModule() : null;
+        if (itemMod == null || itemMod.getItemRegistry() == null) return false;
+
+        ItemRegistry reg = itemMod.getItemRegistry();
+        if (!reg.isDCEItem(stack)) return false;
+        String id = reg.getItemId(stack);
+        DCEItem master = id != null ? reg.getItem(id) : null;
+        if (master == null) return false;
+
+        if (!itemUsesMcTokens(master) && KeystoneDetector.tierOf(stack) == KeystoneTier.NONE) {
+            return false;
+        }
+        if (master.getCategory() == ItemCategory.SCROLL || master.getCategory() == ItemCategory.COSMETIC_SCROLL) {
+            return false;
+        }
+
+        if (KeystoneDetector.tierOf(stack) != KeystoneTier.NONE) {
+            applyToStack(stack, null, null, TooltipMode.COMPACT);
+        } else {
+            TooltipRenderer.renderItem(master, stack, itemMod.getScrollRegistry(), TooltipMode.COMPACT, null);
+        }
+        return true;
+    }
+
+    public static void revertInventoryDynamicMc(Player player) {
+        if (player == null) return;
+        ItemStack[] contents = player.getInventory().getContents();
+        boolean changed = false;
+        for (int i = 0; i < contents.length; i++) {
+            ItemStack st = contents[i];
+            if (st != null && revertToBaseRate(st)) {
+                player.getInventory().setItem(i, st);
+                changed = true;
+            }
+        }
+        if (changed) {
+            player.updateInventory();
+        }
+    }
+
+    /**
+     * Schedules a 10-tick debounced inventory/GUI refresh if the player holds a physical keystone,
+     * dynamic-mC DCE item, or currently has KeystoneMenu open (Task P2-08).
      */
     public static void scheduleInventoryRefresh(Player player) {
         if (player == null || !player.isOnline()) return;
@@ -188,24 +295,44 @@ public final class KeystoneLoreTokens {
             }
 
             // Only bake into player inventory slots when cursor is empty to prevent HashedStack cursor desync
-            if (player.getItemOnCursor().getType().isAir() && carriesPhysicalKeystone(player)) {
-                var teleMgr = plugin.getTeleportationManager();
-                KeystoneProfile kProfile = teleMgr != null ? teleMgr.getProfile(player.getUniqueId()) : null;
-                ItemStack[] contents = player.getInventory().getContents();
-                boolean modified = false;
-                for (int i = 0; i < contents.length; i++) {
-                    ItemStack st = contents[i];
-                    if (st != null && !st.getType().isAir() && KeystoneDetector.isKeystone(st)) {
-                        applyToStack(st, player, kProfile);
+            if (!player.getItemOnCursor().getType().isAir()) return;
+
+            var teleMgr = plugin.getTeleportationManager();
+            var itemMod = plugin.getItemModule();
+            ItemRegistry reg = itemMod != null ? itemMod.getItemRegistry() : null;
+            var scrollReg = itemMod != null ? itemMod.getScrollRegistry() : null;
+            KeystoneProfile kProfile = teleMgr != null ? teleMgr.getProfile(player.getUniqueId()) : null;
+
+            ItemStack[] contents = player.getInventory().getContents();
+            boolean modified = false;
+            for (int i = 0; i < contents.length; i++) {
+                ItemStack st = contents[i];
+                if (st == null || st.getType().isAir()) continue;
+                if (KeystoneDetector.isKeystone(st)) {
+                    if (reg != null) {
+                        reg.updateItemToLatest(st);
+                    }
+                    applyToStack(st, player, kProfile);
+                    player.getInventory().setItem(i, st);
+                    modified = true;
+                } else if (reg != null && reg.isDCEItem(st)) {
+                    boolean itemModified = reg.updateItemToLatest(st);
+                    String id = reg.getItemId(st);
+                    DCEItem master = id != null ? reg.getItem(id) : null;
+                    if (master != null && itemUsesMcTokens(master)) {
+                        TooltipRenderer.renderItem(master, st, scrollReg, TooltipMode.COMPACT, player);
+                        itemModified = true;
+                    }
+                    if (itemModified) {
                         player.getInventory().setItem(i, st);
                         modified = true;
                     }
                 }
-                if (modified) {
-                    player.updateInventory();
-                }
             }
-        }, 10L);
+            if (modified) {
+                player.updateInventory();
+            }
+        }, 4L);
 
         PENDING_REFRESH.put(uuid, task);
     }

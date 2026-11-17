@@ -15,15 +15,24 @@ public class RarityConfigManager {
     public static class RarityFormat {
         private final String nameColor;
         private final String bracketColor;
+        private final String emptyBracketColor;
+        private final String bracketLeft;
+        private final String bracketRight;
         private final String tag;
         private final String divider;
         private final String tooltipStyle;
         private final List<String> header;
         private final List<String> footer;
 
-        public RarityFormat(String nameColor, String bracketColor, String tag, String divider, String tooltipStyle, List<String> header, List<String> footer) {
+        public RarityFormat(String nameColor, String bracketColor, String emptyBracketColor,
+                            String bracketLeft, String bracketRight,
+                            String tag, String divider, String tooltipStyle,
+                            List<String> header, List<String> footer) {
             this.nameColor = nameColor;
             this.bracketColor = bracketColor;
+            this.emptyBracketColor = emptyBracketColor != null ? emptyBracketColor : "&8";
+            this.bracketLeft = bracketLeft != null ? bracketLeft : "[";
+            this.bracketRight = bracketRight != null ? bracketRight : "]";
             this.tag = tag;
             this.divider = divider;
             this.tooltipStyle = tooltipStyle;
@@ -33,6 +42,9 @@ public class RarityConfigManager {
 
         public String getNameColor() { return nameColor; }
         public String getBracketColor() { return bracketColor; }
+        public String getEmptyBracketColor() { return emptyBracketColor; }
+        public String getBracketLeft() { return bracketLeft; }
+        public String getBracketRight() { return bracketRight; }
         public String getTag() { return tag; }
         public String getDivider() { return divider; }
         public String getTooltipStyle() { return tooltipStyle; }
@@ -64,13 +76,16 @@ public class RarityConfigManager {
             String sectionKey = rarity.name().toLowerCase();
             String nameColor = config.getString(sectionKey + ".name_color", rarity.getColor());
             String bracketColor = config.getString(sectionKey + ".bracket_color", getDefaultBracketColor(rarity));
+            String emptyBracketColor = config.getString(sectionKey + ".empty_bracket_color", "&8");
+            String bracketLeft = config.getString(sectionKey + ".bracket_left", "[");
+            String bracketRight = config.getString(sectionKey + ".bracket_right", "]");
             String tag = config.getString(sectionKey + ".tag", ":lztooltips:" + sectionKey + ":");
             String divider = config.getString(sectionKey + ".divider", getDefaultDivider(rarity));
             String style = config.getString(sectionKey + ".tooltip_style", rarity.getTooltipStyle());
             List<String> header = config.getStringList(sectionKey + ".header");
             List<String> footer = config.getStringList(sectionKey + ".footer");
 
-            formats.put(rarity, new RarityFormat(nameColor, bracketColor, tag, divider, style, header, footer));
+            formats.put(rarity, new RarityFormat(nameColor, bracketColor, emptyBracketColor, bracketLeft, bracketRight, tag, divider, style, header, footer));
         }
     }
 
@@ -78,7 +93,7 @@ public class RarityConfigManager {
         if (rarity == null) rarity = ItemRarity.COMMON;
         RarityFormat f = formats.get(rarity);
         if (f == null) {
-            return new RarityFormat(rarity.getColor(), getDefaultBracketColor(rarity),
+            return new RarityFormat(rarity.getColor(), getDefaultBracketColor(rarity), "&8", "[", "]",
                     ":lztooltips:" + rarity.name().toLowerCase() + ":",
                     getDefaultDivider(rarity), rarity.getTooltipStyle(), Collections.emptyList(), Collections.emptyList());
         }

@@ -47,7 +47,7 @@ window.WIKI_DATA.SEARCH_SECTIONS = [
   { file: "keystones.html", secId: "sec-sockets", page: "Keystones", title: "Keystone GUI & Multi-Socket Scrolls", audience: "player", text: "54 slot KeystoneMenu deposit +1 +10 All cursor withdraw cubes slots 20 21 22 socket_keystone_slots KEYSTONE_HEAT TESSERACT CAPACITOR ANCHOR RECLAIM" },
 
   { file: "pets.html", secId: "sec-pet-arch", page: "Pets", title: "DCEPets Architecture & Stationary Perch", audience: "player", text: "Lv 1-100 perks 1/2/3/4/5 ProtocolLib ITEM_DISPLAY TEXT_DISPLAY 0.06 0.03 hysteresis stationary frozen anchor 3.2m re-anchor 15 deg idle gaze" },
-  { file: "pets.html", secId: "sec-domains", page: "Pets", title: "SkillDomain & Weighted Adapt XP Mapping", audience: "player", text: "SkillDomain MELEE RANGED DEFENSE MINING EXCAVATION HARVEST FORAGING FISHING ARCANE ALCHEMY MOBILITY UTILITY axes 50/50 split pickaxe exclude-scroll-bonus-xp" },
+  { file: "pets.html", secId: "sec-domains", page: "Pets", title: "SkillDomain & Weighted Skill XP Mapping", audience: "player", text: "SkillDomain MELEE RANGED DEFENSE MINING EXCAVATION HARVEST FORAGING FISHING ARCANE ALCHEMY MOBILITY UTILITY axes 50/50 golemancy pickaxe exclude-scroll-bonus-xp" },
   { file: "pets.html", secId: "sec-pet-catalog", page: "Pets", title: "All 15 Registered Companions", audience: "player", text: "spark striker ember mend salvo bastion zephyr terra verdant glacies pyre umbra solis astral crimson" },
 
   { file: "cosmetics.html", secId: "sec-profile", page: "Cosmetics", title: "Profile GUI Layout (Slot 11 Keystone, Slot 51 Tooltip)", audience: "player", text: "/profile drawers helmet chest waist boots main hand offhand slot 11 keystone 20 amulet 29 cloak 38 gloves 51 tooltipToggle" },

@@ -1,13 +1,15 @@
 package dc.dccosmetics.manager;
 
 import dc.dccosmetics.DCCosmetics;
+import dc.dcessentials.core.util.ColorUtil;
+import dc.dcessentials.core.util.DCMessage;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.command.CommandSender;
 
 import java.io.File;
 
 public class LanguageManager {
+    private static final String DEFAULT_PREFIX = DCMessage.PREFIX_GENERAL;
     private final DCCosmetics plugin = DCCosmetics.getInstance();
     private YamlConfiguration langConfig;
     private String prefix;
@@ -20,13 +22,17 @@ public class LanguageManager {
             plugin.saveResource("lang/langENG.yml", false);
         }
         langConfig = YamlConfiguration.loadConfiguration(langFile);
-        prefix = plugin.parseColors(langConfig.getString("prefix", "&#38bdf8&lDCCosmetics &8»&r "));
+        String rawPrefix = langConfig.getString("prefix", DEFAULT_PREFIX);
+        if (rawPrefix == null || rawPrefix.contains("DCCosmetics")) {
+            rawPrefix = DEFAULT_PREFIX;
+        }
+        prefix = ColorUtil.colorize(rawPrefix);
     }
 
     public String getMessage(String key) {
         String msg = langConfig.getString("messages." + key);
         if (msg == null || msg.isEmpty()) return "";
-        return plugin.parseColors(prefix + msg);
+        return ColorUtil.colorize(prefix + msg);
     }
 
     public void sendMessage(CommandSender sender, String key) {

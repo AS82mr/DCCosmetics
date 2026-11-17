@@ -115,36 +115,38 @@
             <h3><code>TEMPO</code> &amp; <code>REFINEMENT</code></h3>
             <ul>
               <li><strong><code>TEMPO</code> (max 50%):</strong> Boosts mining break speed via <code>Attribute.BLOCK_BREAK_SPEED</code> and reduces fishing <code>FishHook</code> min/max wait ticks by <code>X%</code>.</li>
-              <li><strong><code>REFINEMENT</code> (max 40%):</strong> Awards <code>+X%</code> Adapt XP on crafting, brewing, and enchanting, plus gives an <code>X%</code> chance to refund enchantment level costs cleanly.</li>
+              <li><strong><code>REFINEMENT</code> (max 40%):</strong> Awards <code>+X%</code> Skill XP on crafting, brewing, and enchanting, plus gives an <code>X%</code> chance to refund enchantment level costs cleanly.</li>
             </ul>
           </div>
         </div>
       </section>
 
       <section class="wiki-sec" id="sec-tooltips">
-        <h2>Expandable Tooltips &amp; 2&times; Socket Icons</h2>
+        <h2>Unified Tooltips, Vanilla Enchant Caps &amp; Socket Layout</h2>
         <div class="grid-2">
           <div class="box">
-            <h3>Non-Destructive Viewer Modes</h3>
-            <p>Server-side stacks always store clean <strong>COMPACT</strong> lore. When a viewer selects <strong>EXPANDED</strong> mode, ProtocolLib rewrites the item packet only inside the viewer's own survival inventory (Creative/Spectator are never rewritten).</p>
+            <h3>Option A Framing, Modes &amp; Enchants (<code>enchants.yml</code>)</h3>
+            <p>All native DCE items and Scrolls share the Option A frame configured in <code>DCEssentials/rarities.yml</code> (top rarity/category glyphs + 1 gradient header, bottom 1 gradient footer, rarity-matched item names, and zero duplicate stars).</p>
             <ul>
               <li><code>/tooltip [compact|expanded|toggle]</code> — Saves persistent setting to <code>dce_player_settings</code>.</li>
-              <li><strong>Profile Slot 51:</strong> Dedicated Tooltip Toggle book inside <code>/profile</code>.</li>
-              <li><strong>Shift + Right-Click:</strong> Flip tooltip mode directly on any DCE item in your inventory.</li>
-              <li><strong>Sneak-on-Open:</strong> Hold Sneak when opening containers/GUIs for session-scoped expanded lore.</li>
+              <li><strong>Vanilla Enchants &amp; Live Sync (3 per line):</strong> Managed via <code>DCEssentials/enchants.yml</code> (vanilla enchantments only). Levels &ge; cap highlight in <code>&amp;c</code>; lower levels render in <code>&amp;9</code>. Enchants are tracked via live PDC signature (<code>dce_ench_sig</code>) so Grindstones (<code>PrepareGrindstoneEvent</code>), Anvils, Enchanting Tables, book drag-and-drop, <code>/enchant</code>/<code>/enchants</code>/<code>/disenchant</code> commands, inventory sync, and outgoing packets automatically reflect actual enchantments.</li>
+              <li><strong>Reward Book Support:</strong> Over-cap vanilla books (e.g. <code>sharpness: 6</code>) apply via Anvil &amp; drag-and-drop up to <code>enchants.yml</code> without unlocking over-cap levels in vanilla Enchanting Tables.</li>
+              <li><strong>Tooltip Styles (<code>tooltip_style</code>):</strong> Configured per rarity in <code>rarities.yml</code> (with <code>mastery</code> mapped to <code>lztooltips:artifact</code> and matching <code>mastery_*</code>/<code>artifact_*</code> sprites under <code>ItemsAdder/contents/lztooltips/resourcepack/assets/</code>). Live items auto-heal mismatched tooltip styles on inventory refresh and outgoing packets.</li>
+              <li><strong>Dynamic <code>↯</code> Costs:</strong> Ability costs written with <code>{mc:...}</code> dynamically display the viewer's Conduit/Keystone-discounted <code>↯</code> cost only inside their own inventory; drops, chests, AH, and trades show base cost.</li>
               <li><code>/dce inspect</code> — Read-only GUI displaying the full expanded breakdown of your held item.</li>
             </ul>
           </div>
           <div class="box">
-            <h3>Expanded Lore &amp; 20px Socket Badges</h3>
+            <h3>All-in-One Tooltip Layout (<code>TooltipRenderer</code>)</h3>
             <div class="lore-preview">
               <div><span style="color:#fcd34d">⚡ Surge</span> ········ <span style="color:#fff">+12%</span></div>
               <div class="lore-sub">Stacking hit momentum &amp; attack speed burst</div>
               <div><span style="color:#3b82f6">🛡 Ward</span> ········· <span style="color:#fff">+25%</span></div>
               <div class="lore-sub">Reduces incoming physical &amp; projectile damage</div>
-              <div class="lore-div">__________________________</div>
               <div>&nbsp;</div>
-              <div>[<span style="color:#a855f7">⬡</span>][<span style="color:#38bdf8">⬡</span>][<span style="color:#64748b">⬡</span>] <span style="color:#8b949e">(2x scale glyphs, 1 spacer line above &amp; below)</span></div>
+              <div><span style="color:#555555">=</span> <span style="color:#a855f7">[</span>⬡<span style="color:#a855f7">]</span> <span style="color:#38bdf8">[</span>⬡<span style="color:#38bdf8">]</span> <span style="color:#64748b">[</span>⬡<span style="color:#64748b">]</span> <span style="color:#8b949e">(1 space gap, configurable brackets)</span></div>
+              <div>&nbsp;</div>
+              <div><span style="color:#ff5555">Sharpness V</span>, <span style="color:#5555ff">Fire Aspect II</span>, <span style="color:#ff5555">Unbreaking III</span></div>
               <div>&nbsp;</div>
               <div><span style="color:#38bdf8">Cryo-Heatsink</span> | -35% Heat, +50% Cooling</div>
               <div><span style="color:#ffd700">Capacitor II</span>  | +100 Max 🗲</div>
@@ -160,9 +162,9 @@
           <div class="box">
             <h3>Void Warper (<code>void_warper.yml</code>)</h3>
             <ul>
-              <li><strong>Right-Click (Void Bounce · 75 mC base):</strong> Computes safe blink destination (up to <code>8.0m</code>) before charging. If displacement is <code>&le; 0.05m</code>, no energy is spent; otherwise spends <code>75 mC</code> (reduced by Tier + Conduit + Flux, up to 70% off).</li>
-              <li><strong>Shift + Right-Click (Sonic Boom · 250 mC base):</strong> Charges for <code>1.2s</code> with Slowness V, cancels safely if the player dies mid-charge, then charges <code>250 mC</code> on detonation for a <code>38.0m</code> dash dealing <code>14.0</code> damage.</li>
-              <li><strong>Overdraw Mode:</strong> At <code>0</code> Energy/mC (or without an attuned Keystone), abilities remain castable by adding configured Overdraw Heat instead (<code>+6</code> Bounce / <code>+15</code> Sonic Boom).</li>
+              <li><strong>Right-Click (Void Bounce &middot; 75↯ base):</strong> Computes safe blink destination (up to <code>8.0m</code>) before charging. If displacement is <code>&le; 0.05m</code>, no energy is spent; otherwise spends <code>75↯</code> (reduced by Tier + Conduit + Flux, up to 70% off).</li>
+              <li><strong>Shift + Right-Click (Sonic Boom &middot; 250↯ base):</strong> Charges for <code>1.2s</code> with Slowness V, cancels safely if the player dies mid-charge, then charges <code>250↯</code> on detonation for a <code>38.0m</code> dash dealing <code>14.0</code> damage.</li>
+              <li><strong>Overdraw Mode:</strong> At <code>0</code> Energy/<code>↯</code> (or without an attuned Keystone), abilities remain castable by adding configured Overdraw Heat instead (<code>+6</code> Bounce / <code>+15</code> Sonic Boom).</li>
             </ul>
           </div>
           <div class="box" data-audience="admin">
@@ -182,7 +184,7 @@
             <button type="button" class="pill-btn active" data-scroll-filter="ALL">All</button>
             <button type="button" class="pill-btn" data-scroll-filter="Keystone">Keystone</button>
             <button type="button" class="pill-btn" data-scroll-filter="Emperor">Emperor</button>
-            <button type="button" class="pill-btn" data-scroll-filter="Mastery">Mastery</button>
+            <button type="button" class="pill-btn" data-scroll-filter="Skill XP">Skill XP</button>
           </div>
           <input type="text" class="inline-filter" id="scrollsTableFilter" placeholder="Filter scrolls..." />
         </div>

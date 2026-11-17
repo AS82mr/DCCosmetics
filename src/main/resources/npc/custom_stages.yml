@@ -498,8 +498,7 @@ characters:
         title: Introduction to Orion
         requires: none
         objective: Consult with Orion in OBSERVATORY
-        dialogue: Probability is merely physics waiting to be bent. Master your Adapt
-          skills.
+        dialogue: Probability is merely physics waiting to be bent. Hone your Skills.
         completion: Thank you for consulting with me. Together we defend the timeline.
         next: none
         cash_reward: 500.0

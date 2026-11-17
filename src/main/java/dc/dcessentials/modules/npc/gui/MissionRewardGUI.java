@@ -103,7 +103,7 @@ public class MissionRewardGUI implements Listener {
         inv.setItem(13, rewardItem);
 
         // Slot 15: Progression & XP
-        ItemStack xpItem = createItem(Material.EXPERIENCE_BOTTLE, "§b§l✦ Timeline Mastery & XP",
+        ItemStack xpItem = createItem(Material.EXPERIENCE_BOTTLE, "§b§l✦ Timeline Skill & Global XP",
                 "§7Granted: §b+50 Timeline XP",
                 "§7Advances chapter progression to §fStage " + (stageNum + 1) + "§7.",
                 "§f",
@@ -115,7 +115,7 @@ public class MissionRewardGUI implements Listener {
         // Slot 22: Big Collect Button
         ItemStack claimBtn = createItem(Material.LIME_CONCRETE, "§a§l✦ COLLECT ALL 3 REWARDS ✦",
                 "§7Simultaneously claims your cash bounty,",
-                "§7quest artifact, and timeline mastery experience.",
+                "§7quest artifact, and timeline experience.",
                 "§f",
                 "§e▶ Click to Claim All & Advance Chapter");
         inv.setItem(22, claimBtn);

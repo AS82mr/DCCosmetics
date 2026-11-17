@@ -16,13 +16,13 @@
       <div class="page-header">
         <div class="page-breadcrumb">Core Systems / Keystones &amp; Energy</div>
         <h1>Native Keystones &amp; Microcharge Matrix</h1>
-        <p class="page-lead">Account-bound Temporal Keystones (Tesseract, Chronolith, Singularity), the 1,000 mC Microcharge buffer, Overdraw Heat thermodynamics, multi-socket scrolls, and the native 54-slot Matrix GUI.</p>
+        <p class="page-lead">Account-bound Temporal Keystones (Tesseract, Chronolith, Singularity), the 1,000↯ Microcharge buffer, Overdraw Heat thermodynamics, multi-socket scrolls, and the native 54-slot Matrix GUI.</p>
       </div>
 
       <div class="page-toc">
         <span class="page-toc-label">On this page:</span>
         <a class="toc-chip" href="#sec-tiers">3 Keystone Tiers</a>
-        <a class="toc-chip" href="#sec-micro">1,000 mC Buffer &amp; Simulator</a>
+        <a class="toc-chip" href="#sec-micro">1,000↯ Buffer &amp; Simulator</a>
         <a class="toc-chip" href="#sec-heat">Heat, Unstable &amp; Overload</a>
         <a class="toc-chip" href="#sec-sockets">Native GUI &amp; Scrolls</a>
       </div>
@@ -50,15 +50,15 @@
       </section>
 
       <section class="wiki-sec" id="sec-micro">
-        <h2>The 1,000 mC Microcharge Buffer &amp; Overdraw</h2>
+        <h2>The 1,000↯ Microcharge Buffer &amp; Overdraw</h2>
         <div class="grid-2">
           <div class="box">
             <h3>How Cracking &amp; Spending Works</h3>
             <ul>
-              <li><strong>Conversion Ratio:</strong> <code>1</code> whole Tesseract charge (<code>🗲</code>) equals <code>1,000 Microcharges (mC)</code> inside your active buffer.</li>
-              <li><strong>Ability Costs:</strong> Gameplay abilities spend Microcharges cleanly (e.g. Void Bounce = <code>75 mC</code>, Sonic Boom = <code>250 mC</code>). Whenever <code>micro &lt; cost</code> and <code>usableEnergy &gt; 0</code>, the matrix automatically cracks <code>1 🗲</code> into <code>+1,000 mC</code>.</li>
-              <li><strong>Full Warp Costs:</strong> Charged commands (<code>/home</code>, <code>/tpa</code>, <code>/tpahere</code>, <code>/tpaccept</code>, <code>/tpyes</code>) cost <code>1,000–3,000 mC</code> through the exact same buffer, so leftover Microcharges are never wasted.</li>
-              <li><strong>Free Bypass Commands:</strong> <code>/back</code>, <code>/spawn</code>, <code>/warp</code>, <code>/pwarp</code>, and <code>/pw</code> are validated accurately via Bukkit <code>CommandMap</code> and cost <code>0 mC</code>. Ender pearls are also exempt.</li>
+              <li><strong>Conversion Ratio:</strong> <code>1</code> whole Tesseract charge (<code>🗲</code>) equals <code>1,000 Microcharges (↯)</code> inside your active buffer.</li>
+              <li><strong>Ability Costs:</strong> Gameplay abilities spend Microcharges cleanly (e.g. Void Bounce = <code>75↯</code>, Sonic Boom = <code>250↯</code>). Whenever <code>micro &lt; cost</code> and <code>usableEnergy &gt; 0</code>, the matrix automatically cracks <code>1 🗲</code> into <code>+1,000↯</code>.</li>
+              <li><strong>Full Warp Costs:</strong> Charged commands (<code>/home</code>, <code>/tpa</code>, <code>/tpahere</code>, <code>/tpaccept</code>, <code>/tpyes</code>) cost <code>1,000–3,000↯</code> through the exact same buffer, so leftover Microcharges are never wasted.</li>
+              <li><strong>Free Bypass Commands:</strong> <code>/back</code>, <code>/spawn</code>, <code>/warp</code>, <code>/pwarp</code>, and <code>/pw</code> are validated accurately via Bukkit <code>CommandMap</code> and cost <code>0↯</code>. Ender pearls are also exempt.</li>
               <li><strong>Cost Reduction Pool:</strong> Tier bonus + <code>CONDUIT</code> stat + Flux scrolls combine additively up to a hard <code>70%</code> cost-reduction cap.</li>
             </ul>
           </div>
@@ -67,8 +67,8 @@
             <p>Test how the Keystone engine cracks whole charges or calculates Overdraw Heat:</p>
             <div class="calc-grid">
               <div class="calc-field"><label>Energy (🗲)</label><input type="number" id="kEnergy" value="2" min="0" /></div>
-              <div class="calc-field"><label>Micro (mC)</label><input type="number" id="kMicro" value="50" min="0" max="999" /></div>
-              <div class="calc-field"><label>Eff. Cost (mC)</label><input type="number" id="kCost" value="75" min="1" /></div>
+              <div class="calc-field"><label>Micro (↯)</label><input type="number" id="kMicro" value="50" min="0" max="999" /></div>
+              <div class="calc-field"><label>Eff. Cost (↯)</label><input type="number" id="kCost" value="75" min="1" /></div>
               <div class="calc-field"><label>Base Overdraw 🔥</label><input type="number" id="kOverHeat" value="6" min="1" /></div>
               <div class="calc-field"><label>Dim Mult</label><select id="kDim"><option value="1">Overworld/End (1.0x)</option><option value="2">Nether (2.0x)</option></select></div>
               <div class="calc-field"><label>Thermal %</label><input type="number" id="kThermal" value="0" min="0" max="60" /></div>
@@ -114,7 +114,7 @@
             <h3>54-Slot <code>KeystoneMenu</code> Controls</h3>
             <ul>
               <li><strong>Slot 11:</strong> Attuned Keystone overview, effective capacity, and active scroll list.</li>
-              <li><strong>Slots 13–15:</strong> Live Energy bar (<code>🗲</code>), Microcharge buffer bar (<code>0–1,000 mC</code>), and Heat stability/Overload gauge.</li>
+              <li><strong>Slots 13–15:</strong> Live Energy bar (<code>🗲</code>), Microcharge buffer bar (<code>0–1,000↯</code>), and Heat stability/Overload gauge.</li>
               <li><strong>Slots 20–22:</strong> Up to 3 Keystone Scroll socket slots (drop scroll from cursor to infuse, Shift-Click to detach &amp; refund). Duplicate mechanic families are rejected.</li>
               <li><strong>Slots 28–34:</strong> Race-safe cube deposit (<code>+1</code>, <code>+10</code>, <code>All</code>, cursor deposit) and withdraw (<code>-1</code>, <code>-10</code>). Accepts both native <code>tesseract_cube</code> and legacy Energy Cubes.</li>
               <li><strong>Hotbar Shortcut:</strong> Right-click a Tesseract Energy Cube in hand to feed <code>+1 🗲</code> (Shift+Right-Click feeds full stack up to capacity).</li>

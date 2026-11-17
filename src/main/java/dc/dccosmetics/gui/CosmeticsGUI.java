@@ -65,8 +65,9 @@ public class CosmeticsGUI implements InventoryHolder {
         // 6. Row 4: Render Colors (If a cosmetic is selected)
         renderColors();
 
-        // 7. Back Button
-        inventory.setItem(49, createItem(Material.ARROW, ChatColor.GOLD + "Back to Menu"));
+        // 7. Unified Back Button
+        inventory.setItem(49, dc.dccosmetics.util.HeadUtil.createBackButton("&6&lMenu",
+                java.util.List.of("&7Return to Main Menu")));
     }
 
     private void renderCosmetics() {
@@ -134,7 +135,7 @@ public class CosmeticsGUI implements InventoryHolder {
         // Handle Back / External Navigation
         else if (slot == 49) {
             clicker.closeInventory();
-            clicker.performCommand("mainmenu");
+            clicker.performCommand("menu");
         }
         else if (slot == 9) { clicker.performCommand("chatcolor"); }
         else if (slot == 18) { clicker.performCommand("tagmenu"); }
@@ -165,7 +166,7 @@ public class CosmeticsGUI implements InventoryHolder {
                     String hexColor = ChatColor.stripColor(meta.getLore().get(0));
 
                     DCCosmetics.getInstance().getProfileManager().equipCosmetic(clicker, state.getSelectedType(), state.getViewedCosmeticId(), hexColor);
-                    clicker.sendMessage(ChatColor.GREEN + "Equipped " + state.getViewedCosmeticId() + "!");
+                    dc.dcessentials.core.util.DCMessage.sendWardrobe(clicker, "Equipped &#FFFFFF" + state.getViewedCosmeticId() + "&#FBCFE8!");
                 }
             }
         }
@@ -174,7 +175,7 @@ public class CosmeticsGUI implements InventoryHolder {
         else if (slot == 44) {
             clicker.closeInventory();
             DCCosmetics.getInstance().getProfileManager().unequipCosmetic(clicker, state.getSelectedType());
-            clicker.sendMessage(ChatColor.RED + "Unequipped cosmetic!");
+            dc.dcessentials.core.util.DCMessage.sendWardrobe(clicker, "Unequipped cosmetic.");
         }
     }
 

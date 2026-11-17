@@ -69,17 +69,17 @@ items:
     update: true
     display_name: "&#E056FD&lColosseum: King of the Hill"
     lore:
-      - "&8PvP Contest & Combat Master Valerius"
+      - "&8PvP Contest & Arena Champion Valerius"
       - "&f"
       - "&7Status: &f%dragoncote_event_koth_status%"
       - "&7Duration: &f20 minutes"
       - "&7Location: &f/warp colosseum"
       - "&f"
       - "&6&lEvent Rewards:"
-      - "&7• Combat Mastery Tokens & Leaderboard Honor"
+      - "&7• Combat Honor Tokens & Leaderboard Honor"
       - "&7• Special weapons & armor upgrades from Valerius"
       - "&f"
-      - "&#E056FD&l▶ &eClick to warp to Colosseum Arena!"
+      - "&#E056FD▶ &eClick to warp to Colosseum Arena!"
     left_click_commands:
       - "[close]"
       - "[player] warp colosseum"
@@ -92,19 +92,19 @@ items:
     slot: 24
     priority: 1
     update: true
-    display_name: "&#2ECC71&lAdapt EXP Surge"
+    display_name: "&#2ECC71&lSkill EXP Surge"
     lore:
-      - "&8Server-Wide Skill Mastery Multiplier"
+      - "&8Server-Wide Skill Experience Multiplier"
       - "&f"
       - "&7Status: &f%dragoncote_event_adapt_status%"
-      - "&7Multiplier: &#2ECC71&l2x Skill Experience"
-      - "&7Applies to: &fAll Adapt Skills (Mining, Woodcutting, Combat...)"
+      - "&7Multiplier: &#2ECC712x Skill Experience"
+      - "&7Applies to: &fAll Skills (Mining, Woodcutting, Combat...)"
       - "&f"
       - "&a&lEvent Perks:"
-      - "&7• Double mastery gains across all 23 skills"
+      - "&7• Double experience gains across all skills"
       - "&7• Faster talent tree unlock progression"
       - "&f"
-      - "&#2ECC71&l✦ &7Active automatically across all dimensions!"
+      - "&#2ECC71✦ &7Active automatically across all dimensions!"
 
   "card_iceboat_race":
     material: OAK_BOAT

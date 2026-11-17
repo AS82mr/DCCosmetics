@@ -72,6 +72,7 @@ public class StatAggregator implements Listener {
             cache.remove(player.getUniqueId());
             if (Bukkit.isPrimaryThread() && player.isOnline()) {
                 getSnapshot(player);
+                dc.dcessentials.modules.teleportation.KeystoneLoreTokens.scheduleInventoryRefresh(player);
             }
         }
     }

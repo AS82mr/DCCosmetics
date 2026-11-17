@@ -50,11 +50,11 @@
       </section>
 
       <section class="wiki-sec" id="sec-domains">
-        <h2><code>SkillDomain</code> &amp; Weighted Adapt XP Mapping</h2>
-        <p>Instead of flat skill lists that misclassify hybrid skills (such as Adapt <code>axes</code> earning both combat hit XP and woodcutting XP), <code>PetsConfig</code> maps every Adapt skill across 12 normalized <code>SkillDomain</code> weights (e.g., <code>axes: {MELEE: 0.5, FORAGING: 0.5}</code>, and mining scrolls fixed to <code>pickaxe</code>). Optional <code>pets.exclude-scroll-bonus-xp</code> prevents Mastery scroll self-grants from double-feeding pet XP.</p>
+        <h2><code>SkillDomain</code> &amp; Weighted Skill XP Mapping</h2>
+        <p>Instead of flat skill lists that misclassify hybrid skills (such as <code>axes</code> earning both combat hit XP and woodcutting XP, or <code>golemancy</code> blending arcane construction and utility), <code>PetsConfig</code> maps all 24 Skills across 12 normalized <code>SkillDomain</code> weights (e.g., <code>axes: {MELEE: 0.5, FORAGING: 0.5}</code>, <code>golemancy: {ARCANE: 0.5, UTILITY: 0.5}</code>, and mining scrolls fixed to <code>pickaxe</code>). Optional <code>pets.exclude-scroll-bonus-xp</code> prevents Mastery scroll self-grants from double-feeding pet XP.</p>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Pet Category</th><th>Matching <code>SkillDomain</code>s</th><th>Weighted Adapt Sources (100% / Split)</th></tr></thead>
+            <thead><tr><th>Pet Category</th><th>Matching <code>SkillDomain</code>s</th><th>Weighted Skill Sources (100% / Split)</th></tr></thead>
             <tbody id="domainsTableBody"></tbody>
           </table>
         </div>
